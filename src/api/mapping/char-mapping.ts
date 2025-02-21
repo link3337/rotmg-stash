@@ -24,7 +24,7 @@ export function mapCharListResponse(charListResponse: CharListResponse): CharLis
   return {
     account: mappedAccount,
     charList: mappedCharlist,
-    exalts: mapExalts(charListResponse.PowerUpStats?.ClassStats ?? []),
+    exalts: mapExalts(charListResponse.PowerUpStats?.ClassStats),
     maxClassLevels:
       maxClassLevels?.map((maxClassLevel) => ({
         classType: maxClassLevel.classType,

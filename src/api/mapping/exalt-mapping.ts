@@ -12,7 +12,7 @@ type ExaltsRaw =
     }
   | null;
 
-export function mapExalts(exalts: ExaltsRaw): ExaltUIModel[] | null {
+export function mapExalts(exalts: ExaltsRaw | undefined): ExaltUIModel[] | null {
   let exaltUiModel: ExaltUIModel[] | undefined;
   if (!exalts) return null;
 
