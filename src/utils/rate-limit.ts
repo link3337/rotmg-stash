@@ -1,4 +1,4 @@
-import { debug } from '@tauri-apps/plugin-log';
+import { debug, info } from '@tauri-apps/plugin-log';
 import { RATE_LIMIT_DURATION, localStorageRateLimitKey } from './../constants';
 
 export const isRateLimited = (): boolean => {
@@ -7,7 +7,9 @@ export const isRateLimited = (): boolean => {
   if (!limitTimestamp) return false;
 
   const timeSinceLimit = Date.now() - new Date(limitTimestamp).getTime();
-  debug(`Time since rate limit: ${timeSinceLimit}`);
+  const minutes = Math.floor(timeSinceLimit / 60000);
+  const seconds = Math.floor((timeSinceLimit % 60000) / 1000);
+  info(`Time since rate limit: ${minutes}m ${seconds}s`);
   return timeSinceLimit < RATE_LIMIT_DURATION;
 };
 
