@@ -5,6 +5,10 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "opener:default"
+    "shell:allow-open",
+    "log:default",
+    "global-shortcut:allow-is-registered",
+    "global-shortcut:allow-register",
+    "global-shortcut:allow-unregister"
   ]
 }

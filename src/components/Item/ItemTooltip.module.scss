@@ -1,0 +1,111 @@
+.tooltip {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 6px;
+  min-width: 150px;
+  z-index: 3000;
+  font-size: 11px;
+  pointer-events: none;
+  position: absolute;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.name {
+  color: #ffd700;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  text-align: center;
+  position: relative;
+}
+
+.nameWrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1px 0;
+
+  span:first-child {
+    color: #aaa;
+  }
+}
+
+.soulbound {
+  color: #ff4444;
+  margin-top: 4px;
+  font-style: italic;
+  text-align: center;
+}
+
+.ut {
+  color: #8a2be2;
+  margin-top: 4px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.st {
+  color: #ff9900;
+  margin-top: 4px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.utst {
+  color: #ffa500;
+  font-size: 10px;
+  padding: 1px 3px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 2px;
+}
+
+.tooltip {
+  &.top {
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+  }
+
+  &.left {
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-right: 18px;
+  }
+
+  &.right {
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 18px;
+  }
+
+  &.visible {
+    opacity: 1;
+  }
+}
+
+.bagType {
+  background: url(../bagtypes.png) transparent;
+  overflow: hidden;
+  width: 26px;
+  height: 26px;
+  position: relative;
+  margin-right: 6px;
+}

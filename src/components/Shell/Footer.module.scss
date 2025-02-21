@@ -1,0 +1,54 @@
+.footer {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--surface-d);
+  color: white;
+}
+
+.footerCopyright {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.footerLink {
+  color: #61dafb;
+  margin-left: 5px;
+}
+
+.footerPoweredBy {
+  margin-top: 5px;
+}
+
+.footerIcons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.footerIcon {
+  width: 25px;
+  height: 25px;
+}
+
+.footerIcon.vite:hover {
+  filter: drop-shadow(0 0 2em #747bff);
+}
+
+.footerIcon.redux:hover {
+  filter: drop-shadow(0 0 2em #d291e4);
+  /* A more vibrant and visible shade of purple */
+}
+
+.footerIcon.tauri:hover {
+  filter: drop-shadow(0 0 2em #e0ad05);
+}
+
+.footerIcon.react:hover,
+.footerIcon.prime:hover {
+  filter: drop-shadow(0 0 2em #61dafb);
+}
+
+.logo.tauri:hover {
+  filter: drop-shadow(0 0 2em #24c8db);
+}

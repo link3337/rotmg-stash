@@ -1,0 +1,108 @@
+.character {
+  width: 180px;
+  padding: 15px;
+
+  .seasonal {
+    color: #4caf50;
+  }
+
+  .header {
+    display: flex;
+    margin-bottom: 15px;
+
+    .portrait {
+      width: 80px;
+      height: 80px;
+    }
+
+    .info {
+      display: flex;
+      gap: 10px;
+
+      .boost img {
+        width: 12px;
+        height: 15px;
+      }
+
+      .details {
+        font-weight: 700;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .stats {
+    width: 100%;
+    margin-bottom: 15px;
+    font-size: 0.8rem;
+    text-align: right;
+
+    .statName {
+      padding: 4px;
+    }
+
+    .stat {
+      &.maxed {
+        color: gold;
+      }
+
+      .statName {
+        color: white;
+      }
+    }
+
+    .exaltBonus {
+      color: #4a9eff;
+      margin-left: 4px;
+      font-size: 0.9em;
+    }
+  }
+
+  .equipmentContainer {
+    display: flex;
+    flex-direction: column;
+
+    .equipment {
+      display: grid;
+      grid-template-columns: repeat(4, 40px);
+      gap: 1.2px;
+    }
+  }
+
+  .item {
+    width: 40px;
+    height: 40px;
+    position: relative;
+
+    &.bordered {
+      border: 1px solid #000;
+      align-self: center;
+      flex-shrink: 0;
+    }
+  }
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
+
+.charId {
+  margin-left: 4px;
+}
+
+.fame {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,61 @@
+.accountinfoContainer {
+  text-align: center;
+  border-radius: 8px;
+  margin: 0 auto; // Center horizontally
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  width: 100%; // Take full width up to max-width
+
+  .header {
+    display: flex;
+    background-color: var(--surface-overlay);
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 16px;
+
+    .scont {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+
+      .star {
+        transition: color 0.3s ease;
+        font-size: 1.4rem;
+      }
+    }
+  }
+}
+
+.small-spinner .p-progress-spinner {
+  width: 40px;
+  height: 40px;
+}
+
+.statsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.statItem {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--surface-ground);
+  border-radius: 4px;
+  min-width: 100px;
+}
+
+.statName {
+  color: var(--text-color-secondary);
+  font-size: 0.875rem;
+}
+
+.statValue {
+  font-weight: 500;
+  font-size: 0.875rem;
+}

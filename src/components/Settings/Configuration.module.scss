@@ -1,0 +1,11 @@
+.tabPanel {
+  :global {
+    .p-tabview-nav-link {
+      color: var(--text-color) !important;
+    }
+
+    .p-tabview-selected .p-tabview-nav-link {
+      color: var(--primary-color) !important;
+    }
+  }
+}

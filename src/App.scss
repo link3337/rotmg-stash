@@ -1,0 +1,46 @@
+.container {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+a {
+  font-weight: 500;
+  color: var(--blue-700);
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: var(--blue-800);
+}
+
+.p-toast {
+  max-width: 250px;
+
+  .p-toast-message {
+    margin: 0.5rem;
+    padding: 0.8rem;
+    border-radius: 4px;
+  }
+
+  .p-toast-message-content {
+    padding: 0.5rem;
+
+    .p-toast-message-text {
+      margin: 0 0 0 1rem;
+    }
+
+    .p-toast-detail {
+      margin: 0.25rem 0 0 0;
+    }
+  }
+}
+
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}

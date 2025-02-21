@@ -1,50 +1,49 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
+import MainLayout from '@components/Shell/MainLayout';
+import { useAppDispatch, useAppSelector } from '@hooks/redux';
+import DebugPage from '@pages/DebugPage';
+import MainPage from '@pages/MainPage';
+import { initializeAccounts } from '@store/slices/AccountsSlice';
+import 'primeflex/primeflex.css';
+import 'primeicons/primeicons.css';
+import { PrimeReactContext } from 'primereact/api';
+import { Button } from 'primereact/button';
+import { useContext, useEffect, useState } from 'react';
+import './App.scss';
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const dispatch = useAppDispatch();
+  const { changeTheme } = useContext(PrimeReactContext);
+  const theme = useAppSelector((state) => state.settings.theme);
+  const isDebugMode = useAppSelector((state) => state.settings.experimental.isDebugMode);
+  const [showDebug, setShowDebug] = useState(false);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+  useEffect(() => {
+    dispatch(initializeAccounts());
+  }, [dispatch]);
+
+  useEffect(() => {
+    const oldTheme = theme === 'dark' ? 'light' : 'dark';
+
+    changeTheme!(`mdc-${oldTheme}-deeppurple`, `mdc-${theme}-deeppurple`, 'app-theme', () =>
+      console.log(`Theme changed from ${oldTheme} to ${theme}`)
+    );
+  }, [theme, changeTheme]);
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
-    </main>
+    <div className="App">
+      <MainLayout>
+        {isDebugMode && (
+          <Button
+            onClick={() => setShowDebug(!showDebug)}
+            style={{ position: 'fixed', top: '5rem', left: '1rem', zIndex: 1000 }}
+          >
+            {showDebug ? 'Hide Debug' : 'Show Debug'}
+          </Button>
+        )}
+        {showDebug && <DebugPage />}
+        <MainPage />
+      </MainLayout>
+    </div>
   );
 }
 

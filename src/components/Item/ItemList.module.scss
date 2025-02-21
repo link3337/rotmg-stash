@@ -1,0 +1,7 @@
+.items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start; // Prevent stretching items
+  padding-left: 5px;
+  padding-right: 5px;
+}

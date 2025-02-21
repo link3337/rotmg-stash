@@ -1,0 +1,9 @@
+.infoCard {
+  margin-bottom: 1rem;
+
+  :global {
+    .p-card-content {
+      padding: 1rem;
+    }
+  }
+}

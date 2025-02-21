@@ -1,0 +1,24 @@
+.exalts {
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+
+  table {
+    min-width: 650px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    border-collapse: collapse;
+
+    th {
+      border-bottom: 1px solid rgba(128, 128, 128, 0.808);
+    }
+
+    tr {
+      border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+    }
+
+    td {
+      padding: 2px;
+    }
+  }
+}

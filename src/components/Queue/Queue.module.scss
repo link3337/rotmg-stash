@@ -1,0 +1,25 @@
+.queue-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.queue-status.ready {
+  background-color: #4caf50;
+  color: white;
+}
+
+.queue-status.waiting {
+  background-color: #ffa726;
+  color: white;
+}
+
+.queue-status.done {
+  background-color: #4caf50;
+  color: white;
+}
+
+.queue-status.processing {
+  background-color: #2196f3;
+  color: white;
+}

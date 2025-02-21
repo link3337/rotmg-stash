@@ -1,0 +1,32 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--surface-card);
+  padding: 0.5rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--surface-border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .headerTitle {
+    margin: 0;
+    color: var(--primary-color);
+  }
+
+  .headerButton {
+    margin-left: auto;
+  }
+
+  .headerLeft {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+}
