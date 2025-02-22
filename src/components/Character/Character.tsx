@@ -1,5 +1,6 @@
 import { CharUIModel } from '@api/models/char-ui-model';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
+import LootBoostIcon from '@components/Icons/LootBoostIcon';
 import { classes, ClassID } from '@realm/renders/classes';
 import React from 'react';
 import { CharacterStats } from '../Account/types';
@@ -82,32 +83,28 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts }) => {
     }
   ];
 
-  const timeInMinutes = (value: number) => {
+  const timeInMinutes = (value: number): string => {
     return `${Math.floor(value / 60)}m ${value % 60}s`;
   };
 
   const boostDisplay = () => (
     <div className={styles.boost}>
       {char?.lootdrop && char?.loottier ? (
-        <img
-          src="/boost.png"
-          className={styles.boostIcon}
+        <div
           title={`Loot Drop: ${timeInMinutes(char?.lootdrop)}\nLoot Tier: ${timeInMinutes(char?.loottier)}`}
-        />
+        >
+          <LootBoostIcon fill="#00CC00" />
+        </div>
       ) : (
         <>
           {char?.lootdrop ? (
-            <img
-              src="/boost-drop.png"
-              className={styles.boostIcon}
-              title={`Loot Drop: ${timeInMinutes(char?.lootdrop)}`}
-            />
+            <div title={`Loot Drop: ${timeInMinutes(char?.lootdrop)}`}>
+              <LootBoostIcon fill="purple" />
+            </div>
           ) : char?.loottier ? (
-            <img
-              src="/boost-tier.png"
-              className={styles.boostIcon}
-              title={`Loot Tier: ${timeInMinutes(char?.loottier)}`}
-            />
+            <div title={`Loot Tier: ${timeInMinutes(char?.loottier)}`}>
+              <LootBoostIcon fill="orange" />
+            </div>
           ) : null}
         </>
       )}

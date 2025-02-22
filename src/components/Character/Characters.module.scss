@@ -20,11 +20,12 @@
       gap: 10px;
 
       .boost {
-        margin-left: 4px;
+        padding-left: 4px;
+        padding-top: 4px;
 
-        img {
-          width: 12px;
-          height: 15px;
+        svg {
+          height: 18px;
+          filter: drop-shadow(0 0 2px currentColor);
         }
       }
 
