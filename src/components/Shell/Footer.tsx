@@ -19,7 +19,12 @@ const Footer: React.FC = () => {
     <footer className={styles.footer}>
       <div className={styles.footerCopyright}>
         Made with ❤️ by
-        <a href="https://github.com/link3337" className={styles.footerLink}>
+        <a
+          href="https://github.com/link3337"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.footerLink}
+        >
           Link3337
         </a>
         <span style={{ marginLeft: '5px' }}>and</span>
