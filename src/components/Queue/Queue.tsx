@@ -53,9 +53,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
-    console.log('Queue Fetch Interval:', queueFetchInterval);
-    console.log('Is Queue Running:', isQueueRunning);
-    console.log('Is Queue Paused:', isQueuePaused);
+
     if (isQueueRunning && !isQueuePaused) {
       intervalId = setInterval(async () => {
         console.log('Processing next queue item');
