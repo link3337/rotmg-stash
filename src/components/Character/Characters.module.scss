@@ -19,9 +19,13 @@
       display: flex;
       gap: 10px;
 
-      .boost img {
-        width: 12px;
-        height: 15px;
+      .boost {
+        margin-left: 4px;
+
+        img {
+          width: 12px;
+          height: 15px;
+        }
       }
 
       .details {
@@ -47,7 +51,7 @@
       }
 
       .statName {
-        color: white;
+        color: var(--text-color);
       }
     }
 

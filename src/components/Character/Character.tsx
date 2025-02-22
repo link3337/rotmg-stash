@@ -82,6 +82,38 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts }) => {
     }
   ];
 
+  const timeInMinutes = (value: number) => {
+    return `${Math.floor(value / 60)}m ${value % 60}s`;
+  };
+
+  const boostDisplay = () => (
+    <div className={styles.boost}>
+      {char?.lootdrop && char?.loottier ? (
+        <img
+          src="/boost.png"
+          className={styles.boostIcon}
+          title={`Loot Drop: ${timeInMinutes(char?.lootdrop)}\nLoot Tier: ${timeInMinutes(char?.loottier)}`}
+        />
+      ) : (
+        <>
+          {char?.lootdrop ? (
+            <img
+              src="/boost-drop.png"
+              className={styles.boostIcon}
+              title={`Loot Drop: ${timeInMinutes(char?.lootdrop)}`}
+            />
+          ) : char?.loottier ? (
+            <img
+              src="/boost-tier.png"
+              className={styles.boostIcon}
+              title={`Loot Tier: ${timeInMinutes(char?.loottier)}`}
+            />
+          ) : null}
+        </>
+      )}
+    </div>
+  );
+
   return (
     <div className={styles.character}>
       <div className={styles.header}>
@@ -93,7 +125,7 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts }) => {
           adjust={false}
         />
         <div className={styles.info}>
-          <div className={styles.boost}>{/* <img src={character.boost} alt="Boost" /> */}</div>
+          {boostDisplay()}
           <div className={`${styles.details} ${char?.seasonal ? styles.seasonal : ''}`}>
             <div className={styles.detailRow}>
               <span className={styles.charInfo}>

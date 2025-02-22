@@ -92,7 +92,6 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
     toBeSortedItems: ItemUIModel[],
     sort: { field: SortFields; direction: 'asc' | 'desc' }
   ): ItemUIModel[] => {
-    console.log(toBeSortedItems.length);
     return [...toBeSortedItems].sort((a, b) => {
       const itemA = items[a.itemId];
       const itemB = items[b.itemId];

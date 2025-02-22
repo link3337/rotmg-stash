@@ -7,7 +7,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 
-// Define available sort fields
+// Sort fields
 export enum SortFields {
   id = 'id',
   name = 'name',
