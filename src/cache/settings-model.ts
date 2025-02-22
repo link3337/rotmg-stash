@@ -1,5 +1,7 @@
+import { SortFields } from '@store/slices/SettingsSlice';
+
 export interface SettingsModel {
-  itemSort: SortCriteria[];
+  itemSort: SortCriteria;
   displaySettings: DisplaySettings;
   experimental: ExperimentalSettings;
   theme: Theme;
@@ -26,7 +28,7 @@ export interface DisplaySettings {
 }
 
 export interface SortCriteria {
-  field: string;
+  field: SortFields;
   direction: 'asc' | 'desc';
 }
 

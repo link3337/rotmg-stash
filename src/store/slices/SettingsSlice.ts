@@ -20,16 +20,6 @@ export enum SortFields {
   shiny = 'shiny'
 }
 
-const getNextAvailableSortField = (usedFields: string[]): string => {
-  const availableFields = Object.values(SortFields);
-  for (const field of availableFields) {
-    if (!usedFields.includes(field)) {
-      return field;
-    }
-  }
-  return availableFields[0]; // default to the first field if all are used
-};
-
 export interface SettingsState extends SettingsModel {}
 
 const initialState: SettingsState = {
@@ -56,12 +46,10 @@ const initialState: SettingsState = {
     isStreamerMode: false,
     isDebugMode: false
   },
-  itemSort: [
-    {
-      field: 'id',
-      direction: 'asc'
-    }
-  ],
+  itemSort: {
+    field: SortFields.id,
+    direction: 'asc'
+  },
   theme: 'dark',
   queueFetchInterval: 70000
 };
@@ -84,27 +72,20 @@ const settingsSlice = createSlice({
     updateItemSort: (
       state,
       action: PayloadAction<{
-        index: number;
-        field: string;
+        field: SortFields;
         direction: 'asc' | 'desc';
       }>
     ) => {
-      const { index, field, direction } = action.payload;
-      if (index < state.itemSort.length) {
-        state.itemSort[index] = {
-          field: field,
-          direction
-        };
-        saveSettingsToLocalStorage(state);
-      }
+      const { field, direction } = action.payload;
+      state.itemSort = {
+        field,
+        direction
+      };
+      saveSettingsToLocalStorage(state);
     },
-    toggleSortDirection: (state, action: PayloadAction<number>) => {
-      const index = action.payload;
-      if (index < state.itemSort.length) {
-        state.itemSort[index].direction =
-          state.itemSort[index].direction === 'asc' ? 'desc' : 'asc';
-        saveSettingsToLocalStorage(state);
-      }
+    toggleSortDirection: (state) => {
+      state.itemSort.direction = state.itemSort.direction === 'asc' ? 'desc' : 'asc';
+      saveSettingsToLocalStorage(state);
     },
     updateTheme: (state, action: PayloadAction<Theme>) => {
       state.theme = action.payload;
@@ -123,24 +104,6 @@ const settingsSlice = createSlice({
         state.experimental[action.payload.key] = action.payload.value as number;
       }
       saveSettingsToLocalStorage(state);
-    },
-    addSortCriteria: (state) => {
-      const usedFields = state.itemSort.map((sort) => sort.field);
-      const nextField = getNextAvailableSortField(usedFields);
-
-      state.itemSort.push({
-        field: nextField,
-        direction: 'desc'
-      });
-
-      saveSettingsToLocalStorage(state);
-    },
-    removeSortCriteria: (state, action: PayloadAction<number>) => {
-      if (action.payload > 0) {
-        // Don't remove first sort criteria
-        state.itemSort.splice(action.payload, 1);
-        saveSettingsToLocalStorage(state);
-      }
     },
     toggleStreamerMode: (state) => {
       state.experimental.isStreamerMode = !state.experimental.isStreamerMode;
@@ -184,8 +147,6 @@ export const {
   toggleSortDirection,
   updateTheme,
   updateExperimentalSetting,
-  addSortCriteria,
-  removeSortCriteria,
   toggleStreamerMode,
   toggleDebugMode,
   updateQueueFetchInterval,

@@ -1,11 +1,10 @@
 import { ItemUIModel } from '@api/models/char-ui-model';
 import { AccountModel } from '@cache/account-model';
-import { SortCriteria } from '@cache/settings-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
-import { itemNameMap, items, RealmItem } from '@realm/renders/items';
+import { itemNameMap, items } from '@realm/renders/items';
 import { clearFilters, selectSelectedItems } from '@store/slices/FilterSlice';
-import { selectItemSort } from '@store/slices/SettingsSlice';
+import { selectItemSort, SortFields } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
 import { Skeleton } from 'primereact/skeleton';
 import React, { useEffect, useState } from 'react';
@@ -89,78 +88,67 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
   const filteredItems = totalItems.filter((item) => activeFilters.includes(item.itemId));
 
-  const recursiveSort = (
+  const sortItems = (
     toBeSortedItems: ItemUIModel[],
-    sortCriteria: SortCriteria[],
-    index: number = 0
+    sort: { field: SortFields; direction: 'asc' | 'desc' }
   ): ItemUIModel[] => {
-    if (index >= sortCriteria.length) return toBeSortedItems;
+    console.log(toBeSortedItems.length);
+    return [...toBeSortedItems].sort((a, b) => {
+      const itemA = items[a.itemId];
+      const itemB = items[b.itemId];
 
-    const sort = sortCriteria[index];
-    const groupedItems = toBeSortedItems.reduce(
-      (acc, item) => {
-        const realmItem: RealmItem = items[item.itemId];
-        const key =
-          sort.field === 'id' || !realmItem ? item.itemId : (realmItem as any)[sort.field];
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(item);
-        return acc;
-      },
-      {} as Record<string, ItemUIModel[]>
-    );
-
-    const sortedKeys = Object.keys(groupedItems).sort((a, b) => {
-      const itemAId = parseInt(a);
-      const itemBId = parseInt(b);
-
-      if (sort.field === 'id') {
-        return sort.direction === 'asc' ? itemAId - itemBId : itemBId - itemAId;
-      } else {
-        const itemA = items[itemAId];
-        const itemB = items[itemBId];
-        if (itemA === undefined || itemB === undefined) return -1;
-
-        if (sort.field === 'name') {
+      switch (sort.field) {
+        case SortFields.id:
+          return sort.direction === 'asc' ? a?.itemId - b?.itemId : b?.itemId - a?.itemId;
+        case SortFields.name:
           return sort.direction === 'asc'
-            ? itemA.name.localeCompare(itemB.name)
-            : itemB.name.localeCompare(itemA.name);
-        } else if (sort.field === 'slotType') {
+            ? itemA?.name.localeCompare(itemB?.name)
+            : itemB?.name.localeCompare(itemA?.name);
+        case SortFields.slotType:
           return sort.direction === 'asc'
-            ? Number(itemA.slotType) - Number(itemB.slotType)
-            : Number(itemB.slotType) - Number(itemA.slotType);
-        } else if (sort.field === 'fameBonus') {
+            ? Number(itemA?.slotType) - Number(itemB?.slotType)
+            : Number(itemB?.slotType) - Number(itemA?.slotType);
+        case SortFields.fameBonus:
           return sort.direction === 'asc'
-            ? itemA.fameBonus - itemB.fameBonus
-            : itemB.fameBonus - itemA.fameBonus;
-        } else if (sort.field === 'feedPower') {
+            ? itemA?.fameBonus - itemB?.fameBonus
+            : itemB?.fameBonus - itemA?.fameBonus;
+        case SortFields.feedPower:
           return sort.direction === 'asc'
-            ? itemA.feedPower - itemB.feedPower
-            : itemB.feedPower - itemA.feedPower;
-        } else if (sort.field === 'bagType') {
+            ? itemA?.feedPower - itemB?.feedPower
+            : itemB?.feedPower - itemA?.feedPower;
+        case SortFields.bagType:
           return sort.direction === 'asc'
-            ? itemA.bagType - itemB.bagType
-            : itemB.bagType - itemA.bagType;
-        } else if (sort.field === 'soulbound') {
+            ? itemA?.bagType - itemB?.bagType
+            : itemB?.bagType - itemA?.bagType;
+        case SortFields.soulbound:
           return sort.direction === 'asc'
-            ? Number(itemA.isSoulbound) - Number(itemB.isSoulbound)
-            : Number(itemB.isSoulbound) - Number(itemA.isSoulbound);
-        } else if (sort.field === 'tier') {
+            ? Number(itemA?.isSoulbound) - Number(itemB?.isSoulbound)
+            : Number(itemB?.isSoulbound) - Number(itemA?.isSoulbound);
+        case SortFields.tier:
           return sort.direction === 'asc'
-            ? Number(itemA.tier) - Number(itemB.tier)
-            : Number(itemB.tier) - Number(itemA.tier);
-        } else if (sort.field === 'shiny') {
+            ? Number(itemA?.tier) - Number(itemB?.tier)
+            : Number(itemB?.tier) - Number(itemA?.tier);
+        case SortFields.shiny:
+          const isShinyA = itemA?.isShiny ?? false;
+          const isShinyB = itemB?.isShiny ?? false;
           return sort.direction === 'asc'
-            ? Number(itemA.isShiny) - Number(itemB.isShiny)
-            : Number(itemB.isShiny) - Number(itemA.isShiny);
-        }
-        return -1;
+            ? isShinyA === isShinyB
+              ? 0
+              : isShinyA
+                ? -1
+                : 1
+            : isShinyA === isShinyB
+              ? 0
+              : isShinyA
+                ? 1
+                : -1;
+        default:
+          return 0;
       }
     });
-
-    return sortedKeys.flatMap((key) => recursiveSort(groupedItems[key], sortCriteria, index + 1));
   };
 
-  totalItems = recursiveSort(totalItems, itemSort);
+  totalItems = sortItems(totalItems, itemSort);
 
   useEffect(() => {
     if (filteredItems.length === 0) {
