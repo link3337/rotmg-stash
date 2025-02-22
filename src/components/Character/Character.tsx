@@ -89,20 +89,20 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts }) => {
 
   const boostDisplay = () => (
     <div className={styles.boost}>
-      {char?.lootdrop && char?.loottier ? (
+      {char?.lootDrop && char?.lootTier ? (
         <div
-          title={`Loot Drop: ${timeInMinutes(char?.lootdrop)}\nLoot Tier: ${timeInMinutes(char?.loottier)}`}
+          title={`Loot Drop: ${timeInMinutes(char?.lootDrop)}\nLoot Tier: ${timeInMinutes(char?.lootTier)}`}
         >
           <LootBoostIcon fill="#4EE50E" />
         </div>
       ) : (
         <>
-          {char?.lootdrop ? (
-            <div title={`Loot Drop: ${timeInMinutes(char?.lootdrop)}`}>
+          {char?.lootDrop ? (
+            <div title={`Loot Drop: ${timeInMinutes(char?.lootDrop)}`}>
               <LootBoostIcon fill="#9143BB" />
             </div>
-          ) : char?.loottier ? (
-            <div title={`Loot Tier: ${timeInMinutes(char?.loottier)}`}>
+          ) : char?.lootTier ? (
+            <div title={`Loot Tier: ${timeInMinutes(char?.lootTier)}`}>
               <LootBoostIcon fill="#C9870E" />
             </div>
           ) : null}

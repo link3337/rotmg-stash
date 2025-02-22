@@ -53,8 +53,8 @@ export interface CharUIModel {
   texture: string | null;
   xpboosted: number;
   xptimer: number;
-  lootdrop: number;
-  loottier: number;
+  lootDrop: number;
+  lootTier: number;
   crucible: boolean | null;
   objectType: string;
 }
