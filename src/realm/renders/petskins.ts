@@ -39,6 +39,26 @@ export const petSkins = {
     false,
     'chars8x8rPets1'
   ],
+  4069: [
+    'Studious Frostwyrm Pet Skin',
+    'Studious Frostwyrm Bookwyrm',
+    1,
+    'Reptile',
+    'Divine',
+    331,
+    false,
+    'petsDivine'
+  ],
+  4072: [
+    'Snowball Rolling Knight Yellow Pet Skin',
+    'Snowball(?) Rolling Knight',
+    1,
+    'Humanoid',
+    'Divine',
+    332,
+    false,
+    'petsDivine'
+  ],
   4091: [
     'Blue Butterfly Pet Skin',
     'Blue Butterfly',
@@ -888,7 +908,7 @@ export const petSkins = {
   19653: ['Walking Grave Skin', 'Walking Grave', 2, 'Spooky', 'Rare', 161, false, 'chars8x8rPets1'],
   21641: [
     'Enlightened Bookwyrm Pet Skin',
-    'Cultured Bookwyrm',
+    'Enlightened Bookwyrm',
     1,
     'Reptile',
     'Divine',
@@ -896,6 +916,7 @@ export const petSkins = {
     true,
     'hauntedHallowsChars16x16'
   ],
+  22582: ['Bogged Panda Pet Skin', 'Bogged Panda', 4, 'Exotic', 'Divine', 340, false, 'petsDivine'],
   23309: ['Mini Lord Pet Skin', 'Mini Lord', 3, '? ? ? ?', 'Rare', 237, false, 'chars8x8rPets1'],
   23312: [
     'Mini Tornado Pet Skin',
@@ -3157,6 +3178,228 @@ export const petSkins = {
     'petsDivine'
   ],
   35234: ['Marid Skin', 'Marid', null, 'Humanoid', 'Divine', 32, false, 'petsDivine'],
+  41267: [
+    'Group of Rats Pet Skin',
+    'Group of Rats',
+    3,
+    'Woodland',
+    'Divine',
+    354,
+    false,
+    'petsDivine'
+  ],
+  41285: [
+    'Gold Primal Snake Pet Skin',
+    'Gold Primal Snake',
+    4,
+    'Reptile',
+    'Divine',
+    353,
+    false,
+    'petsDivine'
+  ],
+  41288: [
+    'Silver Primal Snake Pet Skin',
+    'Silver Primal Snake',
+    4,
+    'Reptile',
+    'Divine',
+    352,
+    false,
+    'petsDivine'
+  ],
+  41291: [
+    'Pink Serpent Pet Skin',
+    'Pink Serpent',
+    3,
+    'Reptile',
+    'Divine',
+    351,
+    false,
+    'petsDivine'
+  ],
+  41294: [
+    'Purple Serpent Pet Skin',
+    'Purple Serpent',
+    3,
+    'Reptile',
+    'Divine',
+    350,
+    false,
+    'petsDivine'
+  ],
+  41297: [
+    'Blue Serpent Pet Skin',
+    'Blue Serpent',
+    3,
+    'Reptile',
+    'Divine',
+    349,
+    false,
+    'petsDivine'
+  ],
+  41300: [
+    'Green Serpent Pet Skin',
+    'Green Serpent',
+    3,
+    'Reptile',
+    'Divine',
+    348,
+    false,
+    'petsDivine'
+  ],
+  41303: [
+    'Yellow Serpent Pet Skin',
+    'Yellow Serpent',
+    3,
+    'Reptile',
+    'Divine',
+    347,
+    false,
+    'petsDivine'
+  ],
+  41306: [
+    'Orange Serpent Pet Skin',
+    'Orange Serpent',
+    3,
+    'Reptile',
+    'Divine',
+    346,
+    false,
+    'petsDivine'
+  ],
+  41309: ['Red Serpent Pet Skin', 'Red Serpent', 3, 'Reptile', 'Divine', 345, false, 'petsDivine'],
+  41312: [
+    'White Serpent Pet Skin',
+    'White Serpent',
+    3,
+    'Reptile',
+    'Divine',
+    344,
+    false,
+    'petsDivine'
+  ],
+  41321: [
+    'Poisoned Apple Pet Skin',
+    'Poisoned Apple',
+    3,
+    'Spooky',
+    'Divine',
+    343,
+    false,
+    'petsDivine'
+  ],
+  41326: [
+    'Fabulous Unicorn Pet Skin',
+    'Fabulous Unicorn',
+    4,
+    'Farm',
+    'Divine',
+    341,
+    false,
+    'petsDivine'
+  ],
+  41342: [
+    'Chibi Ghost of Oryxmas Pet Skin',
+    'Chibi Ghost of Oryxmas',
+    4,
+    'Humanoid',
+    'Divine',
+    339,
+    false,
+    'petsDivine'
+  ],
+  41348: [
+    'Yule Cnidarian Pet Skin',
+    'Yule Cnidarian',
+    4,
+    '? ? ? ?',
+    'Divine',
+    338,
+    false,
+    'petsDivine'
+  ],
+  41351: [
+    'Ice Sculpture Penguin Pet Skin',
+    'Ice Sculpture Penguin',
+    4,
+    'Penguin',
+    'Divine',
+    337,
+    false,
+    'petsDivine'
+  ],
+  41354: [
+    'Beefcake Elf Pet Skin',
+    'Beefcake Elf',
+    4,
+    'Humanoid',
+    'Divine',
+    336,
+    false,
+    'petsDivine'
+  ],
+  41363: [
+    'Holly Reindeer Pet Skin',
+    'Holly Reindeer',
+    4,
+    'Woodland',
+    'Divine',
+    335,
+    false,
+    'petsDivine'
+  ],
+  41366: [
+    'Snowball Rolling Knight Companion Pet Skin',
+    'Snowball Rolling Knight Companion',
+    3,
+    'Humanoid',
+    'Divine',
+    333,
+    false,
+    'petsDivine'
+  ],
+  41369: [
+    'Ice Cube Frozen Crown Companion Pet Skin',
+    'Ice Cube Frozen Crown Companion',
+    4,
+    '? ? ? ?',
+    'Divine',
+    334,
+    false,
+    'petsDivine'
+  ],
+  41405: ['Cursed Raven Pet Skin', 'Cursed Raven', 4, 'Avian', 'Divine', 313, false, 'petsDivine'],
+  41456: [
+    'Wooden Frog Companion Pet Skin',
+    'Wooden Frog Companion',
+    4,
+    'Aquatic',
+    'Divine',
+    330,
+    false,
+    'petsDivine'
+  ],
+  41490: [
+    "Belladonna's Flower Buddy Pet Skin",
+    "Belladonna's Flower Buddy",
+    4,
+    '? ? ? ?',
+    'Divine',
+    355,
+    false,
+    'petsDivine'
+  ],
+  44370: [
+    'Penitent Frog Pet Skin',
+    'Penitent Frog',
+    3,
+    'Aquatic',
+    'Divine',
+    41,
+    true,
+    'specPenChars16x16'
+  ],
   50287: [
     'Toy Bot K.B Pet Skin',
     'Toy Bot K.B',
@@ -3407,12 +3650,170 @@ export const petSkins = {
   51668: ['Hermit Crab Pet Skin', 'Hermit Crab', 4, 'Aquatic', 'Divine', 293, false, 'petsDivine'],
   51720: [
     'the Void Star Pet Skin',
-    'the Void Star',
+    'The Void Star',
     3,
     '? ? ? ?',
     'Divine',
     294,
     false,
     'petsDivine'
-  ]
+  ],
+  51800: [
+    'Imperial Eagle Pet Skin',
+    'Imperial Eagle',
+    4,
+    'Avian',
+    'Divine',
+    295,
+    false,
+    'petsDivine'
+  ],
+  51815: [
+    "Wanderer's Portal Pet Skin",
+    "Wanderer's Portal",
+    3,
+    '? ? ? ?',
+    'Divine',
+    296,
+    false,
+    'petsDivine'
+  ],
+  51818: ['Shady Slurp Pet Skin', 'Shady Slurp', 2, '? ? ? ?', 'Divine', 297, false, 'petsDivine'],
+  51821: [
+    'Wandering Slurp Pet Skin',
+    'Wandering Slurp',
+    2,
+    '? ? ? ?',
+    'Divine',
+    298,
+    false,
+    'petsDivine'
+  ],
+  51824: [
+    'Pirate Queen Slurp Pet Skin',
+    'Pirate Queen Slurp',
+    2,
+    '? ? ? ?',
+    'Divine',
+    299,
+    false,
+    'petsDivine'
+  ],
+  51827: [
+    'Black Blade Slurp Pet Skin',
+    'Black Blade Slurp',
+    2,
+    '? ? ? ?',
+    'Divine',
+    300,
+    false,
+    'petsDivine'
+  ],
+  51830: [
+    'Grand Shaman Slurp Pet Skin',
+    'Grand Shaman Slurp',
+    2,
+    '? ? ? ?',
+    'Divine',
+    301,
+    false,
+    'petsDivine'
+  ],
+  51833: [
+    'Pharaoh Slurp Pet Skin',
+    'Pharaoh Slurp',
+    2,
+    '? ? ? ?',
+    'Divine',
+    302,
+    false,
+    'petsDivine'
+  ],
+  51881: ['Cursed Dirk Pet Skin', 'Cursed Dirk', 4, '? ? ? ?', 'Divine', 303, false, 'petsDivine'],
+  51904: ['Magical Book Pet Skin', 'Magical Book', 4, 'Spooky', 'Divine', 304, false, 'petsDivine'],
+  51907: [
+    'Enchanted Inkwell Pet Skin',
+    'Enchanted Inkwell',
+    4,
+    'Spooky',
+    'Divine',
+    305,
+    false,
+    'petsDivine'
+  ],
+  51910: [
+    'Friendly Pencil Pet Skin',
+    'Friendly Pencil',
+    4,
+    'Spooky',
+    'Divine',
+    306,
+    false,
+    'petsDivine'
+  ],
+  51926: ['Noble Canine Pet Skin', 'Noble Canine', 4, 'Canine', 'Divine', 307, false, 'petsDivine'],
+  51959: ['Vampire Bat Pet Skin', 'Vampire Bat', 4, 'Spooky', 'Divine', 308, false, 'petsDivine'],
+  51962: ['Haunted Cat Pet Skin', 'Haunted Cat', 4, 'Feline', 'Divine', 309, false, 'petsDivine'],
+  51977: [
+    'Chibi Pilgrim Pet Skin',
+    'Chibi Pilgrim',
+    4,
+    'Humanoid',
+    'Divine',
+    315,
+    false,
+    'petsDivine'
+  ],
+  51980: [
+    'Cauldron Spirit Pet Skin',
+    'Cauldron Spirit',
+    4,
+    'Spooky',
+    'Divine',
+    312,
+    false,
+    'petsDivine'
+  ],
+  51983: [
+    'Archmage Craig Pet Skin',
+    'Archmage Craig',
+    4,
+    'Spooky',
+    'Divine',
+    311,
+    false,
+    'petsDivine'
+  ],
+  52048: ['Angelic Cat Pet Skin', 'Angelic Cat', 4, 'Feline', 'Divine', 310, false, 'petsDivine'],
+  52052: [
+    'Giving Pixie Pet Skin',
+    'Giving Pixie',
+    4,
+    'Woodland',
+    'Divine',
+    314,
+    false,
+    'petsDivine'
+  ],
+  52096: [
+    'Knockout King Action Figure Pet Skin',
+    'Knockout King Action Figure',
+    3,
+    'Aquatic',
+    'Rare',
+    309,
+    false,
+    'chars8x8rPets1'
+  ],
+  52211: [
+    'Stone Judoka Action Figure Pet Skin',
+    'Stone Judoka Action Figure',
+    3,
+    'Spooky',
+    'Rare',
+    310,
+    false,
+    'chars8x8rPets1'
+  ],
+  52272: ['Jolly Chimp Pet Skin', 'Jolly Chimp', 4, 'Exotic', 'Divine', 342, false, 'petsDivine']
 };
