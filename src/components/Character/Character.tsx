@@ -99,11 +99,11 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts }) => {
         <>
           {char?.lootDrop ? (
             <div title={`Loot Drop: ${timeInMinutes(char?.lootDrop)}`}>
-              <LootBoostIcon fill="#9143BB" />
+              <LootBoostIcon fill="#C9870E" />
             </div>
           ) : char?.lootTier ? (
             <div title={`Loot Tier: ${timeInMinutes(char?.lootTier)}`}>
-              <LootBoostIcon fill="#C9870E" />
+              <LootBoostIcon fill="#9143BB" />
             </div>
           ) : null}
         </>

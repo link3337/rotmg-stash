@@ -138,19 +138,9 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
             ? Number(itemA?.tier) - Number(itemB?.tier)
             : Number(itemB?.tier) - Number(itemA?.tier);
         case SortFields.shiny:
-          const isShinyA = itemA?.isShiny ?? false;
-          const isShinyB = itemB?.isShiny ?? false;
           return sort.direction === 'asc'
-            ? isShinyA === isShinyB
-              ? 0
-              : isShinyA
-                ? -1
-                : 1
-            : isShinyA === isShinyB
-              ? 0
-              : isShinyA
-                ? 1
-                : -1;
+            ? Number(itemA?.isShiny) - Number(itemB?.isShiny)
+            : Number(itemB?.isShiny) - Number(itemA?.isShiny);
         default:
           return 0;
       }
