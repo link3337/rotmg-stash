@@ -27,7 +27,7 @@ const Footer: React.FC = () => {
         >
           Link3337
         </a>
-        <span style={{ marginLeft: '5px' }}>and</span>
+        <span className="ml-1">and</span>
       </div>
       <div className={styles.footerPoweredBy}>
         <div className={styles.footerIcons}>
