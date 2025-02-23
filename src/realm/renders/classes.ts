@@ -62,6 +62,28 @@ type Classes = {
   [K in ClassID]: ClassData;
 };
 
+/**
+ * A collection of character classes with their respective attributes and statistics.
+ * 
+ * Each class is represented by a unique `ClassID` and contains the following information:
+ * - `ClassName`: The name of the class.
+ * - Base stats: An array containing the base statistics of the class in the following order:
+ *   - Health
+ *   - Mana
+ *   - Attack
+ *   - Defense
+ *   - Speed
+ *   - Dexterity
+ *   - Vitality
+ *   - Wisdom
+ * - Average stats: An array containing the average statistics of the class at level 20 in the same order as base stats.
+ * - Max stats: An array containing the maximum achievable statistics of the class in the same order as base stats.
+ * - Stat increase per level: An array containing the increase in each stat per level in the following order:
+ *   - Health
+ *   - Mana
+ *   - Attack
+ *   - Defense
+ */
 export const classes: Classes = {
   [ClassID.Rogue]: [
     ClassName.Rogue,

@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-type Props = {
+interface RenderIfVisibleProps {
   /**
    * Whether the element should be visible initially or not.
    * Useful e.g. for always setting the first N items to visible.
@@ -23,7 +23,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-const RenderIfVisible = ({
+const RenderIfVisible: React.FC<RenderIfVisibleProps> = ({
   initialVisible = false,
   defaultHeight = 1500,
   visibleOffset = 5000,
@@ -34,7 +34,7 @@ const RenderIfVisible = ({
   placeholderElement = 'div',
   placeholderElementClass = '',
   children
-}: Props) => {
+}) => {
   const [isVisible, setIsVisible] = useState<boolean>(initialVisible);
   const wasVisible = useRef<boolean>(initialVisible);
   const placeholderHeight = useRef<number>(defaultHeight);
@@ -68,7 +68,7 @@ const RenderIfVisible = ({
         }
       };
     }
-    return () => {};
+    return () => { };
   }, []);
 
   useEffect(() => {
