@@ -2,13 +2,15 @@ import { ItemUIModel } from '@api/models/char-ui-model';
 import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
-import { itemNameMap, items } from '@realm/renders/items';
+import { items } from '@realm/renders/items';
 import { clearFilters, selectSelectedItems } from '@store/slices/FilterSlice';
 import { selectItemSort, SortFields } from '@store/slices/SettingsSlice';
+import { itemNameMap } from '@utils/item-name-map';
 import { Button } from 'primereact/button';
 import { Skeleton } from 'primereact/skeleton';
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { itemAliases } from '../../realm/renders/aliases';
 import { ItemList } from '../Item/ItemList';
 
 const calculateTotals = (accounts: AccountModel[]): ItemUIModel[] => {
@@ -85,6 +87,14 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
       totalItems.some((item) => item.itemId === id)
     )
   );
+
+  // add aliases for items in search
+  // e.g. "Potato" -> Magical Lodestone B)
+  itemAliases.forEach((itemId, alias) => {
+    if (Array.from(totalItemsNameMap.values()).includes(itemId)) {
+      totalItemsNameMap.set(alias, itemId);
+    }
+  });
 
   const filteredItems = totalItems.filter((item) => activeFilters.includes(item.itemId));
 

@@ -1,4 +1,4 @@
-import { itemNameMap } from './items';
+import { itemNameMap } from '@utils/item-name-map';
 
 // util functions for debugging
 export function itemNamesToIds(names: string[]): number[] {

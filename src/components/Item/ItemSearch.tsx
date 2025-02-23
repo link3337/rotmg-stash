@@ -22,9 +22,6 @@ const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
         .filter(([key]) => key.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
         .map(([, value]) => value);
 
-      console.log(foundItems);
-      console.log(totalItemsNameMap);
-
       const mapped: ItemUIModel[] = foundItems.map((item) => {
         return { itemId: item };
       });
