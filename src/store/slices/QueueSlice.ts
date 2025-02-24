@@ -95,7 +95,6 @@ export const updateQueue = createAsyncThunk(
   ) => {
     const state = getState() as RootState;
     const queueState = state.queue;
-    console.log(queueState);
 
     // If queue is not running, return empty array
     if (!queueState.isRunning) {
@@ -105,13 +104,12 @@ export const updateQueue = createAsyncThunk(
     const updatedQueueItems = queueState.items.map((acc: QueueItem) =>
       acc.accountId === accountId
         ? {
-            ...acc,
-            status: queueStatus
-          }
+          ...acc,
+          status: queueStatus
+        }
         : acc
     );
 
-    console.log(updatedQueueItems);
     return updatedQueueItems;
   }
 );

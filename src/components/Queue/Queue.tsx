@@ -58,7 +58,6 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
       console.log('Processing next queue item');
       // Process next queue item
       const queuedAccountId = await dispatch(processQueue({ decrypt })).unwrap();
-      console.log(queuedAccountId);
 
       // If no more items to process, stop queue
       if (!queuedAccountId) {
