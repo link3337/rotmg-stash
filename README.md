@@ -1,6 +1,6 @@
 # RotMG Stash
 
-[![build and publish](https://github.com/link3337/rotmg-stash-legacy/actions/workflows/build-and-publish.yml/badge.svg?branch=release)](https://github.com/link3337/rotmg-stash-legacy/actions/workflows/build-and-publish.yml)
+[![build and publish](https://github.com/link3337/rotmg-stash/actions/workflows/build-and-publish.yml/badge.svg?branch=release)](https://github.com/link3337/rotmg-stash/actions/workflows/build-and-publish.yml)
 
 A desktop application built with Tauri, React, and TypeScript for checking your Realm of the Mad God accounts and items.
 
@@ -25,8 +25,8 @@ A desktop application built with Tauri, React, and TypeScript for checking your 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/link3337/rotmg-stash-legacy.git
-cd rotmg-stash-legacy
+git clone https://github.com/link3337/rotmg-stash.git
+cd rotmg-stash
 ```
 
 2. Install dependencies:
@@ -76,7 +76,7 @@ All sensitive data is encrypted locally using industry-standard encryption. Your
 
 ## 🙋‍♂️ Support
 
-If you encounter any issues or have questions, please [open an issue](https://github.com/link3337/rotmg-stash-legacy/issues).
+If you encounter any issues or have questions, please [open an issue](https://github.com/link3337/rotmg-stash/issues).
 
 ---
 

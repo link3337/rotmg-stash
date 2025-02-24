@@ -22,9 +22,6 @@ const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
         .filter(([key]) => key.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
         .map(([, value]) => value);
 
-      console.log(foundItems);
-      console.log(totalItemsNameMap);
-
       const mapped: ItemUIModel[] = foundItems.map((item) => {
         return { itemId: item };
       });
@@ -59,7 +56,12 @@ const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
           onFocus={handleFocus}
           style={{ width: '350px' }}
         />
-        <Button icon="pi pi-times" onClick={handleClear} className="p-button-primary" />
+        <Button
+          icon="pi pi-times"
+          disabled={!searchTerm}
+          onClick={handleClear}
+          className="p-button-primary"
+        />
       </div>
       {filteredItems && filteredItems.length > 0 && <ItemList items={filteredItems} />}
     </div>

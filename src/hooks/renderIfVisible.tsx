@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-type Props = {
+interface RenderIfVisibleProps {
   /**
    * Whether the element should be visible initially or not.
    * Useful e.g. for always setting the first N items to visible.
@@ -12,7 +12,7 @@ type Props = {
   /** How far outside the viewport in pixels should elements be considered visible?  */
   visibleOffset?: number;
   /** Should the element stay rendered after it becomes visible? */
-  stayRendered?: boolean;
+  keepRendered?: boolean;
   root?: HTMLElement | null;
   /** E.g. 'span', 'tbody'. Default = 'div' */
   rootElement?: string;
@@ -21,20 +21,20 @@ type Props = {
   placeholderElement?: string;
   placeholderElementClass?: string;
   children: React.ReactNode;
-};
+}
 
-const RenderIfVisible = ({
+const RenderIfVisible: React.FC<RenderIfVisibleProps> = ({
   initialVisible = false,
   defaultHeight = 1500,
   visibleOffset = 5000,
-  stayRendered = false,
+  keepRendered = false,
   root = null,
   rootElement = 'div',
   rootElementClass = '',
   placeholderElement = 'div',
   placeholderElementClass = '',
   children
-}: Props) => {
+}) => {
   const [isVisible, setIsVisible] = useState<boolean>(initialVisible);
   const wasVisible = useRef<boolean>(initialVisible);
   const placeholderHeight = useRef<number>(defaultHeight);
@@ -86,7 +86,7 @@ const RenderIfVisible = ({
 
   return React.createElement(rootElement, {
     children:
-      isVisible || (stayRendered && wasVisible.current) ? (
+      isVisible || (keepRendered && wasVisible.current) ? (
         <>{children}</>
       ) : (
         React.createElement(placeholderElement, {

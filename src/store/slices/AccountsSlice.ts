@@ -1,7 +1,7 @@
 import { mapCharListResponse } from '@api/mapping/char-mapping';
 import { getAccount } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
-import { AccountExportModel } from '@cache/export';
+import { AccountExportModel } from '@cache/export-model';
 import { CharListResponse } from '@realm/models/charlist-response';
 import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { error } from '@tauri-apps/plugin-log';

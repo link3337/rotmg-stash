@@ -1,5 +1,15 @@
 import { ItemUIModel } from '@api/models/char-ui-model';
 
+/**
+ * Maps an array of item IDs to a compact vault UI model.
+ *
+ * This function takes an array of item IDs and returns an array of objects,
+ * each representing an item and its quantity. It filters out any falsy values
+ * from the input array and counts the occurrences of each item ID.
+ *
+ * @param items - An array of item IDs.
+ * @returns An array of objects, each containing an `itemId` and its `amount`.
+ */
 export const mapToCompactVaultUIModel = (items: number[]): ItemUIModel[] => {
   const totals = new Map<number, number>();
   items.forEach((item) => {
@@ -14,6 +24,12 @@ export const mapToCompactVaultUIModel = (items: number[]): ItemUIModel[] => {
   }));
 };
 
+/**
+ * Maps an array of item IDs to an array of ItemUIModel objects.
+ *
+ * @param items - An array of item IDs.
+ * @returns An array of ItemUIModel objects with the itemId property set.
+ */
 export const mapToUIModel = (items: number[]): ItemUIModel[] => {
   return items.map((item) => {
     return {
@@ -22,6 +38,12 @@ export const mapToUIModel = (items: number[]): ItemUIModel[] => {
   });
 };
 
+/**
+ * Calculates the total number of each potion type from an array of potion IDs.
+ *
+ * @param potions - An array of potion IDs or undefined.
+ * @returns An array of ItemUIModel objects, each containing an itemId and the corresponding amount, sorted by itemId in descending order.
+ */
 export const calculatePotionTotals = (potions: number[] | undefined): ItemUIModel[] => {
   if (!potions) return [];
 
@@ -40,6 +62,14 @@ export const calculatePotionTotals = (potions: number[] | undefined): ItemUIMode
     }));
 };
 
+/**
+ * Creates a map of consumable items and their counts from the provided items and quickslots.
+ *
+ * @param items - An array of item IDs.
+ * @param quickslots - An array of quickslot items, each containing an itemId and an optional amount.
+ * @param consumableIds - An array of item IDs that are considered consumable.
+ * @returns A map where the keys are consumable item IDs and the values are their counts.
+ */
 const createConsumableMap = (
   items: number[],
   quickslots: ItemUIModel[],
@@ -64,6 +94,14 @@ const createConsumableMap = (
   return consumableMap;
 };
 
+/**
+ * Maps consumable items to their corresponding UI models.
+ *
+ * @param items - An array of item IDs.
+ * @param quickslots - An array of quickslot UI models.
+ * @param consumableIds - An array of consumable item IDs to be mapped.
+ * @returns An array of `ItemUIModel` objects representing the mapped consumables.
+ */
 export function mapConsumables(
   items: number[],
   quickslots: ItemUIModel[],

@@ -1,8 +1,9 @@
 .footer {
+  flex-shrink: 0;
   text-align: center;
-  padding: 20px;
+  padding: 16px;
   background-color: var(--surface-d);
-  color: white;
+  color: var(--text-color);
 }
 
 .footerCopyright {
@@ -37,7 +38,6 @@
 
 .footerIcon.redux:hover {
   filter: drop-shadow(0 0 2em #d291e4);
-  /* A more vibrant and visible shade of purple */
 }
 
 .footerIcon.tauri:hover {
