@@ -115,7 +115,10 @@ const Account: React.FC<AccountProps> = ({ account }) => {
   );
 
   return settings?.experimental?.lazyLoading ? (
-    <RenderIfVisible {...(!isConfigOpen ? renderVisibleProps : {})}>
+    <RenderIfVisible
+      keepRendered={settings.experimental.lazyLoadingKeepRendered}
+      {...(!isConfigOpen ? renderVisibleProps : {})}
+    >
       <AccountContent />
     </RenderIfVisible>
   ) : (

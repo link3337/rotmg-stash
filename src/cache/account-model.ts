@@ -1,6 +1,5 @@
-import { CharListResponseUIModel } from "@api/models/charlist-response-ui-model";
-import { QueueStatusType } from "@store/slices/QueueSlice";
-
+import { CharListResponseUIModel } from '@api/models/charlist-response-ui-model';
+import { QueueStatusType } from '@store/slices/QueueSlice';
 
 export interface AccountModel {
   /**

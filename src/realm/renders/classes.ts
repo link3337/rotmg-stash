@@ -64,7 +64,7 @@ type Classes = {
 
 /**
  * A collection of character classes with their respective attributes and statistics.
- * 
+ *
  * Each class is represented by a unique `ClassID` and contains the following information:
  * - `ClassName`: The name of the class.
  * - Base stats: An array containing the base statistics of the class in the following order:

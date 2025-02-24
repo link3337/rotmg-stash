@@ -121,9 +121,9 @@ export const skipAccountFromQueue = createAsyncThunk(
     const updatedAccounts = accounts.map((acc: AccountModel) =>
       acc.id === accountId
         ? {
-          ...acc,
-          queueStatus: newStatus
-        }
+            ...acc,
+            queueStatus: newStatus
+          }
         : acc
     );
 
@@ -133,7 +133,6 @@ export const skipAccountFromQueue = createAsyncThunk(
     return { accountId, newStatus };
   }
 );
-
 
 export const refreshAccount = createAsyncThunk(
   `${accountsFeatureKey}/refreshAccount`,
@@ -154,15 +153,15 @@ export const refreshAccount = createAsyncThunk(
       const updatedAccounts = accounts.map((acc: AccountModel) =>
         acc.id === account.id
           ? {
-            ...acc,
-            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-            error: result.error,
-            lastSaved: new Date().toISOString(),
-            // Update queue status if account was in queue
-            ...(isInQueue && {
-              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-            })
-          }
+              ...acc,
+              mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+              error: result.error,
+              lastSaved: new Date().toISOString(),
+              // Update queue status if account was in queue
+              ...(isInQueue && {
+                queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+              })
+            }
           : acc
       );
 

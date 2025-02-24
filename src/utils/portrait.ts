@@ -71,7 +71,7 @@ function extract_skins(img: any, size: any) {
 
 /**
  * Loads an image from the specified source URL and returns a promise that resolves when the image is loaded.
- * 
+ *
  * @param {string} src - The source URL of the image to load.
  * @param {any} t - An additional parameter to be passed to the resolve function.
  * @param {any} s - Another additional parameter to be passed to the resolve function.

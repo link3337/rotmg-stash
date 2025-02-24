@@ -12,7 +12,7 @@ interface RenderIfVisibleProps {
   /** How far outside the viewport in pixels should elements be considered visible?  */
   visibleOffset?: number;
   /** Should the element stay rendered after it becomes visible? */
-  stayRendered?: boolean;
+  keepRendered?: boolean;
   root?: HTMLElement | null;
   /** E.g. 'span', 'tbody'. Default = 'div' */
   rootElement?: string;
@@ -21,13 +21,13 @@ interface RenderIfVisibleProps {
   placeholderElement?: string;
   placeholderElementClass?: string;
   children: React.ReactNode;
-};
+}
 
 const RenderIfVisible: React.FC<RenderIfVisibleProps> = ({
   initialVisible = false,
   defaultHeight = 1500,
   visibleOffset = 5000,
-  stayRendered = false,
+  keepRendered = false,
   root = null,
   rootElement = 'div',
   rootElementClass = '',
@@ -68,7 +68,7 @@ const RenderIfVisible: React.FC<RenderIfVisibleProps> = ({
         }
       };
     }
-    return () => { };
+    return () => {};
   }, []);
 
   useEffect(() => {
@@ -86,7 +86,7 @@ const RenderIfVisible: React.FC<RenderIfVisibleProps> = ({
 
   return React.createElement(rootElement, {
     children:
-      isVisible || (stayRendered && wasVisible.current) ? (
+      isVisible || (keepRendered && wasVisible.current) ? (
         <>{children}</>
       ) : (
         React.createElement(placeholderElement, {

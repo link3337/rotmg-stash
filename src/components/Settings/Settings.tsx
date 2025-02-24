@@ -239,6 +239,19 @@ const Settings: React.FC = () => {
                       }
                     />
                   </div>
+
+                  <div className="flex align-items-center gap-2 mt-5">
+                    <Checkbox
+                      inputId="lazyLoadingKeepRendered"
+                      checked={settings?.experimental?.lazyLoadingKeepRendered}
+                      onChange={() =>
+                        dispatch(updateExperimentalSetting({ key: 'lazyLoadingKeepRendered' }))
+                      }
+                    />
+                    <label htmlFor="lazyLoadingKeepRendered" className="ml-2">
+                      Keep components rendered even when not visible
+                    </label>
+                  </div>
                 </div>
               )}
 

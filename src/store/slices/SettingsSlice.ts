@@ -20,7 +20,7 @@ export enum SortFields {
   shiny = 'shiny'
 }
 
-export interface SettingsState extends SettingsModel {}
+export interface SettingsState extends SettingsModel { }
 
 const initialState: SettingsState = {
   displaySettings: {
@@ -41,6 +41,7 @@ const initialState: SettingsState = {
   },
   experimental: {
     lazyLoading: false,
+    lazyLoadingKeepRendered: false,
     lazyLoadingHeight: 1000,
     lazyLoadingOffset: 1500,
     isStreamerMode: false,
@@ -95,13 +96,11 @@ const settingsSlice = createSlice({
       state,
       action: PayloadAction<{ key: keyof ExperimentalSettings; value?: any }>
     ) => {
-      if (action.payload.key === 'lazyLoading') {
-        state.experimental.lazyLoading = !state.experimental.lazyLoading;
-      } else if (
-        action.payload.key === 'lazyLoadingHeight' ||
-        action.payload.key === 'lazyLoadingOffset'
-      ) {
-        state.experimental[action.payload.key] = action.payload.value as number;
+      const { key, value } = action.payload;
+      if (key === 'lazyLoading' || key === 'lazyLoadingKeepRendered') {
+        state.experimental[key] = !state.experimental[key];
+      } else if (key === 'lazyLoadingHeight' || key === 'lazyLoadingOffset') {
+        state.experimental[key] = value as number;
       }
       saveSettingsToLocalStorage(state);
     },

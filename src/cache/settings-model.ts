@@ -34,6 +34,7 @@ export interface SortCriteria {
 
 export interface ExperimentalSettings {
   lazyLoading: boolean;
+  lazyLoadingKeepRendered: boolean;
   lazyLoadingHeight: number;
   lazyLoadingOffset: number;
   isStreamerMode: boolean;
