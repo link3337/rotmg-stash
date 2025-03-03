@@ -3,7 +3,7 @@ import { getAccount } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
 import { AccountExportModel } from '@cache/export-model';
 import { CharListResponse } from '@realm/models/charlist-response';
-import { createAsyncThunk, createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSelector, createSlice, PayloadAction, ThunkDispatch } from '@reduxjs/toolkit';
 import { error } from '@tauri-apps/plugin-log';
 import { clearRateLimit, isRateLimited, setRateLimit } from '@utils/rate-limit';
 import {
@@ -26,7 +26,6 @@ const initialState: AccountState = {
 
 const accountsFeatureKey = 'accounts';
 
-// Types
 type AccountResult = {
   success: boolean;
   data?: CharListResponse;
@@ -34,13 +33,13 @@ type AccountResult = {
   isRateLimited: boolean;
 };
 
-const processBackendResponse = (response: string | CharListResponse): AccountResult => {
+const processBackendResponse = (response: string | CharListResponse, dispatch: ThunkDispatch<unknown, unknown, any>): AccountResult => {
   const rateLimitError = 'Try again later';
 
   if (typeof response === 'string') {
     error(response);
     if (response === rateLimitError) {
-      setRateLimit();
+      dispatch(setRateLimit());
     }
     return {
       success: false,
@@ -121,9 +120,9 @@ export const skipAccountFromQueue = createAsyncThunk(
     const updatedAccounts = accounts.map((acc: AccountModel) =>
       acc.id === accountId
         ? {
-            ...acc,
-            queueStatus: newStatus
-          }
+          ...acc,
+          queueStatus: newStatus
+        }
         : acc
     );
 
@@ -136,7 +135,7 @@ export const skipAccountFromQueue = createAsyncThunk(
 
 export const refreshAccount = createAsyncThunk(
   `${accountsFeatureKey}/refreshAccount`,
-  async (account: AccountModel) => {
+  async (account: AccountModel, { dispatch }) => {
     const accounts = getAccountsFromLocalStorage();
 
     // Check if account is in queue
@@ -148,20 +147,20 @@ export const refreshAccount = createAsyncThunk(
 
     if (canMakeRequest()) {
       const backendResponse = await getAccount(account.email, account.password);
-      const result = processBackendResponse(backendResponse);
+      const result = processBackendResponse(backendResponse, dispatch);
 
       const updatedAccounts = accounts.map((acc: AccountModel) =>
         acc.id === account.id
           ? {
-              ...acc,
-              mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-              error: result.error,
-              lastSaved: new Date().toISOString(),
-              // Update queue status if account was in queue
-              ...(isInQueue && {
-                queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-              })
-            }
+            ...acc,
+            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+            error: result.error,
+            lastSaved: new Date().toISOString(),
+            // Update queue status if account was in queue
+            ...(isInQueue && {
+              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+            })
+          }
           : acc
       );
 

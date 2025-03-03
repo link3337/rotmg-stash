@@ -56,21 +56,23 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
 
     const processQueueItem = async () => {
       console.log('Processing next queue item');
-      // Process next queue item
-      const queuedAccountId = await dispatch(processQueue({ decrypt })).unwrap();
+      if (isQueueRunning && !isQueuePaused) {
+        // Process next queue item
+        const queuedAccountId = await dispatch(processQueue({ decrypt })).unwrap();
 
-      // If no more items to process, stop queue
-      if (!queuedAccountId) {
-        dispatch(stopQueue());
-      } else {
-        // update queue items
-        dispatch(updateQueue({ accountId: queuedAccountId, queueStatus: QueueStatus.COMPLETED }));
+        // If no more items to process, stop queue
+        if (!queuedAccountId) {
+          dispatch(stopQueue());
+        } else {
+          // update queue items
+          dispatch(updateQueue({ accountId: queuedAccountId, queueStatus: QueueStatus.COMPLETED }));
+        }
       }
     };
 
     if (isQueueRunning && !isQueuePaused) {
-      // Process first item immediately
-      processQueueItem();
+      // Process first item immediately but with small delay
+      setTimeout(processQueueItem, 3000);
 
       // Set up interval for subsequent items
       intervalId = setInterval(processQueueItem, queueFetchInterval);

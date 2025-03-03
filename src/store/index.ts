@@ -7,6 +7,7 @@ import accountsReducer from './slices/AccountsSlice';
 import filterReducer from './slices/FilterSlice';
 import layoutReducer from './slices/LayoutSlice';
 import queueReducer from './slices/QueueSlice';
+import rateLimitReducer from './slices/RateLimitSlice';
 import settingsReducer from './slices/SettingsSlice';
 
 const logger = createLogger({
@@ -22,6 +23,7 @@ export const store = configureStore({
     layout: layoutReducer,
     accounts: accountsReducer,
     queue: queueReducer,
+    rateLimit: rateLimitReducer,
     settings: settingsReducer,
 
     // apis
