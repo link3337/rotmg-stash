@@ -3,7 +3,13 @@ import { getAccount } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
 import { AccountExportModel } from '@cache/export-model';
 import { CharListResponse } from '@realm/models/charlist-response';
-import { createAsyncThunk, createSelector, createSlice, PayloadAction, ThunkDispatch } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  PayloadAction,
+  ThunkDispatch
+} from '@reduxjs/toolkit';
 import { error } from '@tauri-apps/plugin-log';
 import { clearRateLimit, isRateLimited, setRateLimit } from '@utils/rate-limit';
 import {
@@ -33,7 +39,10 @@ type AccountResult = {
   isRateLimited: boolean;
 };
 
-const processBackendResponse = (response: string | CharListResponse, dispatch: ThunkDispatch<unknown, unknown, any>): AccountResult => {
+const processBackendResponse = (
+  response: string | CharListResponse,
+  dispatch: ThunkDispatch<unknown, unknown, any>
+): AccountResult => {
   const rateLimitError = 'Try again later';
 
   if (typeof response === 'string') {
@@ -120,9 +129,9 @@ export const skipAccountFromQueue = createAsyncThunk(
     const updatedAccounts = accounts.map((acc: AccountModel) =>
       acc.id === accountId
         ? {
-          ...acc,
-          queueStatus: newStatus
-        }
+            ...acc,
+            queueStatus: newStatus
+          }
         : acc
     );
 
@@ -152,15 +161,15 @@ export const refreshAccount = createAsyncThunk(
       const updatedAccounts = accounts.map((acc: AccountModel) =>
         acc.id === account.id
           ? {
-            ...acc,
-            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-            error: result.error,
-            lastSaved: new Date().toISOString(),
-            // Update queue status if account was in queue
-            ...(isInQueue && {
-              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-            })
-          }
+              ...acc,
+              mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+              error: result.error,
+              lastSaved: new Date().toISOString(),
+              // Update queue status if account was in queue
+              ...(isInQueue && {
+                queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+              })
+            }
           : acc
       );
 

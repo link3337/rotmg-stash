@@ -20,7 +20,7 @@ export enum SortFields {
   shiny = 'shiny'
 }
 
-export interface SettingsState extends SettingsModel { }
+export interface SettingsState extends SettingsModel {}
 
 const initialState: SettingsState = {
   displaySettings: {

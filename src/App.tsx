@@ -1,4 +1,4 @@
-import MainLayout from '@components/Shell/MainLayout';
+import MainLayout from '@components/Layout/MainLayout';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import DebugPage from '@pages/DebugPage';
 import MainPage from '@pages/MainPage';
