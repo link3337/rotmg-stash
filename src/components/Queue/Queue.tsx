@@ -56,7 +56,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
 
     const processQueueItem = async () => {
       console.log('Processing next queue item');
-      if (isQueueRunning && !isQueuePaused) {
+      if (!isQueuePaused) {
         // Process next queue item
         const queuedAccountId = await dispatch(processQueue({ decrypt })).unwrap();
 
@@ -66,6 +66,11 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
         } else {
           // update queue items
           dispatch(updateQueue({ accountId: queuedAccountId, queueStatus: QueueStatus.COMPLETED }));
+        }
+      } else {
+        if (intervalId) {
+          // clear interval until user resumes/starts queue again
+          clearInterval(intervalId);
         }
       }
     };
