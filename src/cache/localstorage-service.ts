@@ -25,6 +25,7 @@ export function getSettingsFromLocalStorage(): SettingsModel | null {
   return storedSettings ? JSON.parse(storedSettings) : null;
 }
 
+// todo: make use of this
 export function saveTotalsToLocalStorage(totals: TotalsModel) {
   localStorage.setItem(localStorageSettingsKey, JSON.stringify(totals));
 }

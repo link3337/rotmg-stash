@@ -5,15 +5,18 @@ import { AccountExportModel } from '@cache/export-model';
 import { CharListResponse } from '@realm/models/charlist-response';
 import {
   createAsyncThunk,
+  createListenerMiddleware,
   createSelector,
   createSlice,
+  isAnyOf,
   PayloadAction,
   ThunkDispatch
 } from '@reduxjs/toolkit';
-import { error } from '@tauri-apps/plugin-log';
+import { debug, error } from '@tauri-apps/plugin-log';
 import { clearRateLimit, isRateLimited, setRateLimit } from '@utils/rate-limit';
 import {
   getAccountsFromLocalStorage,
+  saveAccountsToLocalStorage
 } from 'cache/localstorage-service';
 import { useSelector } from 'react-redux';
 import { RootState } from '../index';
@@ -236,9 +239,40 @@ const accountsSlice = createSlice({
   }
 });
 
-export const { setAccountsQueueStatus, updateAccount, changeAccountOrder, toggleAccountActive, deleteAccount } =
-  accountsSlice.actions;
+// actions
+export const {
+  setAccountsQueueStatus,
+  updateAccount,
+  changeAccountOrder,
+  toggleAccountActive,
+  deleteAccount
+} = accountsSlice.actions;
 
+// middleware listener to update localStorage when accounts.items state changes
+export const accountsStateListener = createListenerMiddleware();
+
+accountsStateListener.startListening({
+  matcher: isAnyOf(
+    // all actions that modify state.items
+    addAccount.fulfilled,
+    updateAccount,
+    deleteAccount,
+    changeAccountOrder,
+    toggleAccountActive,
+    setAccountsQueueStatus,
+    importAccounts.fulfilled,
+    refreshAccount.fulfilled,
+    updateAccounts.fulfilled,
+    skipAccountFromQueue.fulfilled
+  ),
+  effect: (_action, listenerApi) => {
+    const state = listenerApi.getState() as RootState;
+    debug('[AccountsStateListener] Accounts state has changed, saving to local storage');
+    saveAccountsToLocalStorage(state.accounts.items);
+  }
+});
+
+// selectors
 const accountsSelector = (state: RootState) => state.accounts;
 
 export const selectAccountList = createSelector(accountsSelector, (accounts) => accounts.items);
@@ -250,6 +284,7 @@ export const selectActiveAccounts = createSelector(accountsSelector, (accounts) 
 export const selectAccountLoading = (state: RootState, id: string) =>
   state.accounts.loading[id] || false;
 
+// hook
 export function useAccounts(): AccountState {
   return useSelector(accountsSelector);
 }

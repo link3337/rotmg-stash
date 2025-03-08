@@ -80,7 +80,7 @@ export const AccountTable: React.FC = () => {
     };
 
     try {
-      await dispatch(addAccount(encryptedAccount));
+      dispatch(addAccount(encryptedAccount));
 
       setDialogVisible(false);
       setNewAccount({});
@@ -101,7 +101,7 @@ export const AccountTable: React.FC = () => {
 
   const handleDeleteAccount = async (account: AccountModel) => {
     try {
-      await dispatch(deleteAccount(account.id)).unwrap();
+      dispatch(deleteAccount(account.id));
 
       toast.current?.show({
         severity: 'success',
@@ -377,7 +377,7 @@ export const AccountTable: React.FC = () => {
         );
 
         // Dispatch import action
-        await dispatch(importAccounts(accountsToImport));
+        dispatch(importAccounts(accountsToImport));
       } else {
         toast.current?.show({
           severity: 'error',
