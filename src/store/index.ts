@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { combineReducers } from 'redux';
 import { createLogger } from 'redux-logger';
+import { accountsMiddleware } from './middleware/accountsMiddleware';
 import accountsReducer from './slices/AccountsSlice';
 import filterReducer from './slices/FilterSlice';
 import layoutReducer from './slices/LayoutSlice';
@@ -17,7 +18,7 @@ const logger = createLogger({
 export const store = configureStore({
   devTools: process.env.NODE_ENV === 'development',
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat([logger].concat(tauriApi.middleware)),
+    getDefaultMiddleware().prepend(accountsMiddleware.middleware).concat([logger].concat(tauriApi.middleware)),
   reducer: combineReducers({
     filter: filterReducer,
     layout: layoutReducer,

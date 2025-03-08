@@ -77,7 +77,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
 
     if (isQueueRunning && !isQueuePaused) {
       // Process first item immediately but with small delay
-      setTimeout(processQueueItem, 3000);
+      setTimeout(processQueueItem, 500);
 
       // Set up interval for subsequent items
       intervalId = setInterval(processQueueItem, queueFetchInterval);

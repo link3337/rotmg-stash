@@ -14,7 +14,6 @@ import { error } from '@tauri-apps/plugin-log';
 import { clearRateLimit, isRateLimited, setRateLimit } from '@utils/rate-limit';
 import {
   getAccountsFromLocalStorage,
-  saveAccountsToLocalStorage
 } from 'cache/localstorage-service';
 import { useSelector } from 'react-redux';
 import { RootState } from '../index';
@@ -104,39 +103,12 @@ export const importAccounts = createAsyncThunk(
   }
 );
 
-export const updateAccount = createAsyncThunk(
-  `${accountsFeatureKey}/updateAccount`,
-  async (account: AccountModel) => account
-);
-
-export const deleteAccount = createAsyncThunk(
-  `${accountsFeatureKey}/deleteAccount`,
-  async (accountId: string) => accountId
-);
-
-export const toggleAccountActive = createAsyncThunk(
-  `${accountsFeatureKey}/toggleActive`,
-  async (accountId: string) => accountId
-);
-
 export const skipAccountFromQueue = createAsyncThunk(
   `${accountsFeatureKey}/skipAccount`,
   async (
     { accountId, newStatus }: { accountId: string; newStatus: QueueStatusType },
     { dispatch }
   ) => {
-    const accounts = getAccountsFromLocalStorage();
-    const updatedAccounts = accounts.map((acc: AccountModel) =>
-      acc.id === accountId
-        ? {
-            ...acc,
-            queueStatus: newStatus
-          }
-        : acc
-    );
-
-    saveAccountsToLocalStorage(updatedAccounts);
-
     dispatch(updateQueue({ accountId, queueStatus: newStatus }));
     return { accountId, newStatus };
   }
@@ -161,19 +133,18 @@ export const refreshAccount = createAsyncThunk(
       const updatedAccounts = accounts.map((acc: AccountModel) =>
         acc.id === account.id
           ? {
-              ...acc,
-              mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-              error: result.error,
-              lastSaved: new Date().toISOString(),
-              // Update queue status if account was in queue
-              ...(isInQueue && {
-                queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-              })
-            }
+            ...acc,
+            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+            error: result.error,
+            lastSaved: new Date().toISOString(),
+            // Update queue status if account was in queue
+            ...(isInQueue && {
+              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+            })
+          }
           : acc
       );
 
-      saveAccountsToLocalStorage(updatedAccounts as AccountModel[]);
       return updatedAccounts;
     }
     return accounts;
@@ -188,54 +159,51 @@ export const updateAccounts = createAsyncThunk(
       const updated = accounts.find((acc) => acc.id === existing.id);
       return updated || existing;
     });
-    saveAccountsToLocalStorage(updatedAccounts);
-    return accounts;
-  }
-);
-
-export const changeAccountOrder = createAsyncThunk(
-  `${accountsFeatureKey}/sortAccounts`,
-  async (accounts: AccountModel[]) => {
-    saveAccountsToLocalStorage(accounts);
-    return accounts;
+    return updatedAccounts;
   }
 );
 
 const accountsSlice = createSlice({
   name: accountsFeatureKey,
   initialState,
-  reducers: {},
+  reducers: {
+    changeAccountOrder: (state, action: PayloadAction<AccountModel[]>) => {
+      state.items = action.payload;
+    },
+    updateAccount: (state, action: PayloadAction<AccountModel>) => {
+      const index = state.items.findIndex((acc) => acc.id === action.payload.id);
+      if (index !== -1) {
+        state.items[index] = action.payload;
+      }
+    },
+    deleteAccount: (state, action: PayloadAction<string>) => {
+      state.items = state.items.filter((acc) => acc.id !== action.payload);
+    },
+    toggleAccountActive: (state, action: PayloadAction<string>) => {
+      const account = state.items.find((acc) => acc.id === action.payload);
+      if (account) {
+        account.active = !account.active;
+      }
+    },
+    // set queue status for all accounts (used for finishing queue)
+    // used to set all accounts to pending or completed
+    setAccountsQueueStatus: (state, action: PayloadAction<QueueStatusType>) => {
+      state.items = state.items.map((account) => ({
+        ...account,
+        queueStatus: account.active ? action.payload : account.queueStatus
+      }));
+    }
+  },
   extraReducers: (builder) => {
     builder
-      // Initialize
       .addCase(initializeAccounts.fulfilled, (state, action) => {
         state.items = action.payload;
       })
       .addCase(addAccount.fulfilled, (state, action) => {
         state.items.push(action.payload);
-        saveAccountsToLocalStorage(state.items);
       })
       .addCase(importAccounts.fulfilled, (state, action) => {
         state.items.push(...action.payload);
-        saveAccountsToLocalStorage(state.items);
-      })
-      .addCase(updateAccount.fulfilled, (state, action) => {
-        const index = state.items.findIndex((acc) => acc.id === action.payload.id);
-        if (index !== -1) {
-          state.items[index] = action.payload;
-          saveAccountsToLocalStorage(state.items);
-        }
-      })
-      .addCase(deleteAccount.fulfilled, (state, action) => {
-        state.items = state.items.filter((acc) => acc.id !== action.payload);
-        saveAccountsToLocalStorage(state.items);
-      })
-      .addCase(toggleAccountActive.fulfilled, (state, action) => {
-        const account = state.items.find((acc) => acc.id === action.payload);
-        if (account) {
-          account.active = !account.active;
-          saveAccountsToLocalStorage(state.items);
-        }
       })
       .addCase(refreshAccount.pending, (state, action) => {
         state.loading[action.meta.arg.id] = true;
@@ -245,7 +213,6 @@ const accountsSlice = createSlice({
         const index = state.items.findIndex((acc) => acc.id === action.meta.arg.id);
         if (index !== -1) {
           state.items = action.payload;
-          saveAccountsToLocalStorage(state.items);
         }
       })
       .addCase(refreshAccount.rejected, (state, action) => {
@@ -265,12 +232,12 @@ const accountsSlice = createSlice({
             account.queueStatus = action.payload.newStatus;
           }
         }
-      )
-      .addCase(changeAccountOrder.fulfilled, (state, action) => {
-        state.items = action.payload;
-      });
+      );
   }
 });
+
+export const { setAccountsQueueStatus, updateAccount, changeAccountOrder, toggleAccountActive, deleteAccount } =
+  accountsSlice.actions;
 
 const accountsSelector = (state: RootState) => state.accounts;
 
