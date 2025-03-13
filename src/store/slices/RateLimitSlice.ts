@@ -1,7 +1,7 @@
+import { localStorageRateLimitKey, RATE_LIMIT_DURATION } from '@/constants';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { debug, info } from '@tauri-apps/plugin-log';
 import { RootState } from '..';
-import { localStorageRateLimitKey, RATE_LIMIT_DURATION } from './../../constants';
 
 interface RateLimitState {
   // When non-null, this represents the timestamp (in milliseconds) when the rate limit was set.

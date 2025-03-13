@@ -3,6 +3,7 @@ import Footer from './Footer';
 import Header from './Header';
 import styles from './MainLayout.module.scss';
 import RateLimitBanner from './RateLimitBanner';
+import RateLimitChecker from './RateLimitChecker';
 import ScrollToTop from './ScrollToTop';
 
 interface MainLayoutProps {
@@ -14,6 +15,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div className={styles.pageContainer}>
       <Header />
       <RateLimitBanner />
+      <RateLimitChecker />
       <main className={styles.contentWrapper}>{children}</main>
       <Footer />
       <ScrollToTop />

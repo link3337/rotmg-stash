@@ -1,8 +1,8 @@
+import { RATE_LIMIT_DURATION } from '@/constants';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { clearRateLimit, isCurrentlyRateLimited, selectRateLimit } from '@store/slices/RateLimitSlice';
 import { debug } from 'console';
 import React, { useEffect, useMemo, useState } from 'react';
-import { RATE_LIMIT_DURATION } from './../../constants';
 
 const RateLimitBanner: React.FC = () => {
   const dispatch = useAppDispatch();

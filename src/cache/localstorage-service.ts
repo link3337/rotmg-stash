@@ -2,7 +2,7 @@ import {
   localStorageAccountsKey,
   localStorageSettingsKey,
   localStorageTotalsKey
-} from '../constants';
+} from '@/constants';
 import { AccountModel } from './account-model';
 import { SettingsModel } from './settings-model';
 import { TotalsModel } from './totals-model';

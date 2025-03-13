@@ -1,3 +1,4 @@
+import { RATE_LIMIT_DURATION } from '@/constants';
 import { AccountModel } from '@cache/account-model';
 import { AccountExportModel, ExportModel } from '@cache/export-model';
 import useCrypto from '@hooks/crypto';
@@ -27,7 +28,6 @@ import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import React, { useRef, useState } from 'react';
-import { RATE_LIMIT_DURATION } from './../../../constants';
 import PasswordEditor from './PasswordEditor';
 
 export const AccountTable: React.FC = () => {

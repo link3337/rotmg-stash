@@ -1,3 +1,4 @@
+import { RATE_LIMIT_DURATION } from '@/constants';
 import { AccountModel } from '@cache/account-model';
 import useCrypto from '@hooks/crypto';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
@@ -22,7 +23,6 @@ import { selectRateLimit } from '@store/slices/RateLimitSlice';
 import { selectQueueFetchInterval } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
 import React, { useEffect, useMemo } from 'react';
-import { RATE_LIMIT_DURATION } from './../../constants';
 import './Queue.module.scss';
 import QueueInfoDialog from './QueueInfoDialog';
 

@@ -2,6 +2,10 @@ import { mapCharListResponse } from '@api/mapping/char-mapping';
 import { getAccount } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
 import { AccountExportModel } from '@cache/export-model';
+import {
+  getAccountsFromLocalStorage,
+  saveAccountsToLocalStorage
+} from '@cache/localstorage-service';
 import { CharListResponse } from '@realm/models/charlist-response';
 import {
   createAsyncThunk,
@@ -13,10 +17,6 @@ import {
   ThunkDispatch
 } from '@reduxjs/toolkit';
 import { debug, error } from '@tauri-apps/plugin-log';
-import {
-  getAccountsFromLocalStorage,
-  saveAccountsToLocalStorage
-} from 'cache/localstorage-service';
 import { useSelector } from 'react-redux';
 import { RootState } from '../index';
 import { QueueStatus, QueueStatusType, updateQueue } from './QueueSlice';
@@ -138,14 +138,14 @@ export const refreshAccount = createAsyncThunk<
     const updatedAccounts = accounts.map((acc: AccountModel) =>
       acc.id === account.id
         ? {
-            ...acc,
-            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-            error: result.error,
-            lastSaved: new Date().toISOString(),
-            ...(isInQueue && {
-              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-            })
-          }
+          ...acc,
+          mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+          error: result.error,
+          lastSaved: new Date().toISOString(),
+          ...(isInQueue && {
+            queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+          })
+        }
         : acc
     );
     // Optionally: If request succeeded, dispatch(clearRateLimit())
