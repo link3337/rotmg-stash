@@ -73,7 +73,7 @@ export const processQueue = createAsyncThunk(
       const account = state.accounts.items.find((a) => a.id === pendingItem.accountId);
       if (account) {
         const decryptedPassword = decrypt(account.password);
-        await dispatch(refreshAccount({ ...account, password: decryptedPassword }));
+        await dispatch(refreshAccount({ ...account, password: decryptedPassword }) as any);
 
         // Check if this is the last non-completed/non-skipped item
         const remainingItems = state.queue.items.filter(

@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import DebugPage from '@pages/DebugPage';
 import MainPage from '@pages/MainPage';
 import { initializeAccounts } from '@store/slices/AccountsSlice';
+import { initRateLimitState } from '@store/slices/RateLimitSlice';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import { PrimeReactContext } from 'primereact/api';
@@ -19,6 +20,7 @@ function App() {
 
   useEffect(() => {
     dispatch(initializeAccounts());
+    dispatch(initRateLimitState());
   }, [dispatch]);
 
   useEffect(() => {

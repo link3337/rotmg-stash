@@ -13,7 +13,6 @@ import {
   ThunkDispatch
 } from '@reduxjs/toolkit';
 import { debug, error } from '@tauri-apps/plugin-log';
-import { clearRateLimit, isRateLimited, setRateLimit } from '@utils/rate-limit';
 import {
   getAccountsFromLocalStorage,
   saveAccountsToLocalStorage
@@ -21,6 +20,7 @@ import {
 import { useSelector } from 'react-redux';
 import { RootState } from '../index';
 import { QueueStatus, QueueStatusType, updateQueue } from './QueueSlice';
+import { clearRateLimit, isCurrentlyRateLimited, setRateLimit } from './RateLimitSlice';
 
 interface AccountState {
   items: AccountModel[];
@@ -50,7 +50,8 @@ const processBackendResponse = (
   if (typeof response === 'string') {
     error(response);
     if (response === rateLimitError) {
-      dispatch(setRateLimit());
+      // Dispatch setRateLimit with the current timestamp
+      dispatch(setRateLimit({ timestamp: Date.now() }));
     }
     return {
       success: false,
@@ -66,13 +67,12 @@ const processBackendResponse = (
   };
 };
 
-// Add this check before making any API requests
-const canMakeRequest = (): boolean => {
-  if (isRateLimited()) {
+const canMakeRequest = (getState: () => RootState): boolean => {
+  const state = getState();
+  if (isCurrentlyRateLimited(state.rateLimit)) {
     error('Rate limited. Please wait 5 minutes before trying again.');
     return false;
   }
-  clearRateLimit();
   return true;
 };
 
@@ -117,42 +117,45 @@ export const skipAccountFromQueue = createAsyncThunk(
   }
 );
 
-export const refreshAccount = createAsyncThunk(
-  `${accountsFeatureKey}/refreshAccount`,
-  async (account: AccountModel, { dispatch }) => {
-    const accounts = getAccountsFromLocalStorage();
+export const refreshAccount = createAsyncThunk<
+  AccountModel[], // Return type: an updated array of AccountModel
+  AccountModel, // Argument type: a single AccountModel
+  { state: RootState } // thunkAPI type: state is typed as RootState
+>(`${accountsFeatureKey}/refreshAccount`, async (account, { dispatch, getState }) => {
+  const accounts = getAccountsFromLocalStorage();
 
-    // Check if account is in queue
-    const isInQueue = accounts.find(
-      (acc) =>
-        (acc.id === account.id && acc.queueStatus === QueueStatus.PENDING) ||
-        acc.queueStatus === QueueStatus.SKIPPED
-    );
+  // Check if account is in queue (existing logic)
+  const isInQueue = accounts.find(
+    (acc) =>
+      (acc.id === account.id && acc.queueStatus === QueueStatus.PENDING) ||
+      acc.queueStatus === QueueStatus.SKIPPED
+  );
 
-    if (canMakeRequest()) {
-      const backendResponse = await getAccount(account.email, account.password);
-      const result = processBackendResponse(backendResponse, dispatch);
+  if (canMakeRequest(getState)) {
+    const backendResponse = await getAccount(account.email, account.password);
+    const result = processBackendResponse(backendResponse, dispatch);
 
-      const updatedAccounts = accounts.map((acc: AccountModel) =>
-        acc.id === account.id
-          ? {
+    const updatedAccounts = accounts.map((acc: AccountModel) =>
+      acc.id === account.id
+        ? {
             ...acc,
             mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
             error: result.error,
             lastSaved: new Date().toISOString(),
-            // Update queue status if account was in queue
             ...(isInQueue && {
               queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
             })
           }
-          : acc
-      );
-
-      return updatedAccounts;
+        : acc
+    );
+    // Optionally: If request succeeded, dispatch(clearRateLimit())
+    if (result.success) {
+      dispatch(clearRateLimit());
     }
-    return accounts;
+    return updatedAccounts;
   }
-);
+  return accounts;
+});
 
 export const updateAccounts = createAsyncThunk(
   `${accountsFeatureKey}/updateAccounts`,

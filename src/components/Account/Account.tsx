@@ -16,9 +16,10 @@ import Exalts from './Exalts';
 
 interface AccountProps {
   account: AccountModel;
+  isRateLimited: boolean;
 }
 
-const Account: React.FC<AccountProps> = ({ account }) => {
+const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const dispatch = useAppDispatch();
 
   const { decrypt } = useCrypto();
@@ -92,6 +93,7 @@ const Account: React.FC<AccountProps> = ({ account }) => {
             refreshButtonClicked={handleRefresh}
             skipQueueButtonClicked={handleSkipQueue}
             showAccountInfo={settings.displaySettings.showAccountInfo}
+            isRateLimited={isRateLimited}
           />
           {settings.displaySettings.showExalts && (
             <div className="pt-3">
