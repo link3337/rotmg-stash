@@ -95,7 +95,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
           />
           <Button
             label="Refresh"
-            disabled={isRateLimited}
+            disabled={loading || isRateLimited}
             onClick={refreshButtonClicked}
             icon="pi pi-refresh"
           />
