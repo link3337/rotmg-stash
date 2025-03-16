@@ -50,9 +50,9 @@ export const { initRateLimitState, setRateLimit, clearRateLimit } = rateLimitSli
 
 // Selector that returns both the stored timestamp and computed isLimited flag.
 export const selectRateLimit = (state: RootState) => {
-  const ts = state.rateLimit.timestamp;
-  const isLimited = ts != null && Date.now() - ts < RATE_LIMIT_DURATION;
-  return { timestamp: ts, isLimited };
+  const { timestamp } = state.rateLimit;
+  const isLimited = timestamp != null && Date.now() - timestamp < RATE_LIMIT_DURATION;
+  return { timestamp, isLimited };
 };
 
 export const isCurrentlyRateLimited = (
