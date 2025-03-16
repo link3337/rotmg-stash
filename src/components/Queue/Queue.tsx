@@ -1,3 +1,4 @@
+import { RATE_LIMIT_DURATION } from '@/constants';
 import { AccountModel } from '@cache/account-model';
 import useCrypto from '@hooks/crypto';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
@@ -18,9 +19,10 @@ import {
   stopQueue,
   updateQueue
 } from '@store/slices/QueueSlice';
+import { selectRateLimit } from '@store/slices/RateLimitSlice';
 import { selectQueueFetchInterval } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import './Queue.module.scss';
 import QueueInfoDialog from './QueueInfoDialog';
 
@@ -46,20 +48,34 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
   const isQueuePaused = useAppSelector(selectIsQueuePaused);
   const isShowQueue = useAppSelector(selectShowQueue);
   const isAutoRefresh = useAppSelector(selectIsAutoRefresh);
+  const { timestamp } = useAppSelector(selectRateLimit);
 
   const setShowQueue = (value: boolean) => dispatch(showQueue(value));
   const setAutoRefresh = (value: boolean) => dispatch(autoRefresh(value));
   const setIsPaused = (value: boolean) => dispatch(pauseQueue(value));
 
+  // Compute if the user is rate limited locally
+  const isRateLimited = useMemo(() => {
+    if (!timestamp) return false;
+    return Date.now() - timestamp < RATE_LIMIT_DURATION;
+  }, [timestamp]);
+
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
 
-    if (isQueueRunning && !isQueuePaused) {
-      intervalId = setInterval(async () => {
-        console.log('Processing next queue item');
+    const processQueueItem = async () => {
+      console.log('Processing next queue item');
+
+      // If user is rate limited, skip processing
+      if (isRateLimited) {
+        console.log('User is currently rate limited. Skipping queue processing.');
+        return;
+      }
+
+      if (!isQueuePaused) {
         // Process next queue item
+
         const queuedAccountId = await dispatch(processQueue({ decrypt })).unwrap();
-        console.log(queuedAccountId);
 
         // If no more items to process, stop queue
         if (!queuedAccountId) {
@@ -68,7 +84,20 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
           // update queue items
           dispatch(updateQueue({ accountId: queuedAccountId, queueStatus: QueueStatus.COMPLETED }));
         }
-      }, queueFetchInterval);
+      } else {
+        if (intervalId) {
+          // clear interval until user resumes/starts queue again
+          clearInterval(intervalId);
+        }
+      }
+    };
+
+    if (isQueueRunning && !isQueuePaused) {
+      // Process first item immediately but with small delay
+      setTimeout(processQueueItem, 500);
+
+      // Set up interval for subsequent items
+      intervalId = setInterval(processQueueItem, queueFetchInterval);
     }
 
     return () => {
@@ -76,7 +105,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
         clearInterval(intervalId);
       }
     };
-  }, [isQueueRunning, isQueuePaused, queueFetchInterval, dispatch]);
+  }, [isQueueRunning, isQueuePaused, queueFetchInterval, dispatch, isRateLimited]);
 
   const initQueue = () => {
     dispatch(initializeQueue({ accounts, queueFetchInterval })).then(() => {

@@ -20,6 +20,7 @@ interface AccountInfoProps {
   refreshButtonClicked: () => void;
   skipQueueButtonClicked: () => void;
   showAccountInfo: boolean;
+  isRateLimited: boolean;
 }
 
 const AccountInfo: React.FC<AccountInfoProps> = ({
@@ -30,9 +31,11 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   characterMaxAmount,
   refreshButtonClicked,
   skipQueueButtonClicked,
-  showAccountInfo
+  showAccountInfo,
+  isRateLimited
 }) => {
   const showAccountName = useAppSelector(selectShowAccountName);
+
   const formatDate = (date: string) => {
     return new Intl.DateTimeFormat(navigator.language, {
       dateStyle: 'short',
@@ -90,7 +93,12 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
             onClick={skipQueueButtonClicked}
             icon={account?.queueStatus === QueueStatus.SKIPPED ? 'pi pi-plus' : 'pi pi-sign-out'}
           />
-          <Button label="Refresh" onClick={refreshButtonClicked} icon="pi pi-refresh" />
+          <Button
+            label="Refresh"
+            disabled={loading || isRateLimited}
+            onClick={refreshButtonClicked}
+            icon="pi pi-refresh"
+          />
         </div>
       </div>
 

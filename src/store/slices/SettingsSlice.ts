@@ -3,7 +3,8 @@ import {
   saveSettingsToLocalStorage
 } from '@cache/localstorage-service';
 import { DisplaySettings, ExperimentalSettings, SettingsModel, Theme } from '@cache/settings-model';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createListenerMiddleware, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
+import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 
@@ -20,7 +21,7 @@ export enum SortFields {
   shiny = 'shiny'
 }
 
-export interface SettingsState extends SettingsModel { }
+export interface SettingsState extends SettingsModel {}
 
 const initialState: SettingsState = {
   displaySettings: {
@@ -68,7 +69,6 @@ const settingsSlice = createSlice({
   reducers: {
     toggleSetting: (state, action: PayloadAction<keyof DisplaySettings>) => {
       state.displaySettings[action.payload] = !state.displaySettings[action.payload];
-      saveSettingsToLocalStorage(state);
     },
     updateItemSort: (
       state,
@@ -82,15 +82,12 @@ const settingsSlice = createSlice({
         field,
         direction
       };
-      saveSettingsToLocalStorage(state);
     },
     toggleSortDirection: (state) => {
       state.itemSort.direction = state.itemSort.direction === 'asc' ? 'desc' : 'asc';
-      saveSettingsToLocalStorage(state);
     },
     updateTheme: (state, action: PayloadAction<Theme>) => {
       state.theme = action.payload;
-      saveSettingsToLocalStorage(state);
     },
     updateExperimentalSetting: (
       state,
@@ -102,25 +99,55 @@ const settingsSlice = createSlice({
       } else if (key === 'lazyLoadingHeight' || key === 'lazyLoadingOffset') {
         state.experimental[key] = value as number;
       }
-      saveSettingsToLocalStorage(state);
     },
     toggleStreamerMode: (state) => {
       state.experimental.isStreamerMode = !state.experimental.isStreamerMode;
-      saveSettingsToLocalStorage(state);
     },
     toggleDebugMode: (state) => {
       state.experimental.isDebugMode = !state.experimental.isDebugMode;
-      saveSettingsToLocalStorage(state);
     },
     setSettings: (state, action: PayloadAction<SettingsState>) => {
       Object.assign(state, action.payload);
-      saveSettingsToLocalStorage(state);
     },
     updateQueueFetchInterval: (state, action: PayloadAction<number>) => {
       // Add this action
       state.queueFetchInterval = action.payload;
-      saveSettingsToLocalStorage(state);
     }
+  }
+});
+
+export const {
+  toggleSetting,
+  updateItemSort,
+  toggleSortDirection,
+  updateTheme,
+  updateExperimentalSetting,
+  toggleStreamerMode,
+  toggleDebugMode,
+  updateQueueFetchInterval,
+  setSettings
+} = settingsSlice.actions;
+
+// middleware listener to update localStorage when settings state changes
+export const settingsStateListener = createListenerMiddleware();
+
+settingsStateListener.startListening({
+  matcher: isAnyOf(
+    // all actions that modify settings state
+    toggleSetting,
+    updateItemSort,
+    toggleSortDirection,
+    updateTheme,
+    updateExperimentalSetting,
+    toggleStreamerMode,
+    toggleDebugMode,
+    setSettings,
+    updateQueueFetchInterval
+  ),
+  effect: (_action, listenerApi) => {
+    const state = listenerApi.getState() as RootState;
+    debug('[SettingsStateListener] Settings state has changed, saving to local storage');
+    saveSettingsToLocalStorage(state.settings);
   }
 });
 
@@ -139,18 +166,6 @@ export const selectShowAccountName = (state: RootState) =>
   settingsSelector(state).displaySettings.showAccountName;
 export const selectDisplayIgnInQueue = (state: RootState) =>
   settingsSelector(state).displaySettings.showIngameNameInQueue;
-
-export const {
-  toggleSetting,
-  updateItemSort,
-  toggleSortDirection,
-  updateTheme,
-  updateExperimentalSetting,
-  toggleStreamerMode,
-  toggleDebugMode,
-  updateQueueFetchInterval,
-  setSettings
-} = settingsSlice.actions;
 
 // hook
 export function useSettings(): SettingsState {

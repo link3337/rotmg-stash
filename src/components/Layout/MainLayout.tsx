@@ -1,4 +1,5 @@
 import React from 'react';
+import RateLimitContainer from '../RateLimit/RateLimitContainer';
 import Footer from './Footer';
 import Header from './Header';
 import styles from './MainLayout.module.scss';
@@ -12,6 +13,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className={styles.pageContainer}>
       <Header />
+      <RateLimitContainer />
       <main className={styles.contentWrapper}>{children}</main>
       <Footer />
       <ScrollToTop />

@@ -18,19 +18,21 @@ use util::generate_hex_key;
 #[derive(Debug)]
 enum AccountError {
     TokenNotFound,
+    CouldNotParseToken,
     InvalidResponse(String),
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 struct Settings {
-    secret_key: Option<String>,
-    // other settings...
+    secret_key: Option<String>, // used for encryption
+                                // other settings...
 }
 
 impl std::fmt::Display for AccountError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::TokenNotFound => write!(f, "Access token not found in response"),
+            Self::CouldNotParseToken => write!(f, "Could not parse access token"),
             Self::InvalidResponse(msg) => write!(f, "Invalid response: {}", msg),
         }
     }
@@ -77,10 +79,10 @@ async fn get_account(guid: &str, password: &str) -> Result<String, String> {
     let access_token: String = match token_regex.captures(&body) {
         Some(caps) => caps.get(1).map(|m| m.as_str().to_string()).ok_or_else(|| {
             log::error!(
-                "[RotMG API] Failed to extract access token. Response body: {}",
+                "[RotMG API] Failed to parse access token. Response body: {}",
                 body
             );
-            AccountError::TokenNotFound.to_string()
+            AccountError::CouldNotParseToken.to_string()
         })?,
         None => {
             log::error!(

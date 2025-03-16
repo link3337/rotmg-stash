@@ -2,7 +2,7 @@ import {
   localStorageAccountsKey,
   localStorageSettingsKey,
   localStorageTotalsKey
-} from '../constants';
+} from '@/constants';
 import { AccountModel } from './account-model';
 import { SettingsModel } from './settings-model';
 import { TotalsModel } from './totals-model';
@@ -25,6 +25,7 @@ export function getSettingsFromLocalStorage(): SettingsModel | null {
   return storedSettings ? JSON.parse(storedSettings) : null;
 }
 
+// todo: make use of this
 export function saveTotalsToLocalStorage(totals: TotalsModel) {
   localStorage.setItem(localStorageSettingsKey, JSON.stringify(totals));
 }
