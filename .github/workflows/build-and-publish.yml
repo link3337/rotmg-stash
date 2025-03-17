@@ -3,7 +3,8 @@ name: 'build and publish'
 on:
   push:
     branches:
-      - release
+      - 'release/**' # Matches release/v1.0, release/v1.1, etc.
+      - 'release' # Also matches the exact "release" branch
   workflow_dispatch:
     inputs:
       version:
