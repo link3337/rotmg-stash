@@ -121,8 +121,8 @@ function mapCharModel(char: Char): CharUIModel | null {
     texture: char.Texture ?? null,
     xpboosted: char.XpBoosted ? parseInt(char.XpBoosted, 10) : 0,
     xptimer: char.XpTimer ? parseInt(char.XpTimer, 10) : 0,
-    lootdrop: char.LDTimer ? parseInt(char.LDTimer, 10) : 0,
-    loottier: char.LTTimer ? parseInt(char.LTTimer, 10) : 0,
+    lootDrop: char.LDTimer ? parseInt(char.LDTimer, 10) : 0,
+    lootTier: char.LTTimer ? parseInt(char.LTTimer, 10) : 0,
     crucible: char.CrucibleActive?.toLowerCase() === 'true',
     objectType: char.ObjectType
   };

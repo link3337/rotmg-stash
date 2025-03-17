@@ -1,8 +1,10 @@
-import MainLayout from '@components/Shell/MainLayout';
+import MainLayout from '@components/Layout/MainLayout';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import DebugPage from '@pages/DebugPage';
 import MainPage from '@pages/MainPage';
 import { initializeAccounts } from '@store/slices/AccountsSlice';
+import { initRateLimitState } from '@store/slices/RateLimitSlice';
+import { info } from '@tauri-apps/plugin-log';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import { PrimeReactContext } from 'primereact/api';
@@ -19,13 +21,14 @@ function App() {
 
   useEffect(() => {
     dispatch(initializeAccounts());
+    dispatch(initRateLimitState());
   }, [dispatch]);
 
   useEffect(() => {
     const oldTheme = theme === 'dark' ? 'light' : 'dark';
 
     changeTheme!(`mdc-${oldTheme}-deeppurple`, `mdc-${theme}-deeppurple`, 'app-theme', () =>
-      console.log(`Theme changed from ${oldTheme} to ${theme}`)
+      info(`Theme changed from ${oldTheme} to ${theme}`)
     );
   }, [theme, changeTheme]);
 

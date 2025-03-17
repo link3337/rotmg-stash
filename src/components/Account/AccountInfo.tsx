@@ -4,7 +4,7 @@ import { AccountModel } from '@cache/account-model';
 import { useAppSelector } from '@hooks/redux';
 import { getGuildRank } from '@realm/renders/guild';
 import { QueueStatus } from '@store/slices/QueueSlice';
-import { selectShowAccountName } from '@store/slices/SettingsSlice';
+import { selectExperimentalSettings, selectShowAccountName } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import React from 'react';
@@ -19,7 +19,9 @@ interface AccountInfoProps {
   characterMaxAmount: number;
   refreshButtonClicked: () => void;
   skipQueueButtonClicked: () => void;
+  launchButtonClicked(): void;
   showAccountInfo: boolean;
+  isRateLimited: boolean;
 }
 
 const AccountInfo: React.FC<AccountInfoProps> = ({
@@ -29,10 +31,14 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   characterAmount,
   characterMaxAmount,
   refreshButtonClicked,
+  launchButtonClicked,
   skipQueueButtonClicked,
-  showAccountInfo
+  showAccountInfo,
+  isRateLimited
 }) => {
   const showAccountName = useAppSelector(selectShowAccountName);
+  const experimentalSettings = useAppSelector(selectExperimentalSettings);
+
   const formatDate = (date: string) => {
     return new Intl.DateTimeFormat(navigator.language, {
       dateStyle: 'short',
@@ -69,28 +75,35 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   return (
     <div className={styles.accountinfoContainer}>
       <div className={styles.header}>
-        <span className={styles.scont}>
+        <span className={styles.accountName}>
           <span>{accountData?.starInfo?.stars}</span>
           <span className={styles.star} style={{ color: accountData?.starInfo?.color }}>
             ★
           </span>
           <span>{showAccountName ? accountData?.name : account?.id}</span>
+          <span className="text-sm text-600">
+            Last saved: {account?.lastSaved ? formatDate(account?.lastSaved) : '-'}
+          </span>
           {loading && (
             <ProgressSpinner style={{ width: '20px', height: '20px', marginLeft: '8px' }} />
           )}
         </span>
         <div className="flex align-items-center gap-2">
-          <span className="text-sm text-500">
-            Last saved: {account?.lastSaved ? formatDate(account?.lastSaved) : '-'}
-          </span>
           {errorInfo()}
-
+          {experimentalSettings.deviceToken && experimentalSettings.exaltPath && (
+            <Button label="Launch Exalt" onClick={launchButtonClicked} icon="pi pi-play" />
+          )}
           <Button
             label={account?.queueStatus === QueueStatus.SKIPPED ? 'Add to Queue' : 'Skip Queue'}
             onClick={skipQueueButtonClicked}
             icon={account?.queueStatus === QueueStatus.SKIPPED ? 'pi pi-plus' : 'pi pi-sign-out'}
           />
-          <Button label="Refresh" onClick={refreshButtonClicked} icon="pi pi-refresh" />
+          <Button
+            label="Refresh"
+            disabled={loading || isRateLimited}
+            onClick={refreshButtonClicked}
+            icon="pi pi-refresh"
+          />
         </div>
       </div>
 

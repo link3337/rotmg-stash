@@ -36,12 +36,15 @@ const VaultOverview: React.FC<VaultOverviewProps> = ({ account }) => {
   const vaultUIModel: ItemUIModel[] = compactVaults
     ? account?.vaultUIModel || []
     : mapToUIModel(rawVault);
+
   const giftsUIModel: ItemUIModel[] = compactVaults
     ? account?.giftsUIModel || []
     : mapToUIModel(rawGifts);
+
   const seasonalSpoilsUIModel: ItemUIModel[] = compactVaults
     ? account?.seasonalSpoilsUIModel || []
     : mapToUIModel(rawSeasonalSpoils);
+
   const materialsUIModel: ItemUIModel[] = compactVaults
     ? account?.materialStorageUIModel || []
     : mapToUIModel(rawMaterials);

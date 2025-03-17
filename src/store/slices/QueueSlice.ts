@@ -1,9 +1,10 @@
 import { AccountModel } from '@cache/account-model';
 import { QueueItem } from '@components/Queue/Queue';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { info } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
-import { refreshAccount } from './AccountsSlice';
+import { refreshAccount, setAccountsQueueStatus } from './AccountsSlice';
 
 export const QueueStatus = {
   PENDING: 'pending',
@@ -65,7 +66,7 @@ export const processQueue = createAsyncThunk(
       (item: QueueItem) => item.status === QueueStatus.PROCESSING
     );
 
-    console.log(
+    info(
       `Queueing: ${pendingItem?.accountId} (${pendingItem?.accountIngameName || pendingItem?.accountName})`
     );
 
@@ -73,7 +74,21 @@ export const processQueue = createAsyncThunk(
       const account = state.accounts.items.find((a) => a.id === pendingItem.accountId);
       if (account) {
         const decryptedPassword = decrypt(account.password);
-        await dispatch(refreshAccount({ ...account, password: decryptedPassword }));
+        await dispatch(refreshAccount({ ...account, password: decryptedPassword }) as any);
+
+        // Check if this is the last non-completed/non-skipped item
+        const remainingItems = state.queue.items.filter(
+          (item) =>
+            item.status !== QueueStatus.COMPLETED &&
+            item.status !== QueueStatus.SKIPPED &&
+            item.accountId !== pendingItem.accountId
+        );
+
+        // If no remaining items, dispatch finishQueueAndUpdateAccounts
+        if (remainingItems.length === 0) {
+          dispatch(finishQueueAndUpdateAccounts());
+        }
+
         return pendingItem.accountId;
       }
     }
@@ -95,7 +110,6 @@ export const updateQueue = createAsyncThunk(
   ) => {
     const state = getState() as RootState;
     const queueState = state.queue;
-    console.log(queueState);
 
     // If queue is not running, return empty array
     if (!queueState.isRunning) {
@@ -111,8 +125,18 @@ export const updateQueue = createAsyncThunk(
         : acc
     );
 
-    console.log(updatedQueueItems);
     return updatedQueueItems;
+  }
+);
+
+// Create a new thunk to handle both queue and account updates
+export const finishQueueAndUpdateAccounts = createAsyncThunk(
+  `${queueFeatureKey}/finishAndUpdate`,
+  async (_, { dispatch }) => {
+    // First finish the queue
+    dispatch(finishQueue());
+    // Then update all accounts queue status
+    dispatch(setAccountsQueueStatus(QueueStatus.COMPLETED));
   }
 );
 
@@ -138,6 +162,15 @@ const queueSlice = createSlice({
     },
     showQueue: (state, action: PayloadAction<boolean>) => {
       state.showQueue = action.payload;
+    },
+    finishQueue: (state) => {
+      state.isRunning = false;
+      state.isPaused = false;
+      state.isAutoRefresh = false;
+      state.items = state.items.map((item) => ({
+        ...item,
+        status: QueueStatus.COMPLETED
+      }));
     }
   },
   extraReducers: (builder) => {
@@ -179,7 +212,8 @@ export const selectIsAutoRefresh = (state: RootState) => state.queue.isAutoRefre
 export const selectAccountsByQueueStatus = (status: QueueStatusType) => (state: RootState) =>
   state.accounts.items.filter((account) => account.queueStatus === status);
 
-export const { startQueue, stopQueue, pauseQueue, showQueue, autoRefresh } = queueSlice.actions;
+export const { startQueue, stopQueue, pauseQueue, showQueue, autoRefresh, finishQueue } =
+  queueSlice.actions;
 
 export function useQueue(): QueueState {
   return useSelector(queueSelector);

@@ -1,5 +1,7 @@
+import { useLaunchExaltMutation } from '@/api/tauri/tauriApi';
+import { RATE_LIMIT_DURATION } from '@/constants';
 import { AccountModel } from '@cache/account-model';
-import { AccountExportModel, ExportModel } from '@cache/export';
+import { AccountExportModel, ExportModel } from '@cache/export-model';
 import useCrypto from '@hooks/crypto';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import {
@@ -13,6 +15,7 @@ import {
   updateAccounts,
   useAccounts
 } from '@store/slices/AccountsSlice';
+import { selectRateLimit } from '@store/slices/RateLimitSlice';
 import { setSettings, useSettings } from '@store/slices/SettingsSlice';
 import { maskEmail } from '@utils/masking';
 import { saveAs } from 'file-saver';
@@ -30,11 +33,18 @@ import PasswordEditor from './PasswordEditor';
 
 export const AccountTable: React.FC = () => {
   const dispatch = useAppDispatch();
+  const [launchAccount] = useLaunchExaltMutation();
 
   const { encrypt, decrypt } = useCrypto();
   const { items: accounts, loading } = useAccounts();
   const settings = useSettings();
   const isStreamerMode = useAppSelector((state) => state.settings.experimental.isStreamerMode);
+  const { timestamp } = useAppSelector(selectRateLimit);
+
+  const isRateLimited = React.useMemo(() => {
+    if (!timestamp) return false;
+    return Date.now() - timestamp < RATE_LIMIT_DURATION;
+  }, [timestamp]);
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [newAccount, setNewAccount] = useState<Partial<AccountModel>>({});
@@ -80,7 +90,7 @@ export const AccountTable: React.FC = () => {
     };
 
     try {
-      await dispatch(addAccount(encryptedAccount));
+      dispatch(addAccount(encryptedAccount));
 
       setDialogVisible(false);
       setNewAccount({});
@@ -101,7 +111,7 @@ export const AccountTable: React.FC = () => {
 
   const handleDeleteAccount = async (account: AccountModel) => {
     try {
-      await dispatch(deleteAccount(account.id)).unwrap();
+      dispatch(deleteAccount(account.id));
 
       toast.current?.show({
         severity: 'success',
@@ -263,8 +273,62 @@ export const AccountTable: React.FC = () => {
     setShowExtraActions((prev) => !prev);
   };
 
+  const launchExalt = async (account: AccountModel) => {
+    try {
+      const exaltPath = settings?.experimental?.exaltPath;
+      const deviceToken = settings?.experimental?.deviceToken;
+
+      if (!exaltPath) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Exalt path not set. Please set it in Experimental Settings.'
+        });
+        return;
+      }
+
+      if (!deviceToken) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Device token not set. Please set it in Experimental Settings.'
+        });
+        return;
+      }
+
+      await launchAccount({
+        exaltPath,
+        deviceToken,
+        guid: account.email,
+        password: decrypt(account.password)
+      }).unwrap();
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Launched RotMG Exalt'
+      });
+    } catch (error) {
+      console.error('Failed to launch Exalt:', error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to launch RotMG Exalt'
+      });
+    }
+  };
+
   const actionBodyTemplate = (rowData: AccountModel, { rowIndex }: { rowIndex: number }) => (
     <div className="flex gap-2">
+      {settings?.experimental?.exaltPath && settings?.experimental?.deviceToken && (
+        <Button
+          icon="pi pi-play"
+          onClick={() => launchExalt(rowData)}
+          className="p-button-success p-button-text p-button-rounded"
+          disabled={loading[rowData.id]}
+          tooltip="Launch Exalt"
+        />
+      )}
       <Button
         icon={`pi pi-star${rowData.active ? '-fill' : ''}`}
         onClick={() => toggleActive(rowData)}
@@ -276,7 +340,7 @@ export const AccountTable: React.FC = () => {
         onClick={() => refreshAccountData(rowData)}
         className="p-button-text p-button-rounded"
         loading={loading[rowData.id]}
-        disabled={loading[rowData.id]}
+        disabled={loading[rowData.id] || isRateLimited}
       />
       <Button
         icon="pi pi-trash"
@@ -345,7 +409,6 @@ export const AccountTable: React.FC = () => {
       if (file.name.endsWith('.json')) {
         // Handle JSON file
         const importJSON: ExportModel = JSON.parse(text);
-        console.log(importJSON);
         const importAccountsRaw = importJSON.accounts;
 
         setPendingImport(importJSON);
@@ -377,7 +440,7 @@ export const AccountTable: React.FC = () => {
         );
 
         // Dispatch import action
-        await dispatch(importAccounts(accountsToImport));
+        dispatch(importAccounts(accountsToImport));
       } else {
         toast.current?.show({
           severity: 'error',

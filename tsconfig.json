@@ -17,17 +17,18 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "@api/*": ["api/*"],
-      "@cache/*": ["cache/*"],
-      "@components/*": ["components/*"],
-      "@hooks/*": ["hooks/*"],
-      "@pages/*": ["pages/*"],
-      "@providers/*": ["providers/*"],
-      "@realm/*": ["realm/*"],
-      "@store/*": ["store/*"],
-      "@utils/*": ["utils/*"]
+      "@/*": ["src/*"],
+      "@api/*": ["src/api/*"],
+      "@cache/*": ["src/cache/*"],
+      "@components/*": ["src/components/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@pages/*": ["src/pages/*"],
+      "@providers/*": ["src/providers/*"],
+      "@realm/*": ["src/realm/*"],
+      "@store/*": ["src/store/*"],
+      "@utils/*": ["src/utils/*"]
     }
   },
   "include": ["src"],

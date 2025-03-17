@@ -1,5 +1,5 @@
+import { bagPositionMap } from '@/constants';
 import React, { useEffect, useRef, useState } from 'react';
-import { bagPositionMap } from '../../constants';
 import styles from './ItemTooltip.module.scss';
 
 export interface ItemInfo {

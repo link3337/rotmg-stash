@@ -45,7 +45,13 @@ function extract_sprites(img: any, sx: any, sy?: any) {
   return r;
 }
 
-// Function to extract skins
+/**
+ * Extracts skin images from a given image.
+ *
+ * @param img - The source image from which skins will be extracted.
+ * @param size - The size of each skin to be extracted. Defaults to 8 if not provided.
+ * @returns An array of ImageData objects, each representing a skin extracted from the source image.
+ */
 function extract_skins(img: any, size: any) {
   size = size || 8;
   const sprc = document.createElement('canvas');
@@ -63,7 +69,14 @@ function extract_skins(img: any, size: any) {
   return r;
 }
 
-// Function to load image
+/**
+ * Loads an image from the specified source URL and returns a promise that resolves when the image is loaded.
+ *
+ * @param {string} src - The source URL of the image to load.
+ * @param {any} t - An additional parameter to be passed to the resolve function.
+ * @param {any} s - Another additional parameter to be passed to the resolve function.
+ * @returns {Promise<HTMLImageElement>} A promise that resolves with the loaded image element and the additional parameters.
+ */
 function load_img(src: any, t: any, s: any) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -79,7 +92,14 @@ function load_img(src: any, t: any, s: any) {
   });
 }
 
-// Function to load sheets
+/**
+ * Loads skinsheets and textiles, processes them, and stores the resulting sprites.
+ *
+ * This function creates promises for loading images from the `skinsheets` and `textiles` objects.
+ * It processes each image by extracting skins or sprites and stores them in the `sprites` object.
+ *
+ * @returns {Promise<void[]>} A promise that resolves when all skinsheets and textiles have been loaded and processed.
+ */
 function load_sheets() {
   const skinsheetPromises = Object.keys(skinsheets).map((key) => {
     const src: any = (skinsheets as any)[key];
@@ -110,7 +130,23 @@ function load_sheets() {
 const fs: any = {};
 let fsc: any;
 
-// Function to create pattern from texture
+/**
+ * Generates a texture pattern based on the provided texture and ratio.
+ *
+ * @param tex - The texture identifier, which can be a number or any other type.
+ * @param ratio - The ratio used for scaling the texture.
+ * @returns The generated texture pattern as a string or CanvasPattern.
+ *
+ * The function performs the following steps:
+ * 1. Checks if the texture pattern for the given ratio already exists in the cache.
+ * 2. If the texture identifier is 0, returns 'transparent'.
+ * 3. If the texture identifier is 1, converts the texture to a hexadecimal color string and returns it.
+ * 4. If the sprite sheet corresponding to the texture identifier is not found, logs an error and returns 'transparent'.
+ * 5. If the sprite corresponding to the texture identifier is not found, logs an error and returns 'transparent'.
+ * 6. Creates a canvas element and scales the sprite based on the provided ratio.
+ * 7. Generates a repeating pattern from the scaled sprite and caches it.
+ * 8. Returns the generated texture pattern.
+ */
 function makeTexPattern(tex: any, ratio: any) {
   if (!fs[ratio]) fs[ratio] = {};
   const dict = fs[ratio];
@@ -152,7 +188,26 @@ function makeTexPattern(tex: any, ratio: any) {
   return dict[tex];
 }
 
-// Function to generate sprite based on skin, textures, etc.
+/**
+ * Generates a portrait image based on the provided type, skin, and texture IDs.
+ *
+ * @param {any} type - The type of the portrait.
+ * @param {any} skin - The skin ID for the portrait.
+ * @param {any} tex1Id - The first texture ID for the portrait.
+ * @param {any} tex2Id - The second texture ID for the portrait.
+ * @returns {string} - A data URL representing the generated portrait image.
+ *
+ * @remarks
+ * This function relies on global variables `ready`, `skins`, `sprites`, and `textures`.
+ * It creates a canvas element, draws the portrait based on the provided parameters,
+ * and returns the image as a data URL.
+ *
+ * If the sprites are not ready, or if the skin data is not found, it logs an error
+ * and returns an empty string.
+ *
+ * The function also handles texture patterns and applies them to the portrait
+ * based on the mask data.
+ */
 function portrait(type: any, skin: any, tex1Id: any, tex2Id: any) {
   if (!ready) {
     console.error('Sprites are not ready yet.');

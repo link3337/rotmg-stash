@@ -1,3 +1,14 @@
+/**
+ * Calculates the total number of stars and the corresponding star color based on the class statistics.
+ *
+ * @param {ClassStat[]} classStats - An array of class statistics.
+ * @returns {StarInfoUIModel} An object containing the total number of stars and the corresponding star color.
+ *
+ * @remarks
+ * - If `classStats` is not an array or is null/undefined, the function returns an object with 0 stars and the default color.
+ * - The number of stars is calculated based on the `BestBaseFame` of each class stat.
+ * - The star color is determined by dividing the total number of stars by the number of classes and mapping it to the `STARCOLOR` array.
+ */
 import { StarInfoUIModel } from '@api/models/account-ui-model';
 import { ClassStat } from '@realm/models/charlist-response';
 

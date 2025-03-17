@@ -6,6 +6,13 @@ import { AccountUIModel, StarInfoUIModel } from '../models/account-ui-model';
 import { calculatePotionTotals, mapConsumables, mapToCompactVaultUIModel } from './item-mapping';
 import { objectToArray, parseItemList } from './util';
 
+/**
+ * Maps an `Account` object and a list of `CharUIModel` objects to an `AccountUIModel`.
+ *
+ * @param {Account} account - The account object to be mapped.
+ * @param {CharUIModel[]} charList - The list of character UI models associated with the account.
+ * @returns {AccountUIModel | null} The mapped account UI model or null if the account is not provided.
+ */
 export function mapAccount(account: Account, charList: CharUIModel[]): AccountUIModel | null {
   if (!account) return null;
 

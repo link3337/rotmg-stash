@@ -12,17 +12,20 @@ const GeneralInfo: React.FC = () => {
       </p>
       <p className="text-center">Version: {packageJson.version} (beta)</p>
       <p className="text-center">Made by Lingo with ❤️</p>
-      <p className="text-center mt-2">
+      <div className="flex flex-column align-items-center gap-2 mt-2">
         <a
           href="https://github.com/link3337/rotmg-stash"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:text-primary-700 transition-colors flex align-items-center justify-content-center gap-2"
+          className="text-primary hover:text-primary-700 transition-colors flex align-items-center gap-2"
         >
           <i className="pi pi-github text-xl"></i>
           <span>View on GitHub</span>
         </a>
-      </p>
+        <p className="text-center text-sm text-500 mt-2">
+          Need help? Add me on Discord: <span className="font-semibold">lingo1337</span>
+        </p>
+      </div>
     </Card>
   );
 };

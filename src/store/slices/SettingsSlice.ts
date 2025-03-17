@@ -3,11 +3,12 @@ import {
   saveSettingsToLocalStorage
 } from '@cache/localstorage-service';
 import { DisplaySettings, ExperimentalSettings, SettingsModel, Theme } from '@cache/settings-model';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createListenerMiddleware, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
+import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 
-// Define available sort fields
+// Sort fields
 export enum SortFields {
   id = 'id',
   name = 'name',
@@ -19,16 +20,6 @@ export enum SortFields {
   tier = 'tier',
   shiny = 'shiny'
 }
-
-const getNextAvailableSortField = (usedFields: string[]): string => {
-  const availableFields = Object.values(SortFields);
-  for (const field of availableFields) {
-    if (!usedFields.includes(field)) {
-      return field;
-    }
-  }
-  return availableFields[0]; // default to the first field if all are used
-};
 
 export interface SettingsState extends SettingsModel {}
 
@@ -51,17 +42,18 @@ const initialState: SettingsState = {
   },
   experimental: {
     lazyLoading: false,
+    lazyLoadingKeepRendered: false,
     lazyLoadingHeight: 1000,
     lazyLoadingOffset: 1500,
     isStreamerMode: false,
-    isDebugMode: false
+    isDebugMode: false,
+    deviceToken: '',
+    exaltPath: ''
   },
-  itemSort: [
-    {
-      field: 'id',
-      direction: 'asc'
-    }
-  ],
+  itemSort: {
+    field: SortFields.id,
+    direction: 'asc'
+  },
   theme: 'dark',
   queueFetchInterval: 70000
 };
@@ -79,104 +71,55 @@ const settingsSlice = createSlice({
   reducers: {
     toggleSetting: (state, action: PayloadAction<keyof DisplaySettings>) => {
       state.displaySettings[action.payload] = !state.displaySettings[action.payload];
-      saveSettingsToLocalStorage(state);
     },
     updateItemSort: (
       state,
       action: PayloadAction<{
-        index: number;
-        field: string;
+        field: SortFields;
         direction: 'asc' | 'desc';
       }>
     ) => {
-      const { index, field, direction } = action.payload;
-      if (index < state.itemSort.length) {
-        state.itemSort[index] = {
-          field: field,
-          direction
-        };
-        saveSettingsToLocalStorage(state);
-      }
+      const { field, direction } = action.payload;
+      state.itemSort = {
+        field,
+        direction
+      };
     },
-    toggleSortDirection: (state, action: PayloadAction<number>) => {
-      const index = action.payload;
-      if (index < state.itemSort.length) {
-        state.itemSort[index].direction =
-          state.itemSort[index].direction === 'asc' ? 'desc' : 'asc';
-        saveSettingsToLocalStorage(state);
-      }
+    toggleSortDirection: (state) => {
+      state.itemSort.direction = state.itemSort.direction === 'asc' ? 'desc' : 'asc';
     },
     updateTheme: (state, action: PayloadAction<Theme>) => {
       state.theme = action.payload;
-      saveSettingsToLocalStorage(state);
     },
     updateExperimentalSetting: (
       state,
       action: PayloadAction<{ key: keyof ExperimentalSettings; value?: any }>
     ) => {
-      if (action.payload.key === 'lazyLoading') {
-        state.experimental.lazyLoading = !state.experimental.lazyLoading;
-      } else if (
-        action.payload.key === 'lazyLoadingHeight' ||
-        action.payload.key === 'lazyLoadingOffset'
-      ) {
-        state.experimental[action.payload.key] = action.payload.value as number;
+      const { key, value } = action.payload;
+      if (key === 'deviceToken' || key === 'exaltPath') {
+        state.experimental[key] = value as string;
       }
-      saveSettingsToLocalStorage(state);
-    },
-    addSortCriteria: (state) => {
-      const usedFields = state.itemSort.map((sort) => sort.field);
-      const nextField = getNextAvailableSortField(usedFields);
-
-      state.itemSort.push({
-        field: nextField,
-        direction: 'desc'
-      });
-
-      saveSettingsToLocalStorage(state);
-    },
-    removeSortCriteria: (state, action: PayloadAction<number>) => {
-      if (action.payload > 0) {
-        // Don't remove first sort criteria
-        state.itemSort.splice(action.payload, 1);
-        saveSettingsToLocalStorage(state);
+      if (key === 'lazyLoading' || key === 'lazyLoadingKeepRendered') {
+        state.experimental[key] = !state.experimental[key];
+      } else if (key === 'lazyLoadingHeight' || key === 'lazyLoadingOffset') {
+        state.experimental[key] = value as number;
       }
     },
     toggleStreamerMode: (state) => {
       state.experimental.isStreamerMode = !state.experimental.isStreamerMode;
-      saveSettingsToLocalStorage(state);
     },
     toggleDebugMode: (state) => {
       state.experimental.isDebugMode = !state.experimental.isDebugMode;
-      saveSettingsToLocalStorage(state);
     },
     setSettings: (state, action: PayloadAction<SettingsState>) => {
       Object.assign(state, action.payload);
-      saveSettingsToLocalStorage(state);
     },
     updateQueueFetchInterval: (state, action: PayloadAction<number>) => {
       // Add this action
       state.queueFetchInterval = action.payload;
-      saveSettingsToLocalStorage(state);
     }
   }
 });
-
-// selectors
-const settingsSelector = (state: RootState) => state.settings;
-
-export const selectItemSort = (state: RootState) => settingsSelector(state).itemSort;
-export const selectIsStreamerMode = (state: RootState) =>
-  settingsSelector(state).experimental.isStreamerMode;
-export const selectExperimentalSettings = (state: RootState) =>
-  settingsSelector(state).experimental;
-export const selectTheme = (state: RootState) => settingsSelector(state).theme;
-export const selectQueueFetchInterval = (state: RootState) =>
-  settingsSelector(state).queueFetchInterval;
-export const selectShowAccountName = (state: RootState) =>
-  settingsSelector(state).displaySettings.showAccountName;
-export const selectDisplayIgnInQueue = (state: RootState) =>
-  settingsSelector(state).displaySettings.showIngameNameInQueue;
 
 export const {
   toggleSetting,
@@ -184,13 +127,56 @@ export const {
   toggleSortDirection,
   updateTheme,
   updateExperimentalSetting,
-  addSortCriteria,
-  removeSortCriteria,
   toggleStreamerMode,
   toggleDebugMode,
   updateQueueFetchInterval,
   setSettings
 } = settingsSlice.actions;
+
+// middleware listener to update localStorage when settings state changes
+export const settingsStateListener = createListenerMiddleware();
+
+settingsStateListener.startListening({
+  matcher: isAnyOf(
+    // all actions that modify settings state
+    toggleSetting,
+    updateItemSort,
+    toggleSortDirection,
+    updateTheme,
+    updateExperimentalSetting,
+    toggleStreamerMode,
+    toggleDebugMode,
+    setSettings,
+    updateQueueFetchInterval
+  ),
+  effect: (_action, listenerApi) => {
+    const state = listenerApi.getState() as RootState;
+    debug('[SettingsStateListener] Settings state has changed, saving to local storage');
+    saveSettingsToLocalStorage(state.settings);
+  }
+});
+
+// selectors
+const settingsSelector = (state: RootState) => state.settings;
+
+export const selectItemSort = (state: RootState) => settingsSelector(state).itemSort;
+
+export const selectIsStreamerMode = (state: RootState) =>
+  settingsSelector(state).experimental.isStreamerMode;
+
+export const selectExperimentalSettings = (state: RootState) =>
+  settingsSelector(state).experimental;
+
+export const selectTheme = (state: RootState) => settingsSelector(state).theme;
+
+export const selectQueueFetchInterval = (state: RootState) =>
+  settingsSelector(state).queueFetchInterval;
+
+export const selectShowAccountName = (state: RootState) =>
+  settingsSelector(state).displaySettings.showAccountName;
+
+export const selectDisplayIgnInQueue = (state: RootState) =>
+  settingsSelector(state).displaySettings.showIngameNameInQueue;
 
 // hook
 export function useSettings(): SettingsState {

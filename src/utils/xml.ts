@@ -1,3 +1,24 @@
+/**
+ * Converts an XML document or element into a JSON object.
+ *
+ * @param {any} xml - The XML document or element to convert.
+ * @returns {any} The JSON representation of the XML input.
+ *
+ * The function uses a helper object `X` with the following methods:
+ * - `toObj(xml: any)`: Recursively converts an XML node to a JSON object.
+ * - `innerXml(node: any)`: Serializes an XML node to a string.
+ * - `escape(txt: any)`: Escapes special characters in a string.
+ * - `removeWhite(e: any)`: Removes whitespace-only text nodes from an XML element.
+ *
+ * The conversion process handles different types of XML nodes, including:
+ * - Element nodes with attributes and child nodes.
+ * - Text nodes with non-whitespace content.
+ * - CDATA section nodes.
+ * - Document nodes.
+ *
+ * The resulting JSON object structure depends on the XML input structure, preserving
+ * attributes, text content, and nested elements.
+ */
 export function xmlToJson(xml: any) {
   var X = {
     toObj: function (xml: any) {
