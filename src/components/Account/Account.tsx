@@ -1,3 +1,4 @@
+import { useLaunchExaltMutation } from '@/api/tauri/tauriApi';
 import { CharListResponseUIModel } from '@api/models/charlist-response-ui-model';
 import { AccountModel } from '@cache/account-model';
 import useCrypto from '@hooks/crypto';
@@ -21,6 +22,7 @@ interface AccountProps {
 
 const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const dispatch = useAppDispatch();
+  const [launchAccount] = useLaunchExaltMutation();
 
   const { decrypt } = useCrypto();
 
@@ -43,6 +45,23 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const hasFilteredItems = () => {
     if (!activeFilters.length) return true; // no filters active
     return data?.account?.uniqueItems.some((item) => activeFilters.includes(item));
+  };
+
+  const handleLaunch = async () => {
+    const exaltPath = settings.experimental.exaltPath;
+    const deviceToken = settings.experimental.deviceToken;
+
+    if (!exaltPath || !deviceToken) {
+      console.error('Exalt path or device token not set in settings');
+      return;
+    }
+
+    await launchAccount({
+      exaltPath,
+      deviceToken,
+      guid: account.email,
+      password: decrypt(account.password)
+    }).unwrap();
   };
 
   const handleRefresh = async () => {
@@ -92,6 +111,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
             characterMaxAmount={data.maxNumChars}
             refreshButtonClicked={handleRefresh}
             skipQueueButtonClicked={handleSkipQueue}
+            launchButtonClicked={handleLaunch}
             showAccountInfo={settings.displaySettings.showAccountInfo}
             isRateLimited={isRateLimited}
           />

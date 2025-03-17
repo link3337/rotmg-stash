@@ -46,7 +46,9 @@ const initialState: SettingsState = {
     lazyLoadingHeight: 1000,
     lazyLoadingOffset: 1500,
     isStreamerMode: false,
-    isDebugMode: false
+    isDebugMode: false,
+    deviceToken: '',
+    exaltPath: ''
   },
   itemSort: {
     field: SortFields.id,
@@ -94,6 +96,9 @@ const settingsSlice = createSlice({
       action: PayloadAction<{ key: keyof ExperimentalSettings; value?: any }>
     ) => {
       const { key, value } = action.payload;
+      if (key === 'deviceToken' || key === 'exaltPath') {
+        state.experimental[key] = value as string;
+      }
       if (key === 'lazyLoading' || key === 'lazyLoadingKeepRendered') {
         state.experimental[key] = !state.experimental[key];
       } else if (key === 'lazyLoadingHeight' || key === 'lazyLoadingOffset') {
@@ -155,15 +160,21 @@ settingsStateListener.startListening({
 const settingsSelector = (state: RootState) => state.settings;
 
 export const selectItemSort = (state: RootState) => settingsSelector(state).itemSort;
+
 export const selectIsStreamerMode = (state: RootState) =>
   settingsSelector(state).experimental.isStreamerMode;
+
 export const selectExperimentalSettings = (state: RootState) =>
   settingsSelector(state).experimental;
+
 export const selectTheme = (state: RootState) => settingsSelector(state).theme;
+
 export const selectQueueFetchInterval = (state: RootState) =>
   settingsSelector(state).queueFetchInterval;
+
 export const selectShowAccountName = (state: RootState) =>
   settingsSelector(state).displaySettings.showAccountName;
+
 export const selectDisplayIgnInQueue = (state: RootState) =>
   settingsSelector(state).displaySettings.showIngameNameInQueue;
 

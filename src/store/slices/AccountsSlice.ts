@@ -1,5 +1,5 @@
 import { mapCharListResponse } from '@api/mapping/char-mapping';
-import { getAccount } from '@api/realmApi';
+import { getAccountData } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
 import { AccountExportModel } from '@cache/export-model';
 import {
@@ -132,20 +132,20 @@ export const refreshAccount = createAsyncThunk<
   );
 
   if (canMakeRequest(getState)) {
-    const backendResponse = await getAccount(account.email, account.password);
+    const backendResponse = await getAccountData(account.email, account.password);
     const result = processBackendResponse(backendResponse, dispatch);
 
     const updatedAccounts = accounts.map((acc: AccountModel) =>
       acc.id === account.id
         ? {
-          ...acc,
-          mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-          error: result.error,
-          lastSaved: new Date().toISOString(),
-          ...(isInQueue && {
-            queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-          })
-        }
+            ...acc,
+            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+            error: result.error,
+            lastSaved: new Date().toISOString(),
+            ...(isInQueue && {
+              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+            })
+          }
         : acc
     );
     // Optionally: If request succeeded, dispatch(clearRateLimit())

@@ -12,11 +12,15 @@ import {
   updateTheme
 } from '@store/slices/SettingsSlice';
 import { Theme } from '@tauri-apps/api/window';
+import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
+import { InputText } from 'primereact/inputtext';
+import { useState } from 'react';
+import DeviceTokenHelperDialog from './Helper/DeviceTokenHelperDialog';
 
 export interface DisplayOption {
   label: string;
@@ -86,6 +90,7 @@ const queueFetchIntervalOptions = Array.from({ length: 31 }, (_, i) => ({
 const Settings: React.FC = () => {
   const dispatch = useAppDispatch();
   const settings = useAppSelector((state) => state.settings);
+  const [showDeviceTokenHelp, setShowDeviceTokenHelp] = useState(false);
 
   const handleThemeChange = (e: DropdownChangeEvent) => {
     dispatch(updateTheme(e.value as Theme));
@@ -278,10 +283,71 @@ const Settings: React.FC = () => {
                   <small className="block text-500">Enable debug component</small>
                 </label>
               </div>
+
+              <div className="flex flex-column gap-2 mt-3">
+                <label htmlFor="exaltPath">Exalt Path</label>
+                <div className="p-inputgroup">
+                  <InputText
+                    id="exaltPath"
+                    value={settings?.experimental?.exaltPath || ''}
+                    readOnly
+                  />
+                  <Button
+                    icon="pi pi-folder-open"
+                    onClick={async () => {
+                      try {
+                        const selected = await open({
+                          directory: true,
+                          multiple: false,
+                          defaultPath: settings?.experimental?.exaltPath
+                        });
+
+                        if (selected) {
+                          dispatch(
+                            updateExperimentalSetting({
+                              key: 'exaltPath',
+                              value: selected as string
+                            })
+                          );
+                        }
+                      } catch (err) {
+                        console.error('Failed to open folder dialog:', err);
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-column gap-2 mt-3">
+                <div className="flex align-items-center gap-2">
+                  <label htmlFor="deviceToken">Device Token</label>
+                  <Button
+                    icon="pi pi-question-circle"
+                    className="p-button-text p-button-rounded p-button-sm"
+                    onClick={() => setShowDeviceTokenHelp(true)}
+                  />
+                </div>
+                <InputText
+                  id="deviceToken"
+                  value={settings?.experimental?.deviceToken}
+                  onChange={(e) =>
+                    dispatch(
+                      updateExperimentalSetting({
+                        key: 'deviceToken',
+                        value: e.target.value
+                      })
+                    )
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <DeviceTokenHelperDialog
+        showDeviceTokenHelp={showDeviceTokenHelp}
+        onClose={() => setShowDeviceTokenHelp(false)}
+      />
     </Card>
   );
 };

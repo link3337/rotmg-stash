@@ -22,12 +22,12 @@ export const libraries: Library[] = [
   },
   {
     name: 'Redux',
-    version: '2.5.1',
+    version: '2.6.1',
     icon: 'redux'
   },
   {
     name: 'PrimeReact',
-    version: '10.9.2',
+    version: '10.9.3',
     icon: 'primereact'
   }
 ];

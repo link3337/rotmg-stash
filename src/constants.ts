@@ -16,3 +16,9 @@ export const bagPositionMap: { [key: number]: string } = {
   8: '-78px -26px',
   9: '-0px -52px'
 };
+
+export const TAURI_COMMANDS = {
+  GET_ACCOUNT_DATA: 'get_account_data',
+  LAUNCH_EXALT: 'launch_exalt',
+  GET_SETTINGS: 'get_settings'
+};
