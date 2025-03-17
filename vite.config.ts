@@ -6,7 +6,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 const host = process.env.TAURI_DEV_HOST;
 
 const ReactCompilerConfig = {
-  target: '18'
+  target: '19'
 };
 
 // https://vitejs.dev/config/
