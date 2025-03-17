@@ -21,6 +21,7 @@ import {
 } from '@store/slices/QueueSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
 import { selectQueueFetchInterval } from '@store/slices/SettingsSlice';
+import { info } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
 import React, { useEffect, useMemo } from 'react';
 import './Queue.module.scss';
@@ -64,11 +65,11 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
     let intervalId: NodeJS.Timeout;
 
     const processQueueItem = async () => {
-      console.log('Processing next queue item');
+      info('Processing next queue item');
 
       // If user is rate limited, skip processing
       if (isRateLimited) {
-        console.log('User is currently rate limited. Skipping queue processing.');
+        info('User is currently rate limited. Skipping queue processing.');
         return;
       }
 

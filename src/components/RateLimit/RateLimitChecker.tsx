@@ -5,27 +5,27 @@ import { debug } from 'console';
 import React, { useEffect } from 'react';
 
 interface RateLimitCheckerProps {
-    timestamp: number | null;
+  timestamp: number | null;
 }
 
 const RateLimitChecker: React.FC<RateLimitCheckerProps> = ({ timestamp }) => {
-    const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        if (!timestamp) return;
+  useEffect(() => {
+    if (!timestamp) return;
 
-        const intervalId = setInterval(() => {
-            const elapsed = Date.now() - timestamp;
-            if (elapsed >= RATE_LIMIT_DURATION) {
-                debug('Rate limit expired - clearing rate limit');
-                dispatch(clearRateLimit());
-            }
-        }, 5000); // Check every 5 seconds
+    const intervalId = setInterval(() => {
+      const elapsed = Date.now() - timestamp;
+      if (elapsed >= RATE_LIMIT_DURATION) {
+        debug('Rate limit expired - clearing rate limit');
+        dispatch(clearRateLimit());
+      }
+    }, 5000); // Check every 5 seconds
 
-        return () => clearInterval(intervalId);
-    }, [timestamp, dispatch]);
+    return () => clearInterval(intervalId);
+  }, [timestamp, dispatch]);
 
-    return null;
+  return null;
 };
 
 export default RateLimitChecker;

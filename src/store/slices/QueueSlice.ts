@@ -1,6 +1,7 @@
 import { AccountModel } from '@cache/account-model';
 import { QueueItem } from '@components/Queue/Queue';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { info } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 import { refreshAccount, setAccountsQueueStatus } from './AccountsSlice';
@@ -65,7 +66,7 @@ export const processQueue = createAsyncThunk(
       (item: QueueItem) => item.status === QueueStatus.PROCESSING
     );
 
-    console.log(
+    info(
       `Queueing: ${pendingItem?.accountId} (${pendingItem?.accountIngameName || pendingItem?.accountName})`
     );
 

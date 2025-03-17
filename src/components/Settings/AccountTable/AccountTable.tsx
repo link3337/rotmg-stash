@@ -1,3 +1,4 @@
+import { useLaunchExaltMutation } from '@/api/tauri/tauriApi';
 import { RATE_LIMIT_DURATION } from '@/constants';
 import { AccountModel } from '@cache/account-model';
 import { AccountExportModel, ExportModel } from '@cache/export-model';
@@ -32,6 +33,7 @@ import PasswordEditor from './PasswordEditor';
 
 export const AccountTable: React.FC = () => {
   const dispatch = useAppDispatch();
+  const [launchAccount] = useLaunchExaltMutation();
 
   const { encrypt, decrypt } = useCrypto();
   const { items: accounts, loading } = useAccounts();
@@ -271,8 +273,62 @@ export const AccountTable: React.FC = () => {
     setShowExtraActions((prev) => !prev);
   };
 
+  const launchExalt = async (account: AccountModel) => {
+    try {
+      const exaltPath = settings?.experimental?.exaltPath;
+      const deviceToken = settings?.experimental?.deviceToken;
+
+      if (!exaltPath) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Exalt path not set. Please set it in Experimental Settings.'
+        });
+        return;
+      }
+
+      if (!deviceToken) {
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Device token not set. Please set it in Experimental Settings.'
+        });
+        return;
+      }
+
+      await launchAccount({
+        exaltPath,
+        deviceToken,
+        guid: account.email,
+        password: decrypt(account.password)
+      }).unwrap();
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Launched RotMG Exalt'
+      });
+    } catch (error) {
+      console.error('Failed to launch Exalt:', error);
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to launch RotMG Exalt'
+      });
+    }
+  };
+
   const actionBodyTemplate = (rowData: AccountModel, { rowIndex }: { rowIndex: number }) => (
     <div className="flex gap-2">
+      {settings?.experimental?.exaltPath && settings?.experimental?.deviceToken && (
+        <Button
+          icon="pi pi-play"
+          onClick={() => launchExalt(rowData)}
+          className="p-button-success p-button-text p-button-rounded"
+          disabled={loading[rowData.id]}
+          tooltip="Launch Exalt"
+        />
+      )}
       <Button
         icon={`pi pi-star${rowData.active ? '-fill' : ''}`}
         onClick={() => toggleActive(rowData)}
@@ -353,7 +409,6 @@ export const AccountTable: React.FC = () => {
       if (file.name.endsWith('.json')) {
         // Handle JSON file
         const importJSON: ExportModel = JSON.parse(text);
-        console.log(importJSON);
         const importAccountsRaw = importJSON.accounts;
 
         setPendingImport(importJSON);

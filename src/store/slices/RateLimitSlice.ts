@@ -24,7 +24,7 @@ const rateLimitSlice = createSlice({
       if (stored) {
         const ts = parseInt(stored);
         // Only consider it valid if it’s within the duration
-        if ((Date.now() - ts) < RATE_LIMIT_DURATION) {
+        if (Date.now() - ts < RATE_LIMIT_DURATION) {
           state.timestamp = ts;
         } else {
           state.timestamp = null;

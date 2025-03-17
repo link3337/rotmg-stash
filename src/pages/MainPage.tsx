@@ -22,7 +22,9 @@ const MainPage: React.FC = () => {
     <>
       <Queue accounts={activeAccounts} />
       {showTotals && <Totals accounts={activeAccounts} />}
-      {activeAccounts?.map((account) => <Account key={account.id} account={account} isRateLimited={rateLimit.isLimited} />)}
+      {activeAccounts?.map((account) => (
+        <Account key={account.id} account={account} isRateLimited={rateLimit.isLimited} />
+      ))}
     </>
   );
 };
