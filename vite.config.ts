@@ -6,7 +6,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 const host = process.env.TAURI_DEV_HOST;
 
 const ReactCompilerConfig = {
-  target: '18'
+  target: '19'
 };
 
 // https://vitejs.dev/config/
@@ -31,10 +31,10 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-          protocol: 'ws',
-          host,
-          port: 1421
-        }
+        protocol: 'ws',
+        host,
+        port: 1421
+      }
       : undefined,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
