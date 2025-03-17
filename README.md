@@ -47,15 +47,17 @@ npm run tauri dev
 To use RotMG Stash with the game client, you'll need to generate a device token. This is similar to Unity's [Device Unique Identifier](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SystemInfo-deviceUniqueIdentifier.html).
 
 1. Get the PowerShell script:
+
    - Download `generate-device-token.ps1` from the `scripts` folder, or
    - Copy the script content
 
 2. Run the script:
+
    ```powershell
    .\generate-device-token.ps1
    ```
 
-    or copy paste the content into Powershell
+   or copy paste the content into Powershell
 
 3. Configure RotMG Stash:
    - Copy the generated device token

@@ -1,7 +1,10 @@
 import { useAppSelector } from '@/hooks/redux';
 import { selectTheme } from '@/store/slices/SettingsSlice';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import React from 'react';
+import { Prism, SyntaxHighlighterProps } from 'react-syntax-highlighter';
 import { a11yDark, a11yLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+
+const SyntaxHighlighter = Prism as any as React.FC<SyntaxHighlighterProps>;
 
 interface CodeBlockProps {
   children?: null;
