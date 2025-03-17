@@ -55,37 +55,56 @@ async fn launch_exalt(
     guid: &str,
     password: &str,
 ) -> Result<String, String> {
-    // Build the path to the executable.
+    // Build and verify the path to the executable
     let mut exalt_path = PathBuf::from(exalt_path);
     exalt_path.push("RotMG Exalt.exe");
 
+    if !exalt_path.exists() {
+        let err = format!("Exalt executable not found at: {:?}", exalt_path);
+        log::error!("[Exalt] {}", err);
+        return Err(err);
+    }
+
     log::info!("[Exalt] Launching Exalt at: {:?}", exalt_path);
 
-    // get access token
+    // Get access token
     let access_token: AccessTokenResponse = get_access_token(guid, password, Some(device_token))
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            log::error!("[Exalt] Failed to get access token: {}", e);
+            e.to_string()
+        })?;
 
-    // Encode parameters in Base64.
+    // Encode parameters in Base64
     let encoded_guid = general_purpose::STANDARD.encode(guid);
-    let encoded_token = general_purpose::STANDARD.encode(access_token.access_token);
-    let encoded_timestamp = general_purpose::STANDARD.encode(access_token.timestamp);
-    let encoded_expiration = general_purpose::STANDARD.encode(access_token.expiration);
+    let encoded_token = general_purpose::STANDARD.encode(&access_token.access_token);
+    let encoded_timestamp = general_purpose::STANDARD.encode(&access_token.timestamp);
+    let encoded_expiration = general_purpose::STANDARD.encode(&access_token.expiration);
 
-    // Build the arguments string.
+    // Build the arguments string
     let args = format!(
         "data:{{platform:Deca,guid:{},token:{},tokenTimestamp:{},tokenExpiration:{},env:4}}",
         encoded_guid, encoded_token, encoded_timestamp, encoded_expiration
     );
 
-    // Start the process.
-    Command::new(&exalt_path)
-        .arg(args)
-        .spawn()
-        .map(|_| ())
-        .map_err(|e| e.to_string())?;
+    log::info!("[Exalt] Launching...");
 
-    Ok("Done".to_string())
+    // Start the process with explicit working directory
+    match Command::new(&exalt_path)
+        .current_dir(exalt_path.parent().ok_or("Invalid path")?)
+        .arg(&args)
+        .spawn()
+    {
+        Ok(_) => {
+            log::info!("[Exalt] Successfully launched");
+            Ok("Successfully launched Exalt".to_string())
+        }
+        Err(e) => {
+            let err = format!("Failed to launch Exalt: {}", e);
+            log::error!("[Exalt] {}", err);
+            Err(err)
+        }
+    }
 }
 
 /// Gets an access token from the RotMG API.
