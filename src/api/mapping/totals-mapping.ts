@@ -1,4 +1,5 @@
 import { TotalsUIModel } from '@/cache/totals-model';
+import { EMPTY_SLOT_ITEM_ID } from '@/constants';
 import { AccountUIModel } from '@api/models/account-ui-model';
 import { CharUIModel, ItemUIModel } from '@api/models/char-ui-model';
 
@@ -24,9 +25,15 @@ export function mapTotals(
   const iterateQuickslots = (items: ItemUIModel[]) => {
     items.forEach((item) => {
       const current = totals.get(item.itemId) || 0;
-      totals.set(item.itemId, current + (item.amount ?? 0));
+      // If itemId is -1 (empty slot), count as 1 regardless of amount
+      const amountToAdd = item.itemId === EMPTY_SLOT_ITEM_ID ? 1 : (item.amount ?? 0);
+      totals.set(item.itemId, current + amountToAdd);
     });
   };
+
+  // vault
+  const vault = account?.vault || [];
+  iterateItems(vault);
 
   // gifts
   const gifts = account?.gifts || [];
@@ -36,9 +43,13 @@ export function mapTotals(
   const temporaryGifts = account?.seasonalSpoils || [];
   iterateItems(temporaryGifts);
 
-  // vault
-  const vault = account?.vault || [];
-  iterateItems(vault);
+  // material storage
+  const materialStorage = account?.materialStorage || [];
+  iterateItems(materialStorage);
+
+  // potion storage
+  const potionStorage = account?.potions || [];
+  iterateItems(potionStorage);
 
   // characters
   const characters = charList || [];

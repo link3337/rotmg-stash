@@ -16,7 +16,7 @@ import { ItemList } from '../Item/ItemList';
 
 const calculateTotalsOfAllAccounts = (accounts: AccountModel[]): TotalsUIModel[] => {
   const totals = new Map<number, number>();
-  accounts.forEach((account) => {
+  accounts?.forEach((account) => {
     const mappedData = account.mappedData;
 
     if (!mappedData) return;

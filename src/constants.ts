@@ -4,6 +4,7 @@ export const localStorageTotalsKey = 'totals';
 export const localStorageRateLimitKey = 'rate_limit_expiration';
 
 export const RATE_LIMIT_DURATION = 300000; // 5 minutes in milliseconds
+export const EMPTY_SLOT_ITEM_ID = -1;
 
 export const bagPositionMap: { [key: number]: string } = {
   1: '-26px -0px',
