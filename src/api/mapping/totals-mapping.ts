@@ -1,8 +1,17 @@
+import { TotalsUIModel } from '@/cache/totals-model';
 import { AccountUIModel } from '@api/models/account-ui-model';
 import { CharUIModel, ItemUIModel } from '@api/models/char-ui-model';
 
-// todo: proper use of function
-export function mapTotals(accounts: AccountUIModel[], charList: CharUIModel[]): ItemUIModel[] {
+/**
+ * maps totals of one account
+ * @param accounts all accounts
+ * @param charList charlist of
+ * @returns totals ui model
+ */
+export function mapTotals(
+  account: AccountUIModel | null,
+  charList: CharUIModel[]
+): TotalsUIModel[] {
   const totals = new Map<number, number>();
 
   const iterateItems = (items: number[]) => {
@@ -19,30 +28,28 @@ export function mapTotals(accounts: AccountUIModel[], charList: CharUIModel[]): 
     });
   };
 
-  accounts.forEach((account) => {
-    // gifts
-    const gifts = account?.gifts || [];
-    iterateItems(gifts);
+  // gifts
+  const gifts = account?.gifts || [];
+  iterateItems(gifts);
 
-    // temporaryGifts
-    const temporaryGifts = account?.seasonalSpoils || [];
-    iterateItems(temporaryGifts);
+  // temporaryGifts
+  const temporaryGifts = account?.seasonalSpoils || [];
+  iterateItems(temporaryGifts);
 
-    // vault
-    const vault = account?.vault || [];
-    iterateItems(vault);
+  // vault
+  const vault = account?.vault || [];
+  iterateItems(vault);
 
-    // characters
-    const characters = charList || [];
-    characters.forEach((character) => {
-      // equipment
-      const equipment = character.equipment || [];
-      iterateItems(equipment);
+  // characters
+  const characters = charList || [];
+  characters.forEach((character) => {
+    // equipment
+    const equipment = character.equipment || [];
+    iterateItems(equipment);
 
-      // quickslots
-      const quickslots = character.equip_qs || [];
-      iterateQuickslots(quickslots);
-    });
+    // quickslots
+    const quickslots = character.equip_qs || [];
+    iterateQuickslots(quickslots);
   });
 
   return Array.from(totals).map(([itemId, amount]) => ({

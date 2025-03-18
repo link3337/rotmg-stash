@@ -14,9 +14,12 @@ import './App.scss';
 
 function App() {
   const dispatch = useAppDispatch();
+
   const { changeTheme } = useContext(PrimeReactContext);
+
   const theme = useAppSelector((state) => state.settings.theme);
   const isDebugMode = useAppSelector((state) => state.settings.experimental.isDebugMode);
+
   const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {

@@ -327,6 +327,7 @@ export const AccountTable: React.FC = () => {
           className="p-button-success p-button-text p-button-rounded"
           disabled={loading[rowData.id]}
           tooltip="Launch Exalt"
+          tooltipOptions={{ position: 'top' }}
         />
       )}
       <Button
@@ -334,6 +335,8 @@ export const AccountTable: React.FC = () => {
         onClick={() => toggleActive(rowData)}
         className={`p-button-text p-button-rounded ${rowData.active ? 'text-yellow-500' : 'text-gray-500'}`}
         disabled={loading[rowData.id]}
+        tooltip={rowData.active ? 'Deactivate' : 'Activate'}
+        tooltipOptions={{ position: 'top' }}
       />
       <Button
         icon="pi pi-refresh"
@@ -341,12 +344,16 @@ export const AccountTable: React.FC = () => {
         className="p-button-text p-button-rounded"
         loading={loading[rowData.id]}
         disabled={loading[rowData.id] || isRateLimited}
+        tooltip="Refresh"
+        tooltipOptions={{ position: 'top' }}
       />
       <Button
         icon="pi pi-trash"
         className="p-button-danger p-button-text p-button-rounded"
         onClick={() => confirmDelete(rowData)}
         disabled={loading[rowData.id]}
+        tooltip="Delete"
+        tooltipOptions={{ position: 'top' }}
       />
       {showExtraActions && (
         <>
