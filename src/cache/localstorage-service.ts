@@ -9,7 +9,6 @@ import { TotalsUIModel } from './totals-model';
 
 /**
  * Saves the provided accounts to local storage.
- *
  * @param updatedAccounts - An array of `AccountModel` objects to be saved.
  */
 export function saveAccountsToLocalStorage(updatedAccounts: AccountModel[]) {
@@ -18,7 +17,6 @@ export function saveAccountsToLocalStorage(updatedAccounts: AccountModel[]) {
 
 /**
  * Retrieves the accounts stored in local storage.
- *
  * @returns An array of `AccountModel` objects, or an empty array if no accounts are found.
  */
 export function getAccountsFromLocalStorage(): AccountModel[] {
@@ -28,7 +26,6 @@ export function getAccountsFromLocalStorage(): AccountModel[] {
 
 /**
  * Saves the provided settings to local storage.
- *
  * @param settings - A `SettingsModel` object to be saved.
  */
 export function saveSettingsToLocalStorage(settings: SettingsModel) {
@@ -37,7 +34,6 @@ export function saveSettingsToLocalStorage(settings: SettingsModel) {
 
 /**
  * Retrieves the settings stored in local storage.
- *
  * @returns A `SettingsModel` object, or `null` if no settings are found.
  */
 export function getSettingsFromLocalStorage(): SettingsModel | null {
@@ -45,13 +41,9 @@ export function getSettingsFromLocalStorage(): SettingsModel | null {
   return storedSettings ? JSON.parse(storedSettings) : null;
 }
 
-// todo: make use of this (later)
 /**
  * Saves the provided totals to local storage.
- *
  * @param totals - A `TotalsModel` object to be saved.
- *
- * @todo Update the implementation to use the correct key for storing totals.
  */
 export function saveTotalsToLocalStorage(totals: TotalsUIModel[]) {
   localStorage.setItem(localStorageTotalsKey, JSON.stringify(totals));
@@ -59,7 +51,6 @@ export function saveTotalsToLocalStorage(totals: TotalsUIModel[]) {
 
 /**
  * Retrieves the totals stored in local storage.
- *
  * @returns A `TotalsModel` object, or `null` if no totals are found.
  */
 export function getTotalsFromLocalStorage(): TotalsUIModel[] {

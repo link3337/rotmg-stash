@@ -50,54 +50,57 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const [showHighlighted, setShowHighlighted] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const sortItems = useCallback((
-    toBeSortedItems: TotalsUIModel[],
-    sort: { field: SortFields; direction: 'asc' | 'desc' }
-  ): TotalsUIModel[] => {
-    return [...toBeSortedItems].sort((a, b) => {
-      const itemA = items[a.itemId];
-      const itemB = items[b.itemId];
+  const sortItems = useCallback(
+    (
+      toBeSortedItems: TotalsUIModel[],
+      sort: { field: SortFields; direction: 'asc' | 'desc' }
+    ): TotalsUIModel[] => {
+      return [...toBeSortedItems].sort((a, b) => {
+        const itemA = items[a.itemId];
+        const itemB = items[b.itemId];
 
-      switch (sort.field) {
-        case SortFields.id:
-          return sort.direction === 'asc' ? a?.itemId - b?.itemId : b?.itemId - a?.itemId;
-        case SortFields.name:
-          return sort.direction === 'asc'
-            ? itemA?.name.localeCompare(itemB?.name)
-            : itemB?.name.localeCompare(itemA?.name);
-        case SortFields.slotType:
-          return sort.direction === 'asc'
-            ? Number(itemA?.slotType) - Number(itemB?.slotType)
-            : Number(itemB?.slotType) - Number(itemA?.slotType);
-        case SortFields.fameBonus:
-          return sort.direction === 'asc'
-            ? itemA?.fameBonus - itemB?.fameBonus
-            : itemB?.fameBonus - itemA?.fameBonus;
-        case SortFields.feedPower:
-          return sort.direction === 'asc'
-            ? itemA?.feedPower - itemB?.feedPower
-            : itemB?.feedPower - itemA?.feedPower;
-        case SortFields.bagType:
-          return sort.direction === 'asc'
-            ? itemA?.bagType - itemB?.bagType
-            : itemB?.bagType - itemA?.bagType;
-        case SortFields.soulbound:
-          return sort.direction === 'asc'
-            ? Number(itemA?.isSoulbound) - Number(itemB?.isSoulbound)
-            : Number(itemB?.isSoulbound) - Number(itemA?.isSoulbound);
-        case SortFields.tier:
-          return sort.direction === 'asc'
-            ? Number(itemA?.tier) - Number(itemB?.tier)
-            : Number(itemB?.tier) - Number(itemA?.tier);
-        case SortFields.shiny:
-          return sort.direction === 'asc'
-            ? Number(itemA?.isShiny) - Number(itemB?.isShiny)
-            : Number(itemB?.isShiny) - Number(itemA?.isShiny);
-        default:
-          return 0;
-      }
-    });
-  }, []);
+        switch (sort.field) {
+          case SortFields.id:
+            return sort.direction === 'asc' ? a?.itemId - b?.itemId : b?.itemId - a?.itemId;
+          case SortFields.name:
+            return sort.direction === 'asc'
+              ? itemA?.name.localeCompare(itemB?.name)
+              : itemB?.name.localeCompare(itemA?.name);
+          case SortFields.slotType:
+            return sort.direction === 'asc'
+              ? Number(itemA?.slotType) - Number(itemB?.slotType)
+              : Number(itemB?.slotType) - Number(itemA?.slotType);
+          case SortFields.fameBonus:
+            return sort.direction === 'asc'
+              ? itemA?.fameBonus - itemB?.fameBonus
+              : itemB?.fameBonus - itemA?.fameBonus;
+          case SortFields.feedPower:
+            return sort.direction === 'asc'
+              ? itemA?.feedPower - itemB?.feedPower
+              : itemB?.feedPower - itemA?.feedPower;
+          case SortFields.bagType:
+            return sort.direction === 'asc'
+              ? itemA?.bagType - itemB?.bagType
+              : itemB?.bagType - itemA?.bagType;
+          case SortFields.soulbound:
+            return sort.direction === 'asc'
+              ? Number(itemA?.isSoulbound) - Number(itemB?.isSoulbound)
+              : Number(itemB?.isSoulbound) - Number(itemA?.isSoulbound);
+          case SortFields.tier:
+            return sort.direction === 'asc'
+              ? Number(itemA?.tier) - Number(itemB?.tier)
+              : Number(itemB?.tier) - Number(itemA?.tier);
+          case SortFields.shiny:
+            return sort.direction === 'asc'
+              ? Number(itemA?.isShiny) - Number(itemB?.isShiny)
+              : Number(itemB?.isShiny) - Number(itemA?.isShiny);
+          default:
+            return 0;
+        }
+      });
+    },
+    []
+  );
 
   const handleClearFilters = () => {
     dispatch(clearFilters());
@@ -128,9 +131,10 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
       }
 
       // filter items based on active filters
-      const filtered = activeFilters.length > 0
-        ? sortedItems.filter((item) => activeFilters.includes(item.itemId))
-        : sortedItems;
+      const filtered =
+        activeFilters.length > 0
+          ? sortedItems.filter((item) => activeFilters.includes(item.itemId))
+          : sortedItems;
 
       setFilteredItems(filtered);
     }
@@ -141,7 +145,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
     const newNameMap = new Map<string, number>();
 
     // add base item names
-    totalItems.forEach(item => {
+    totalItems.forEach((item) => {
       const itemData = items[item.itemId];
       if (itemData?.name) {
         newNameMap.set(itemData.name.toLowerCase(), item.itemId);
@@ -150,7 +154,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
     // add item aliases for existing items
     itemAliases.forEach((itemId, alias) => {
-      if (totalItems.some(item => item.itemId === itemId)) {
+      if (totalItems.some((item) => item.itemId === itemId)) {
         newNameMap.set(alias.toLowerCase(), itemId);
       }
     });
