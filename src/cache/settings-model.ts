@@ -2,15 +2,15 @@ import { SortFields } from '@store/slices/SettingsSlice';
 
 export interface SettingsModel {
   itemSort: SortCriteria;
-  displaySettings: DisplaySettings;
-  experimental: ExperimentalSettings;
+  displaySettings: DisplaySettingsModel;
+  experimental: ExperimentalSettingsModel;
   theme: Theme;
   queueFetchInterval: number;
 }
 
 export type Theme = 'light' | 'dark';
 
-export interface DisplaySettings {
+export interface DisplaySettingsModel {
   showTotals: boolean;
   showAccountInfo: boolean;
   showExalts: boolean;
@@ -32,7 +32,7 @@ export interface SortCriteria {
   direction: 'asc' | 'desc';
 }
 
-export interface ExperimentalSettings {
+export interface ExperimentalSettingsModel {
   lazyLoading: boolean;
   lazyLoadingKeepRendered: boolean;
   lazyLoadingHeight?: number;

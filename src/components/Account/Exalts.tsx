@@ -28,7 +28,7 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
 
   return (
     <>
-      <h2>Exalts</h2>
+      <h2 style={{ textAlign: 'center' }}>Exalts</h2>
       <div className={styles.exalts}>
         <table>
           <thead>

@@ -119,9 +119,9 @@ export const updateQueue = createAsyncThunk(
     const updatedQueueItems = queueState.items.map((acc: QueueItem) =>
       acc.accountId === accountId
         ? {
-            ...acc,
-            status: queueStatus
-          }
+          ...acc,
+          status: queueStatus
+        }
         : acc
     );
 

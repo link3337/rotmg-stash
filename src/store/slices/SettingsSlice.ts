@@ -2,7 +2,12 @@ import {
   getSettingsFromLocalStorage,
   saveSettingsToLocalStorage
 } from '@cache/localstorage-service';
-import { DisplaySettings, ExperimentalSettings, SettingsModel, Theme } from '@cache/settings-model';
+import {
+  DisplaySettingsModel,
+  ExperimentalSettingsModel,
+  SettingsModel,
+  Theme
+} from '@cache/settings-model';
 import { createListenerMiddleware, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
 import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
@@ -69,7 +74,7 @@ const settingsSlice = createSlice({
   name: featureKey,
   initialState: loadSettings(),
   reducers: {
-    toggleSetting: (state, action: PayloadAction<keyof DisplaySettings>) => {
+    toggleSetting: (state, action: PayloadAction<keyof DisplaySettingsModel>) => {
       state.displaySettings[action.payload] = !state.displaySettings[action.payload];
     },
     updateItemSort: (
@@ -93,7 +98,7 @@ const settingsSlice = createSlice({
     },
     updateExperimentalSetting: (
       state,
-      action: PayloadAction<{ key: keyof ExperimentalSettings; value?: any }>
+      action: PayloadAction<{ key: keyof ExperimentalSettingsModel; value?: any }>
     ) => {
       const { key, value } = action.payload;
       if (key === 'deviceToken' || key === 'exaltPath') {
@@ -115,7 +120,6 @@ const settingsSlice = createSlice({
       Object.assign(state, action.payload);
     },
     updateQueueFetchInterval: (state, action: PayloadAction<number>) => {
-      // Add this action
       state.queueFetchInterval = action.payload;
     }
   }

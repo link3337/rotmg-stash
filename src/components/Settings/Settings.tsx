@@ -1,30 +1,23 @@
-import { DisplaySettings } from '@cache/settings-model';
+import { DisplaySettingsModel } from '@cache/settings-model';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import {
   SortFields,
-  toggleDebugMode,
   toggleSetting,
   toggleSortDirection,
-  toggleStreamerMode,
-  updateExperimentalSetting,
   updateItemSort,
   updateQueueFetchInterval,
   updateTheme
 } from '@store/slices/SettingsSlice';
 import { Theme } from '@tauri-apps/api/window';
-import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
-import { InputNumber } from 'primereact/inputnumber';
-import { InputText } from 'primereact/inputtext';
-import { useState } from 'react';
-import DeviceTokenHelperDialog from './Helper/DeviceTokenHelperDialog';
+import ExperimentalSettings from './Experimental/ExperimentalSettings';
 
 export interface DisplayOption {
   label: string;
-  key: keyof DisplaySettings;
+  key: keyof DisplaySettingsModel;
   tooltip?: string;
 }
 
@@ -90,7 +83,6 @@ const queueFetchIntervalOptions = Array.from({ length: 31 }, (_, i) => ({
 const Settings: React.FC = () => {
   const dispatch = useAppDispatch();
   const settings = useAppSelector((state) => state.settings);
-  const [showDeviceTokenHelp, setShowDeviceTokenHelp] = useState(false);
 
   const handleThemeChange = (e: DropdownChangeEvent) => {
     dispatch(updateTheme(e.value as Theme));
@@ -184,170 +176,9 @@ const Settings: React.FC = () => {
         </div>
 
         <div className="col-12 mt-3">
-          <h4>
-            <i className="pi pi-exclamation-triangle text-yellow-500 mr-2" />
-            Experimental Features
-          </h4>
-          <div className="p-3 border-2 border-yellow-500 border-round">
-            <small className="text-yellow-500 block mb-3">
-              Warning: These features are experimental and may not work as expected.
-            </small>
-            <div className="flex flex-column gap-2">
-              <div className="flex align-items-center">
-                <Checkbox
-                  inputId="lazyLoading"
-                  checked={settings?.experimental?.lazyLoading}
-                  onChange={() => dispatch(updateExperimentalSetting({ key: 'lazyLoading' }))}
-                />
-                <label htmlFor="lazyLoading" className="ml-2">
-                  Lazy Loading
-                  <small className="block text-500">
-                    Only render accounts when they are visible in viewport
-                  </small>
-                </label>
-              </div>
-
-              {settings.experimental.lazyLoading && (
-                <div className="flex gap-3 ml-4 mt-2">
-                  <div className="flex flex-column gap-2">
-                    <label htmlFor="lazyLoadingHeight">Default Height</label>
-                    <InputNumber
-                      id="lazyLoadingHeight"
-                      useGrouping={false}
-                      suffix="px"
-                      value={settings?.experimental?.lazyLoadingHeight}
-                      onChange={(e) =>
-                        dispatch(
-                          updateExperimentalSetting({
-                            key: 'lazyLoadingHeight',
-                            value: e.value
-                          })
-                        )
-                      }
-                    />
-                  </div>
-
-                  <div className="flex flex-column gap-2">
-                    <label htmlFor="lazyLoadingOffset">Visible Offset</label>
-                    <InputNumber
-                      id="lazyLoadingOffset"
-                      useGrouping={false}
-                      suffix="px"
-                      value={settings?.experimental?.lazyLoadingOffset}
-                      onChange={(e) =>
-                        dispatch(
-                          updateExperimentalSetting({
-                            key: 'lazyLoadingOffset',
-                            value: e.value
-                          })
-                        )
-                      }
-                    />
-                  </div>
-
-                  <div className="flex align-items-center gap-2 mt-5">
-                    <Checkbox
-                      inputId="lazyLoadingKeepRendered"
-                      checked={settings?.experimental?.lazyLoadingKeepRendered}
-                      onChange={() =>
-                        dispatch(updateExperimentalSetting({ key: 'lazyLoadingKeepRendered' }))
-                      }
-                    />
-                    <label htmlFor="lazyLoadingKeepRendered" className="ml-2">
-                      Keep components rendered even when not visible
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex align-items-center gap-2">
-                <Checkbox
-                  checked={settings.experimental.isStreamerMode}
-                  onChange={() => dispatch(toggleStreamerMode())}
-                  id="streamerMode"
-                />
-                <label htmlFor="streamerMode" className="ml-2">
-                  Streamer Mode
-                  <small className="block text-500">Mask email addresses for privacy</small>
-                </label>
-              </div>
-
-              <div className="flex align-items-center gap-2">
-                <Checkbox
-                  checked={settings.experimental.isDebugMode}
-                  onChange={() => dispatch(toggleDebugMode())}
-                  id="debug"
-                />
-                <label htmlFor="debug" className="ml-2">
-                  Debug
-                  <small className="block text-500">Enable debug component</small>
-                </label>
-              </div>
-
-              <div className="flex flex-column gap-2 mt-3">
-                <label htmlFor="exaltPath">Exalt Path</label>
-                <div className="p-inputgroup">
-                  <InputText
-                    id="exaltPath"
-                    value={settings?.experimental?.exaltPath || ''}
-                    readOnly
-                  />
-                  <Button
-                    icon="pi pi-folder-open"
-                    onClick={async () => {
-                      try {
-                        const selected = await open({
-                          directory: true,
-                          multiple: false,
-                          defaultPath: settings?.experimental?.exaltPath
-                        });
-
-                        if (selected) {
-                          dispatch(
-                            updateExperimentalSetting({
-                              key: 'exaltPath',
-                              value: selected as string
-                            })
-                          );
-                        }
-                      } catch (err) {
-                        console.error('Failed to open folder dialog:', err);
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-column gap-2 mt-3">
-                <div className="flex align-items-center gap-2">
-                  <label htmlFor="deviceToken">Device Token</label>
-                  <Button
-                    icon="pi pi-question-circle"
-                    className="p-button-text p-button-rounded p-button-sm"
-                    onClick={() => setShowDeviceTokenHelp(true)}
-                  />
-                </div>
-                <InputText
-                  id="deviceToken"
-                  value={settings?.experimental?.deviceToken}
-                  onChange={(e) =>
-                    dispatch(
-                      updateExperimentalSetting({
-                        key: 'deviceToken',
-                        value: e.target.value
-                      })
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
+          <ExperimentalSettings experimentalSettings={settings?.experimental} />
         </div>
       </div>
-      <DeviceTokenHelperDialog
-        showDeviceTokenHelp={showDeviceTokenHelp}
-        onClose={() => setShowDeviceTokenHelp(false)}
-      />
     </Card>
   );
 };
