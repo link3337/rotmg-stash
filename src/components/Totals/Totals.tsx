@@ -162,6 +162,13 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
     setTotalItemsNameMap(newNameMap);
   }, [totalItems]);
 
+  // reset showHighlighted when filters are cleared
+  useEffect(() => {
+    if (activeFilters.length === 0 && showHighlighted) {
+      setShowHighlighted(false);
+    }
+  }, [activeFilters]);
+
   return (
     <div>
       <div className="flex container justify-content-end">
@@ -172,7 +179,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
           <Button className="mr-2" label="Clear" onClick={handleClearFilters} />
         )}
         <Button
-          disabled={!showHighlighted && filteredItems.length === 0}
+          disabled={activeFilters.length === 0}
           label={showHighlighted ? 'Show All' : 'Show Highlighted Only'}
           onClick={() => setShowHighlighted(!showHighlighted)}
         />
