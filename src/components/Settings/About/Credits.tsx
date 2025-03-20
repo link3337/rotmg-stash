@@ -3,7 +3,7 @@ import { Card } from 'primereact/card';
 const Credits: React.FC = () => {
   return (
     <Card className="mt-3">
-      <h3 className="text-center mb-4">Hall of Fame</h3>
+      <h3 className="text-center mb-4">🐐 Goats 🐐</h3>
       <div className="grid">
         <div className="col-6">
           <div className="surface-card p-3 border-round">
