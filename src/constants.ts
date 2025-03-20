@@ -18,6 +18,18 @@ export const bagPositionMap: { [key: number]: string } = {
   9: '-0px -52px'
 };
 
+export const backendErrorMessages = {
+  TRY_AGAIN_LATER: 'Try again later',
+  NO_INTERNET: 'dns error: No such host is known',
+  UNKNOWN_ERROR: 'An unknown error occurred'
+};
+
+export const displayErrorMessages = {
+  NO_INTERNET: 'No internet connection',
+  RATE_LIMITED: 'Rate limited. Please wait 5 minutes before trying again.',
+  UNKNOWN_ERROR: 'An unknown error occurred. Please try again later.'
+};
+
 export const TAURI_COMMANDS = {
   GET_ACCOUNT_DATA: 'get_account_data',
   LAUNCH_EXALT: 'launch_exalt',
