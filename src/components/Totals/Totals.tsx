@@ -2,7 +2,7 @@ import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/loc
 import { SortCriteria } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
 import { itemAliases } from '@/realm/renders/aliases';
-import { booleanSort } from '@/utils/sorting';
+import { booleanSort, numberSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
@@ -35,6 +35,7 @@ const calculateTotalsOfAllAccounts = (accounts: AccountModel[]): TotalsUIModel[]
   }));
 };
 
+
 interface TotalProps {
   accounts: AccountModel[];
 }
@@ -65,28 +66,14 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
             return sort.direction === 'asc'
               ? itemA?.name.localeCompare(itemB?.name)
               : itemB?.name.localeCompare(itemA?.name);
-          case SortFields.slotType:
-            return sort.direction === 'asc'
-              ? Number(itemA?.slotType) - Number(itemB?.slotType)
-              : Number(itemB?.slotType) - Number(itemA?.slotType);
           case SortFields.fameBonus:
-            return sort.direction === 'asc'
-              ? itemA?.fameBonus - itemB?.fameBonus
-              : itemB?.fameBonus - itemA?.fameBonus;
+            return numberSort(itemA?.fameBonus, itemB?.fameBonus, sort.direction);
           case SortFields.feedPower:
-            return sort.direction === 'asc'
-              ? itemA?.feedPower - itemB?.feedPower
-              : itemB?.feedPower - itemA?.feedPower;
-          case SortFields.bagType:
-            return sort.direction === 'asc'
-              ? itemA?.bagType - itemB?.bagType
-              : itemB?.bagType - itemA?.bagType;
+            return numberSort(itemA?.feedPower, itemB?.feedPower, sort.direction);
           case SortFields.soulbound:
             return booleanSort(itemA?.isSoulbound, itemB?.isSoulbound, sort.direction);
           case SortFields.tier:
-            return sort.direction === 'asc'
-              ? Number(itemA?.tier) - Number(itemB?.tier)
-              : Number(itemB?.tier) - Number(itemA?.tier);
+            return numberSort(itemA?.tier, itemB?.tier, sort.direction);
           case SortFields.shiny:
             return booleanSort(itemA?.isShiny, itemB?.isShiny, sort.direction);
           default:
