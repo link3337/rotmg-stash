@@ -138,12 +138,12 @@ export const refreshAccount = createAsyncThunk<
       const updatedAccounts = accounts.map((acc: AccountModel) =>
         acc.id === account.id
           ? {
-            ...acc,
-            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-            error: result.error,
-            lastSaved: new Date().toISOString(),
-            queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-          }
+              ...acc,
+              mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+              error: result.error,
+              lastSaved: new Date().toISOString(),
+              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+            }
           : acc
       );
 

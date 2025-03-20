@@ -117,6 +117,7 @@ const Settings: React.FC = () => {
                 options={themeOptions}
                 onChange={handleThemeChange}
                 className="w-full"
+                appendTo="self"
               />
             </div>
 
@@ -156,6 +157,7 @@ const Settings: React.FC = () => {
                 optionValue="value"
                 placeholder="Select sort field"
                 className="flex-grow-1"
+                appendTo="self"
               />
               <Button
                 icon={`pi pi-sort-${settings.itemSort.direction === 'asc' ? 'up' : 'down'}`}
@@ -171,6 +173,7 @@ const Settings: React.FC = () => {
               options={queueFetchIntervalOptions}
               onChange={(e) => dispatch(updateQueueFetchInterval(e.value))}
               placeholder="Select Interval"
+              appendTo="self"
             />
           </div>
         </div>
