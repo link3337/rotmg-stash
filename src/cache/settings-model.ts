@@ -1,3 +1,4 @@
+import { SortDirection } from '@/utils/sorting';
 import { SortFields } from '@store/slices/SettingsSlice';
 
 export interface SettingsModel {
@@ -29,7 +30,7 @@ export interface DisplaySettingsModel {
 
 export interface SortCriteria {
   field: SortFields;
-  direction: 'asc' | 'desc';
+  direction: SortDirection;
 }
 
 export interface ExperimentalSettingsModel {

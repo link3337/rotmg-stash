@@ -1,6 +1,8 @@
 import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/localstorage-service';
+import { SortCriteria } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
 import { itemAliases } from '@/realm/renders/aliases';
+import { booleanSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
@@ -51,10 +53,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const [loading, setLoading] = useState(true);
 
   const sortItems = useCallback(
-    (
-      toBeSortedItems: TotalsUIModel[],
-      sort: { field: SortFields; direction: 'asc' | 'desc' }
-    ): TotalsUIModel[] => {
+    (toBeSortedItems: TotalsUIModel[], sort: SortCriteria): TotalsUIModel[] => {
       return [...toBeSortedItems].sort((a, b) => {
         const itemA = items[a.itemId];
         const itemB = items[b.itemId];
@@ -83,17 +82,13 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
               ? itemA?.bagType - itemB?.bagType
               : itemB?.bagType - itemA?.bagType;
           case SortFields.soulbound:
-            return sort.direction === 'asc'
-              ? Number(itemA?.isSoulbound) - Number(itemB?.isSoulbound)
-              : Number(itemB?.isSoulbound) - Number(itemA?.isSoulbound);
+            return booleanSort(itemA?.isSoulbound, itemB?.isSoulbound, sort.direction);
           case SortFields.tier:
             return sort.direction === 'asc'
               ? Number(itemA?.tier) - Number(itemB?.tier)
               : Number(itemB?.tier) - Number(itemA?.tier);
           case SortFields.shiny:
-            return sort.direction === 'asc'
-              ? Number(itemA?.isShiny) - Number(itemB?.isShiny)
-              : Number(itemB?.isShiny) - Number(itemA?.isShiny);
+            return booleanSort(itemA?.isShiny, itemB?.isShiny, sort.direction);
           default:
             return 0;
         }
@@ -125,7 +120,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
       // sort the items
       const sortedItems = sortItems(totalItems, itemSort);
 
-      // update totalItems if sort changed
+      // update totalItems if sort changed the order
       if (JSON.stringify(sortedItems) !== JSON.stringify(totalItems)) {
         setTotalItems(sortedItems);
       }
