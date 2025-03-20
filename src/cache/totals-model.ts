@@ -1,3 +1,6 @@
 import { ItemUIModel } from '@api/models/char-ui-model';
 
-export interface TotalsModel extends ItemUIModel {}
+export interface TotalsUIModel extends ItemUIModel {
+  // amount is required here and not optional, if an item doesn't exist it was never added to the set
+  amount: number;
+}

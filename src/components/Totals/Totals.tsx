@@ -1,62 +1,31 @@
-import { ItemUIModel } from '@api/models/char-ui-model';
+import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/localstorage-service';
+import { SortCriteria } from '@/cache/settings-model';
+import { TotalsUIModel } from '@/cache/totals-model';
+import { itemAliases } from '@/realm/renders/aliases';
+import { booleanSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
 import { items } from '@realm/renders/items';
 import { clearFilters, selectSelectedItems } from '@store/slices/FilterSlice';
 import { selectItemSort, SortFields } from '@store/slices/SettingsSlice';
-import { itemNameMap } from '@utils/item-name-map';
+import { debug } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
 import { Skeleton } from 'primereact/skeleton';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { itemAliases } from '../../realm/renders/aliases';
 import { ItemList } from '../Item/ItemList';
 
-const calculateTotals = (accounts: AccountModel[]): ItemUIModel[] => {
+const calculateTotalsOfAllAccounts = (accounts: AccountModel[]): TotalsUIModel[] => {
   const totals = new Map<number, number>();
+  accounts?.forEach((account) => {
+    const mappedData = account.mappedData;
 
-  const iterateItems = (items: number[]) => {
-    items.forEach((item) => {
-      const current = totals.get(item) || 0;
-      totals.set(item, current + 1);
-    });
-  };
+    if (!mappedData) return;
 
-  const iterateQuickslots = (items: ItemUIModel[]) => {
-    items.forEach((item) => {
+    mappedData?.totals?.forEach((item) => {
       const current = totals.get(item.itemId) || 0;
-      totals.set(item.itemId, current + (item.amount ?? 0));
-    });
-  };
-
-  accounts.forEach((account) => {
-    // gifts
-    const gifts = account?.mappedData?.account?.gifts || [];
-    iterateItems(gifts);
-
-    // temporaryGifts
-    const temporaryGifts = account?.mappedData?.account?.seasonalSpoils || [];
-    iterateItems(temporaryGifts);
-
-    // potion storage
-    const potionStorage = account?.mappedData?.account?.potions || [];
-    iterateItems(potionStorage);
-
-    // vault
-    const vault = account?.mappedData?.account?.vault || [];
-    iterateItems(vault);
-
-    // characters
-    const characters = account?.mappedData?.charList || [];
-    characters.forEach((character) => {
-      // equipment
-      const equipment = character.equipment || [];
-      iterateItems(equipment);
-
-      // quickslots
-      const quickslots = character.equip_qs || [];
-      iterateQuickslots(quickslots);
+      totals.set(item.itemId, current + item.amount);
     });
   });
 
@@ -73,92 +42,127 @@ interface TotalProps {
 const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const dispatch = useDispatch();
 
+  const [totalItems, setTotalItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
+  const [filteredItems, setFilteredItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
+  const [totalItemsNameMap, setTotalItemsNameMap] = useState<Map<string, number>>(new Map());
+
   const activeFilters = useAppSelector(selectSelectedItems);
   const itemSort = useAppSelector(selectItemSort);
 
   const [showHighlighted, setShowHighlighted] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  let totalItems = calculateTotals(accounts);
-  let totalItemsNameMap = new Map<string, number>();
+  const sortItems = useCallback(
+    (toBeSortedItems: TotalsUIModel[], sort: SortCriteria): TotalsUIModel[] => {
+      return [...toBeSortedItems].sort((a, b) => {
+        const itemA = items[a.itemId];
+        const itemB = items[b.itemId];
 
-  totalItemsNameMap = new Map<string, number>(
-    Array.from(itemNameMap.entries()).filter(([_name, id]) =>
-      totalItems.some((item) => item.itemId === id)
-    )
+        switch (sort.field) {
+          case SortFields.id:
+            return sort.direction === 'asc' ? a?.itemId - b?.itemId : b?.itemId - a?.itemId;
+          case SortFields.name:
+            return sort.direction === 'asc'
+              ? itemA?.name.localeCompare(itemB?.name)
+              : itemB?.name.localeCompare(itemA?.name);
+          case SortFields.slotType:
+            return sort.direction === 'asc'
+              ? Number(itemA?.slotType) - Number(itemB?.slotType)
+              : Number(itemB?.slotType) - Number(itemA?.slotType);
+          case SortFields.fameBonus:
+            return sort.direction === 'asc'
+              ? itemA?.fameBonus - itemB?.fameBonus
+              : itemB?.fameBonus - itemA?.fameBonus;
+          case SortFields.feedPower:
+            return sort.direction === 'asc'
+              ? itemA?.feedPower - itemB?.feedPower
+              : itemB?.feedPower - itemA?.feedPower;
+          case SortFields.bagType:
+            return sort.direction === 'asc'
+              ? itemA?.bagType - itemB?.bagType
+              : itemB?.bagType - itemA?.bagType;
+          case SortFields.soulbound:
+            return booleanSort(itemA?.isSoulbound, itemB?.isSoulbound, sort.direction);
+          case SortFields.tier:
+            return sort.direction === 'asc'
+              ? Number(itemA?.tier) - Number(itemB?.tier)
+              : Number(itemB?.tier) - Number(itemA?.tier);
+          case SortFields.shiny:
+            return booleanSort(itemA?.isShiny, itemB?.isShiny, sort.direction);
+          default:
+            return 0;
+        }
+      });
+    },
+    []
   );
-
-  // add aliases for items in search
-  // e.g. "Potato" -> Magical Lodestone B)
-  itemAliases.forEach((itemId, alias) => {
-    if (Array.from(totalItemsNameMap.values()).includes(itemId)) {
-      totalItemsNameMap.set(alias, itemId);
-    }
-  });
-
-  const filteredItems = totalItems.filter((item) => activeFilters.includes(item.itemId));
-
-  const sortItems = (
-    toBeSortedItems: ItemUIModel[],
-    sort: { field: SortFields; direction: 'asc' | 'desc' }
-  ): ItemUIModel[] => {
-    return [...toBeSortedItems].sort((a, b) => {
-      const itemA = items[a.itemId];
-      const itemB = items[b.itemId];
-
-      switch (sort.field) {
-        case SortFields.id:
-          return sort.direction === 'asc' ? a?.itemId - b?.itemId : b?.itemId - a?.itemId;
-        case SortFields.name:
-          return sort.direction === 'asc'
-            ? itemA?.name.localeCompare(itemB?.name)
-            : itemB?.name.localeCompare(itemA?.name);
-        case SortFields.slotType:
-          return sort.direction === 'asc'
-            ? Number(itemA?.slotType) - Number(itemB?.slotType)
-            : Number(itemB?.slotType) - Number(itemA?.slotType);
-        case SortFields.fameBonus:
-          return sort.direction === 'asc'
-            ? itemA?.fameBonus - itemB?.fameBonus
-            : itemB?.fameBonus - itemA?.fameBonus;
-        case SortFields.feedPower:
-          return sort.direction === 'asc'
-            ? itemA?.feedPower - itemB?.feedPower
-            : itemB?.feedPower - itemA?.feedPower;
-        case SortFields.bagType:
-          return sort.direction === 'asc'
-            ? itemA?.bagType - itemB?.bagType
-            : itemB?.bagType - itemA?.bagType;
-        case SortFields.soulbound:
-          return sort.direction === 'asc'
-            ? Number(itemA?.isSoulbound) - Number(itemB?.isSoulbound)
-            : Number(itemB?.isSoulbound) - Number(itemA?.isSoulbound);
-        case SortFields.tier:
-          return sort.direction === 'asc'
-            ? Number(itemA?.tier) - Number(itemB?.tier)
-            : Number(itemB?.tier) - Number(itemA?.tier);
-        case SortFields.shiny:
-          return sort.direction === 'asc'
-            ? Number(itemA?.isShiny) - Number(itemB?.isShiny)
-            : Number(itemB?.isShiny) - Number(itemA?.isShiny);
-        default:
-          return 0;
-      }
-    });
-  };
-
-  totalItems = sortItems(totalItems, itemSort);
-
-  useEffect(() => {
-    if (filteredItems.length === 0) {
-      setShowHighlighted(false);
-      setLoading(false);
-    }
-  }, [filteredItems.length]);
 
   const handleClearFilters = () => {
     dispatch(clearFilters());
   };
+
+  // Calculate total items from accounts
+  useEffect(() => {
+    const newTotalItems = calculateTotalsOfAllAccounts(accounts);
+    if (JSON.stringify(newTotalItems) !== JSON.stringify(totalItems)) {
+      debug('Totals updated');
+      // override local storage with new totals
+      saveTotalsToLocalStorage(newTotalItems);
+      // set local state
+      setTotalItems(newTotalItems);
+      setLoading(false);
+    }
+  }, [accounts]);
+
+  // sort total items and update filtered items
+  useEffect(() => {
+    if (totalItems.length > 0) {
+      // sort the items
+      const sortedItems = sortItems(totalItems, itemSort);
+
+      // update totalItems if sort changed the order
+      if (JSON.stringify(sortedItems) !== JSON.stringify(totalItems)) {
+        setTotalItems(sortedItems);
+      }
+
+      // filter items based on active filters
+      const filtered =
+        activeFilters.length > 0
+          ? sortedItems.filter((item) => activeFilters.includes(item.itemId))
+          : sortedItems;
+
+      setFilteredItems(filtered);
+    }
+  }, [totalItems, itemSort, activeFilters, sortItems]);
+
+  // update name map for search functionality
+  useEffect(() => {
+    const newNameMap = new Map<string, number>();
+
+    // add base item names
+    totalItems.forEach((item) => {
+      const itemData = items[item.itemId];
+      if (itemData?.name) {
+        newNameMap.set(itemData.name.toLowerCase(), item.itemId);
+      }
+    });
+
+    // add item aliases for existing items
+    itemAliases.forEach((itemId, alias) => {
+      if (totalItems.some((item) => item.itemId === itemId)) {
+        newNameMap.set(alias.toLowerCase(), itemId);
+      }
+    });
+
+    setTotalItemsNameMap(newNameMap);
+  }, [totalItems]);
+
+  // reset showHighlighted when filters are cleared
+  useEffect(() => {
+    if (activeFilters.length === 0 && showHighlighted) {
+      setShowHighlighted(false);
+    }
+  }, [activeFilters]);
 
   return (
     <div>
@@ -170,7 +174,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
           <Button className="mr-2" label="Clear" onClick={handleClearFilters} />
         )}
         <Button
-          disabled={!showHighlighted && filteredItems.length === 0}
+          disabled={activeFilters.length === 0}
           label={showHighlighted ? 'Show All' : 'Show Highlighted Only'}
           onClick={() => setShowHighlighted(!showHighlighted)}
         />

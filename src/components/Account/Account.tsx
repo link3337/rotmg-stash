@@ -22,17 +22,20 @@ interface AccountProps {
 
 const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const dispatch = useAppDispatch();
-  const [launchAccount] = useLaunchExaltMutation();
 
   const { decrypt } = useCrypto();
-
-  const activeFilters = useAppSelector(selectSelectedItems);
   const { loading } = useAccounts();
 
-  const data = account?.mappedData as CharListResponseUIModel;
+  const [launchAccount] = useLaunchExaltMutation();
+
+  const activeFilters = useAppSelector(selectSelectedItems);
 
   const settings = useAppSelector((state) => state.settings);
   const isConfigOpen = useAppSelector((state) => state.layout.isSettingsOpen);
+
+  const data = useMemo(() => {
+    return account?.mappedData as CharListResponseUIModel;
+  }, [account?.mappedData]);
 
   const renderVisibleProps = useMemo(
     () => ({

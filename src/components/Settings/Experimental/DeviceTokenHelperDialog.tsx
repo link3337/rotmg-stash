@@ -2,7 +2,7 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
 import { useRef } from 'react';
-import CodeBlock from './CodeBlock';
+import CodeBlock from '../Util/CodeBlock';
 import { deviceTokenPowershellScript } from './device-token-powershell-script';
 
 interface DeviceTokenHelperDialog {

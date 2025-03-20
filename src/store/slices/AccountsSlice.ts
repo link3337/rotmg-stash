@@ -1,3 +1,4 @@
+import { backendErrorMessages } from '@/constants';
 import { mapCharListResponse } from '@api/mapping/char-mapping';
 import { getAccountData } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
@@ -45,7 +46,7 @@ const processBackendResponse = (
   response: string | CharListResponse,
   dispatch: ThunkDispatch<unknown, unknown, any>
 ): AccountResult => {
-  const rateLimitError = 'Try again later';
+  const rateLimitError = backendErrorMessages.TRY_AGAIN_LATER;
 
   if (typeof response === 'string') {
     error(response);
@@ -118,44 +119,46 @@ export const skipAccountFromQueue = createAsyncThunk(
 );
 
 export const refreshAccount = createAsyncThunk<
-  AccountModel[], // Return type: an updated array of AccountModel
-  AccountModel, // Argument type: a single AccountModel
-  { state: RootState } // thunkAPI type: state is typed as RootState
->(`${accountsFeatureKey}/refreshAccount`, async (account, { dispatch, getState }) => {
-  const accounts = getAccountsFromLocalStorage();
+  AccountModel[],
+  AccountModel,
+  { state: RootState; rejectValue: string }
+>(
+  `${accountsFeatureKey}/refreshAccount`,
+  async (account, { dispatch, getState, rejectWithValue }) => {
+    const accounts = getAccountsFromLocalStorage();
 
-  // Check if account is in queue (existing logic)
-  const isInQueue = accounts.find(
-    (acc) =>
-      (acc.id === account.id && acc.queueStatus === QueueStatus.PENDING) ||
-      acc.queueStatus === QueueStatus.SKIPPED
-  );
-
-  if (canMakeRequest(getState)) {
-    const backendResponse = await getAccountData(account.email, account.password);
-    const result = processBackendResponse(backendResponse, dispatch);
-
-    const updatedAccounts = accounts.map((acc: AccountModel) =>
-      acc.id === account.id
-        ? {
-            ...acc,
-            mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
-            error: result.error,
-            lastSaved: new Date().toISOString(),
-            ...(isInQueue && {
-              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-            })
-          }
-        : acc
-    );
-    // Optionally: If request succeeded, dispatch(clearRateLimit())
-    if (result.success) {
-      dispatch(clearRateLimit());
+    if (!canMakeRequest(getState)) {
+      return accounts;
     }
-    return updatedAccounts;
+
+    try {
+      const backendResponse = await getAccountData(account.email, account.password);
+      const result = processBackendResponse(backendResponse, dispatch);
+
+      const updatedAccounts = accounts.map((acc: AccountModel) =>
+        acc.id === account.id
+          ? {
+              ...acc,
+              mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+              error: result.error,
+              lastSaved: new Date().toISOString(),
+              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+            }
+          : acc
+      );
+
+      if (result.success) {
+        dispatch(clearRateLimit());
+        return updatedAccounts;
+      }
+
+      return rejectWithValue(backendErrorMessages.UNKNOWN_ERROR);
+    } catch (err: any) {
+      const errorMessage = err?.message || String(err);
+      return rejectWithValue(errorMessage);
+    }
   }
-  return accounts;
-});
+);
 
 export const updateAccounts = createAsyncThunk(
   `${accountsFeatureKey}/updateAccounts`,
@@ -222,7 +225,15 @@ const accountsSlice = createSlice({
         }
       })
       .addCase(refreshAccount.rejected, (state, action) => {
-        state.loading[action.meta.arg.id] = false;
+        const accountId = action.meta.arg.id;
+        state.loading[accountId] = false;
+
+        // Find and update the account with the error
+        const account = state.items.find((acc) => acc.id === accountId);
+        if (account) {
+          account.error = action.payload || 'Failed to refresh account';
+          account.queueStatus = QueueStatus.ERROR;
+        }
       })
       .addCase(updateAccounts.fulfilled, (state, action) => {
         state.items = state.items.map((existing) => {

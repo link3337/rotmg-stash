@@ -7,7 +7,7 @@ export async function getAccountData(
   guid: string,
   password: string
 ): Promise<CharListResponse | string> {
-  // call tauri
+  // call tauri "get_account_data" command
   const apiResponse: string = await invoke(TAURI_COMMANDS.GET_ACCOUNT_DATA, {
     guid,
     password

@@ -14,7 +14,7 @@ const Configuration: React.FC<ConfigurationProps> = ({ visible, onHide }) => {
   return (
     <Dialog
       visible={visible}
-      style={{ width: '70vw' }}
+      style={{ width: '80vw' }}
       modal
       header="Configuration"
       onHide={onHide}

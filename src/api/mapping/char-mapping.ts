@@ -1,8 +1,10 @@
+import { TotalsUIModel } from '@/cache/totals-model';
 import { Char, CharListResponse, MaxClassLevel } from '@realm/models/charlist-response';
 import { CharUIModel, ItemUIModel } from '../models/char-ui-model';
 import { CharListResponseUIModel } from '../models/charlist-response-ui-model';
 import { mapAccount } from './account-mapping';
 import { mapExalts } from './exalt-mapping';
+import { mapTotals } from './totals-mapping';
 import { objectToArray } from './util';
 
 export function mapCharListResponse(charListResponse: CharListResponse): CharListResponseUIModel {
@@ -18,13 +20,14 @@ export function mapCharListResponse(charListResponse: CharListResponse): CharLis
 
   const mappedAccount = mapAccount(charListResponse.Account, mappedCharlist);
 
-  // todo
-  // const totals = mapTotals(mappedAccount, mappedCharlist);
+  // totals for that single account
+  const accountTotals: TotalsUIModel[] = mapTotals(mappedAccount, mappedCharlist);
 
   return {
     account: mappedAccount,
     charList: mappedCharlist,
     exalts: mapExalts(charListResponse.PowerUpStats?.ClassStats),
+    totals: accountTotals,
     maxClassLevels:
       maxClassLevels?.map((maxClassLevel) => ({
         classType: maxClassLevel.classType,

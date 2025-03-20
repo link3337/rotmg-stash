@@ -1,3 +1,4 @@
+import { EMPTY_SLOT_ITEM_ID } from '@/constants';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { items } from '@realm/renders/items';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
@@ -39,7 +40,7 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
     soulbound: false,
     utst: -1,
     isShiny,
-    id: -1
+    id: EMPTY_SLOT_ITEM_ID // default -1
   };
 
   let backgroundPosition = '0 0';

@@ -1,3 +1,4 @@
+import { backendErrorMessages, displayErrorMessages } from '@/constants';
 import { AccountUIModel } from '@api/models/account-ui-model';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { AccountModel } from '@cache/account-model';
@@ -67,8 +68,15 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   ];
 
   const errorInfo = () => {
-    if ((account?.error as string) === 'Try again later') {
-      return <>Account was rate limited, data could not be fetched</>;
+    const error: string = account?.error as string;
+    if (!error) return null;
+
+    if (error === backendErrorMessages.TRY_AGAIN_LATER) {
+      return <>{displayErrorMessages.RATE_LIMITED}</>;
+    } else if (error === backendErrorMessages.NO_INTERNET) {
+      return <>{displayErrorMessages.NO_INTERNET}</>;
+    } else {
+      return displayErrorMessages.UNKNOWN_ERROR;
     }
   };
 
