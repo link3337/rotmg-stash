@@ -1,10 +1,11 @@
-use rand::thread_rng;
+use rand::distr;
+use rand::rng;
 use rand::Rng;
 
 pub fn generate_hex_key(length: usize) -> String {
     // generate random bytes
-    let random_bytes: Vec<u8> = thread_rng()
-        .sample_iter(rand::distributions::Standard)
+    let random_bytes: Vec<u8> = rng()
+        .sample_iter(distr::StandardUniform)
         .take(length)
         .collect();
 
