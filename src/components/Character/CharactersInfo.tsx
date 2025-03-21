@@ -22,7 +22,7 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ classStats, characters 
   const characterInfo: CharacterInfo[] = Object.values(ClassID)
     .filter((id) => !isNaN(Number(id)))
     .map((classId) => {
-      const classCharacters = characters.filter((char) => char.class === classId);
+      const classCharacters = characters.filter((char) => char.classId === classId);
       const totalAliveFame = classCharacters.reduce((acc, char) => acc + (char.fame || 0), 0);
 
       return {
