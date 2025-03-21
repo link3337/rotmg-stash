@@ -1,8 +1,8 @@
 import { TAURI_COMMANDS } from '@/constants';
 import { CharListResponse } from '@realm/models/charlist-response';
 import { invoke } from '@tauri-apps/api/core';
+import { info } from '@tauri-apps/plugin-log';
 import { xmlToJson } from '@utils/xml';
-import { info } from 'console';
 
 export async function getAccountData(
   guid: string,

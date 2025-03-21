@@ -10,7 +10,7 @@ const GeneralInfo: React.FC = () => {
         RotMG Stash is a tool that allows you to manage and organize your Realm of the Mad God
         accounts.
       </p>
-      <p className="text-center">Version: {packageJson.version} (beta)</p>
+      <p className="text-center">Version: {packageJson.version}</p>
       <p className="text-center">Made by Lingo with ❤️</p>
       <div className="flex flex-column align-items-center gap-2 mt-2">
         <a
