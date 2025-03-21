@@ -1,6 +1,7 @@
 import { TotalsUIModel } from '@/cache/totals-model';
+import { classes, ClassID } from '@/realm/renders/classes';
 import { Char, CharListResponse, MaxClassLevel } from '@realm/models/charlist-response';
-import { CharUIModel, ItemUIModel } from '../models/char-ui-model';
+import { CharacterStats, CharUIModel, ItemUIModel, MappedCharacterStats } from '../models/char-ui-model';
 import { CharListResponseUIModel } from '../models/charlist-response-ui-model';
 import { mapAccount } from './account-mapping';
 import { mapExalts } from './exalt-mapping';
@@ -48,30 +49,91 @@ export function mapQuickSlot(quickslots: string): ItemUIModel[] {
   });
 }
 
+const mapStats = (classId: ClassID, rawStats: CharacterStats): MappedCharacterStats[] => {
+  const classObj = classes[classId];
+  const classMaxStats = classObj[3];
+
+  return [
+    {
+      name: 'HP',
+      value: rawStats.maxHP ?? 0,
+      maxed: (rawStats.maxHP ?? 0) >= classMaxStats[0],
+      toMax: Math.ceil((classMaxStats[0] - (rawStats.maxHP ?? 0)) / 5)
+    },
+    {
+      name: 'MP',
+      value: rawStats.maxMP ?? 0,
+      maxed: (rawStats?.maxMP ?? 0) >= classMaxStats[1],
+      toMax: Math.ceil((classMaxStats[1] - (rawStats?.maxMP ?? 0)) / 5)
+    },
+    {
+      name: 'ATT',
+      value: rawStats?.attack ?? 0,
+      maxed: (rawStats?.attack ?? 0) >= classMaxStats[2],
+      toMax: classMaxStats[2] - (rawStats?.attack ?? 0)
+    },
+    {
+      name: 'DEF',
+      value: rawStats?.defense ?? 0,
+      maxed: (rawStats?.defense ?? 0) >= classMaxStats[3],
+      toMax: classMaxStats[3] - (rawStats?.defense ?? 0)
+    },
+    {
+      name: 'SPD',
+      value: rawStats?.speed ?? 0,
+      maxed: (rawStats?.speed ?? 0) >= classMaxStats[4],
+      toMax: classMaxStats[4] - (rawStats?.speed ?? 0)
+    },
+    {
+      name: 'DEX',
+      value: rawStats?.dexterity ?? 0,
+      maxed: (rawStats?.dexterity ?? 0) >= classMaxStats[5],
+      toMax: classMaxStats[5] - (rawStats?.dexterity ?? 0)
+    },
+    {
+      name: 'VIT',
+      value: rawStats?.vitality ?? 0,
+      maxed: (rawStats?.vitality ?? 0) >= classMaxStats[6],
+      toMax: classMaxStats[6] - (rawStats?.vitality ?? 0)
+    },
+    {
+      name: 'WIS',
+      value: rawStats?.wisdom ?? 0,
+      maxed: (rawStats?.wisdom ?? 0) >= classMaxStats[7],
+      toMax: classMaxStats[7] - (rawStats?.wisdom ?? 0)
+    }
+  ];
+};
+
 function mapCharModel(char: Char): CharUIModel | null {
   if (!char) return null;
 
+  const classId = parseInt(char.ObjectType, 10) as ClassID;
+  const classObj = classes[classId];
+
+  const rawStats: CharacterStats = {
+    maxHP: char.MaxHitPoints ? parseInt(char.MaxHitPoints, 10) : 0,
+    hp: char.HitPoints ? parseInt(char.HitPoints, 10) : 0,
+    maxMP: char.MaxMagicPoints ? parseInt(char.MaxMagicPoints, 10) : 0,
+    mp: char.MagicPoints ? parseInt(char.MagicPoints, 10) : 0,
+    attack: char.Attack ? parseInt(char.Attack, 10) : 0,
+    defense: char.Defense ? parseInt(char.Defense, 10) : 0,
+    speed: char.Speed ? parseInt(char.Speed, 10) : 0,
+    dexterity: char.Dexterity ? parseInt(char.Dexterity, 10) : 0,
+    vitality: char.HpRegen ? parseInt(char.HpRegen, 10) : 0,
+    wisdom: char.MpRegen ? parseInt(char.MpRegen, 10) : 0
+  };
+
   return {
     id: char?.id ? parseInt(char?.id, 10) : -1,
-    class: char.ObjectType ? parseInt(char.ObjectType, 10) : -1,
+    classId: classId,
+    className: classObj[0],
     seasonal: char.Seasonal?.toLowerCase() === 'true',
     level: char.Level ? parseInt(char.Level, 10) : 1,
     exp: char.Exp ? parseInt(char.Exp, 10) : 0,
     fame: char.CurrentFame ? parseInt(char.CurrentFame, 10) : 0,
     equipment: char.Equipment?.split(',').map((item) => parseInt(item.split('#')[0], 10)),
     equip_qs: mapQuickSlot(char.EquipQS),
-    stats: {
-      maxHP: char.MaxHitPoints ? parseInt(char.MaxHitPoints, 10) : 1,
-      hp: char.HitPoints ? parseInt(char.HitPoints, 10) : 0,
-      maxMP: char.MaxMagicPoints ? parseInt(char.MaxMagicPoints, 10) : 1,
-      mp: char.MagicPoints ? parseInt(char.MagicPoints, 10) : 0,
-      attack: char.Attack ? parseInt(char.Attack, 10) : 0,
-      defense: char.Defense ? parseInt(char.Defense, 10) : 0,
-      speed: char.Speed ? parseInt(char.Speed, 10) : 0,
-      dexterity: char.Dexterity ? parseInt(char.Dexterity, 10) : 0,
-      vitality: char.HpRegen ? parseInt(char.HpRegen, 10) : 0,
-      wisdom: char.MpRegen ? parseInt(char.MpRegen, 10) : 0
-    },
     health_stack_count: char.HealthStackCount ? parseInt(char.HealthStackCount, 10) : 0,
     magic_stack_count: char.MagicStackCount ? parseInt(char.MagicStackCount, 10) : 0,
     dead: char.Dead?.toLowerCase() === 'true',
@@ -127,6 +189,8 @@ function mapCharModel(char: Char): CharUIModel | null {
     lootDrop: char.LDTimer ? parseInt(char.LDTimer, 10) : 0,
     lootTier: char.LTTimer ? parseInt(char.LTTimer, 10) : 0,
     crucible: char.CrucibleActive?.toLowerCase() === 'true',
-    objectType: char.ObjectType
+    objectType: char.ObjectType,
+    stats: rawStats,
+    mappedStats: mapStats(classId, rawStats)
   };
 }

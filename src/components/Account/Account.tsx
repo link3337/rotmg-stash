@@ -7,6 +7,7 @@ import RenderIfVisible from '@hooks/renderIfVisible';
 import { refreshAccount, skipAccountFromQueue, useAccounts } from '@store/slices/AccountsSlice';
 import { selectSelectedItems } from '@store/slices/FilterSlice';
 import { QueueStatus } from '@store/slices/QueueSlice';
+import { info } from 'console';
 import { Card } from 'primereact/card';
 import { useMemo } from 'react';
 import Characters from '../Character/Characters';
@@ -51,6 +52,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   };
 
   const handleLaunch = async () => {
+    info('Launching account');
     const exaltPath = settings.experimental.exaltPath;
     const deviceToken = settings.experimental.deviceToken;
 
@@ -68,10 +70,12 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   };
 
   const handleRefresh = async () => {
+    info('Refreshing account data');
     await dispatch(refreshAccount({ ...account, password: decrypt(account.password) })).unwrap();
   };
 
   const handleSkipQueue = async () => {
+    info('Skipping account from queue');
     const newStatus =
       account?.queueStatus == QueueStatus.SKIPPED ? QueueStatus.PENDING : QueueStatus.SKIPPED;
     await dispatch(

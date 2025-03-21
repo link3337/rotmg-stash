@@ -92,7 +92,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   useEffect(() => {
     const newTotalItems = calculateTotalsOfAllAccounts(accounts);
     if (JSON.stringify(newTotalItems) !== JSON.stringify(totalItems)) {
-      debug('Totals updated');
+      debug('Totals were recalculated and updated');
       // override local storage with new totals
       saveTotalsToLocalStorage(newTotalItems);
       // set local state
@@ -109,6 +109,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
       // update totalItems if sort changed the order
       if (JSON.stringify(sortedItems) !== JSON.stringify(totalItems)) {
+        debug('Totals were sorted and updated');
         setTotalItems(sortedItems);
       }
 
