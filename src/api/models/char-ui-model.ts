@@ -1,24 +1,16 @@
+import { ClassID } from "@/realm/renders/classes";
+
 export interface CharUIModel {
   id: number;
-  class: number;
+  classId: ClassID;
+  className: string;
   seasonal: boolean;
   level: number;
   exp: number;
   fame: number;
   equipment: number[];
   equip_qs: ItemUIModel[];
-  stats: {
-    maxHP: number;
-    hp: number;
-    maxMP: number;
-    mp: number;
-    attack: number;
-    defense: number;
-    speed: number;
-    dexterity: number;
-    vitality: number;
-    wisdom: number;
-  };
+  stats: CharacterStats;
   health_stack_count: number;
   magic_stack_count: number;
   dead: boolean;
@@ -57,9 +49,30 @@ export interface CharUIModel {
   lootTier: number;
   crucible: boolean | null;
   objectType: string;
+  mappedStats: MappedCharacterStats[];
 }
 
 export interface ItemUIModel {
   itemId: number;
   amount?: number;
+}
+
+export interface CharacterStats {
+  maxHP: number;
+  hp: number;
+  maxMP: number;
+  mp: number;
+  attack: number;
+  defense: number;
+  speed: number;
+  dexterity: number;
+  vitality: number;
+  wisdom: number;
+}
+
+export interface MappedCharacterStats {
+  name: string;
+  value: number;
+  maxed?: boolean;
+  toMax: number;
 }

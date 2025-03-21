@@ -109,6 +109,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
   }, [isQueueRunning, isQueuePaused, queueFetchInterval, dispatch, isRateLimited]);
 
   const initQueue = () => {
+    info('Initializing queue');
     dispatch(initializeQueue({ accounts, queueFetchInterval })).then(() => {
       dispatch(startQueue());
     });
@@ -122,9 +123,11 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
       setIsPaused(false);
     } else if (!isQueuePaused) {
       // Pause queue
+      info('Pausing queue');
       setIsPaused(true);
     } else {
       // Resume queue
+      info('Resuming queue');
       setIsPaused(false);
     }
   };

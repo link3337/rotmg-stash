@@ -60,7 +60,7 @@ export const initializeQueue = createAsyncThunk(
 export const processQueue = createAsyncThunk(
   `${queueFeatureKey}/process`,
   async ({ decrypt }: { decrypt: (password: string) => string }, { getState, dispatch }) => {
-    const state = getState() as RootState;
+    const state: RootState = getState() as RootState;
 
     const pendingItem = state.queue.items.find(
       (item: QueueItem) => item.status === QueueStatus.PROCESSING

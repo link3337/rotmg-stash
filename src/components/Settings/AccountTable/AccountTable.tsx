@@ -17,7 +17,9 @@ import {
 } from '@store/slices/AccountsSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
 import { setSettings, useSettings } from '@store/slices/SettingsSlice';
+import { debug } from '@tauri-apps/plugin-log';
 import { maskEmail } from '@utils/masking';
+import { info } from 'console';
 import { saveAs } from 'file-saver';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
@@ -39,12 +41,12 @@ export const AccountTable: React.FC = () => {
   const { items: accounts, loading } = useAccounts();
   const settings = useSettings();
   const isStreamerMode = useAppSelector((state) => state.settings.experimental.isStreamerMode);
-  const { timestamp } = useAppSelector(selectRateLimit);
+  const rateLimit = useAppSelector(selectRateLimit);
 
   const isRateLimited = React.useMemo(() => {
-    if (!timestamp) return false;
-    return Date.now() - timestamp < RATE_LIMIT_DURATION;
-  }, [timestamp]);
+    if (!rateLimit.timestamp) return false;
+    return Date.now() - rateLimit.timestamp < RATE_LIMIT_DURATION;
+  }, [rateLimit.timestamp]);
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [newAccount, setNewAccount] = useState<Partial<AccountModel>>({});
@@ -75,6 +77,7 @@ export const AccountTable: React.FC = () => {
   };
 
   const handleAddAccount = async () => {
+    debug('Adding account');
     if (!newAccount.email || !newAccount.password) {
       toast.current?.show({
         severity: 'error',
@@ -111,6 +114,7 @@ export const AccountTable: React.FC = () => {
 
   const handleDeleteAccount = async (account: AccountModel) => {
     try {
+      debug('Deleting account');
       dispatch(deleteAccount(account.id));
 
       toast.current?.show({
@@ -146,9 +150,10 @@ export const AccountTable: React.FC = () => {
 
   const onRowEditComplete = async (e: DataTableRowEditCompleteEvent) => {
     try {
+      debug('Updating account');
       const updatedAccount = { ...e.newData } as AccountModel;
       updatedAccount.password = encrypt(updatedAccount.password);
-      await dispatch(updateAccount(updatedAccount));
+      dispatch(updateAccount(updatedAccount));
 
       toast.current?.show({
         severity: 'success',
@@ -201,6 +206,7 @@ export const AccountTable: React.FC = () => {
 
   const refreshAccountData = async (account: AccountModel) => {
     try {
+      debug('Refreshing account data');
       await dispatch(refreshAccount({ ...account, password: decrypt(account.password) })).unwrap();
 
       toast.current?.show({
@@ -275,6 +281,7 @@ export const AccountTable: React.FC = () => {
 
   const launchExalt = async (account: AccountModel) => {
     try {
+      info('Launching Exalt');
       const exaltPath = settings?.experimental?.exaltPath;
       const deviceToken = settings?.experimental?.deviceToken;
 
@@ -530,6 +537,7 @@ export const AccountTable: React.FC = () => {
   };
 
   const handleExportAccounts = () => {
+    debug('Exporting accounts');
     const accountsData: AccountExportModel[] = accounts.map((account: AccountModel) => {
       return {
         email: account.email,

@@ -46,20 +46,12 @@ const sortOptions: SortOption[] = [
     value: SortFields.name
   },
   {
-    label: 'Slot Type',
-    value: SortFields.slotType
-  },
-  {
     label: 'Fame Bonus',
     value: SortFields.fameBonus
   },
   {
     label: 'Feed Power',
     value: SortFields.feedPower
-  },
-  {
-    label: 'Bag Type',
-    value: SortFields.bagType
   },
   {
     label: 'Soulbound',

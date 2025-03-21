@@ -33,12 +33,6 @@ const QueueInfoDialog: React.FC<QueueInfoDialogProps> = ({ visible, onHide, queu
     >
       <DataTable value={queueInfo}>
         <Column field="accountName" header="Account" body={accountNameTemplate} />
-        {/* <Column
-          field="lastRefresh"
-          header="Last Refresh"
-          body={(rowData) => <span>{rowData.lastRefresh || '-'}</span>}
-        />
-        <Column field="nextRefresh" header="Next Refresh At" /> */}
         <Column
           field="status"
           header="Status"
