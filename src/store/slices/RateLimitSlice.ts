@@ -1,5 +1,5 @@
 import { localStorageRateLimitKey, RATE_LIMIT_DURATION } from '@/constants';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { debug, info } from '@tauri-apps/plugin-log';
 import { RootState } from '..';
 
@@ -48,12 +48,13 @@ const rateLimitSlice = createSlice({
 
 export const { initRateLimitState, setRateLimit, clearRateLimit } = rateLimitSlice.actions;
 
-// Selector that returns both the stored timestamp and computed isLimited flag.
-export const selectRateLimit = (state: RootState) => {
-  const { timestamp } = state.rateLimit;
-  const isLimited = timestamp != null && Date.now() - timestamp < RATE_LIMIT_DURATION;
-  return { timestamp, isLimited };
-};
+export const selectRateLimit = createSelector(
+  (state: RootState) => state.rateLimit,
+  (rateLimit) => ({
+    isLimited: rateLimit.timestamp != null && Date.now() - rateLimit.timestamp < RATE_LIMIT_DURATION,
+    timestamp: rateLimit.timestamp
+  })
+);
 
 export const isCurrentlyRateLimited = (
   state: RateLimitState,

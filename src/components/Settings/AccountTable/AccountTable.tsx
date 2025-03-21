@@ -39,12 +39,12 @@ export const AccountTable: React.FC = () => {
   const { items: accounts, loading } = useAccounts();
   const settings = useSettings();
   const isStreamerMode = useAppSelector((state) => state.settings.experimental.isStreamerMode);
-  const { timestamp } = useAppSelector(selectRateLimit);
+  const rateLimit = useAppSelector(selectRateLimit);
 
   const isRateLimited = React.useMemo(() => {
-    if (!timestamp) return false;
-    return Date.now() - timestamp < RATE_LIMIT_DURATION;
-  }, [timestamp]);
+    if (!rateLimit.timestamp) return false;
+    return Date.now() - rateLimit.timestamp < RATE_LIMIT_DURATION;
+  }, [rateLimit.timestamp]);
 
   const [dialogVisible, setDialogVisible] = useState(false);
   const [newAccount, setNewAccount] = useState<Partial<AccountModel>>({});
