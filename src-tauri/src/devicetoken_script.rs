@@ -1,4 +1,6 @@
-export const deviceTokenPowershellScript = `# This script queries WMI classes and concatenates the SerialNumber values
+/// A constant string containing a PowerShell script that generates a unique device token.
+pub const DEVICE_TOKEN_POWERSHELLSCRIPT: &str = r#"
+# This script queries WMI classes and concatenates the SerialNumber values
 $wmiClasses = @("Win32_BaseBoard", "Win32_BIOS", "Win32_OperatingSystem")
 $hardwareInfo = ""
 
@@ -27,4 +29,5 @@ $bytes = [System.Text.Encoding]::UTF8.GetBytes($hardwareInfo)
 $hashBytes = $sha1.ComputeHash($bytes)
 $deviceToken = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
 
-Write-Output $deviceToken`;
+Write-Output $deviceToken
+"#;
