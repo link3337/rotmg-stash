@@ -15,11 +15,13 @@ interface AccountFilterMap {
 interface FilterState {
   selectedItems: number[];
   accountFilters: AccountFilterMap;
+  showHighlightedOnly: boolean;
 }
 
 const initialState: FilterState = {
   selectedItems: [],
-  accountFilters: {}
+  accountFilters: {},
+  showHighlightedOnly: false
 };
 
 const filterSlice = createSlice({
@@ -55,15 +57,29 @@ const filterSlice = createSlice({
         state.accountFilters[accountId] = { characterFilter: 'all', selectedClasses };
       }
       state.accountFilters[accountId].selectedClasses = selectedClasses;
+    },
+    toggleHighlightedOnly: (state) => {
+      state.showHighlightedOnly = !state.showHighlightedOnly;
+    },
+    setHighlightedOnly: (state, action: PayloadAction<boolean>) => {
+      state.showHighlightedOnly = action.payload;
     }
   }
 });
 
 const filterSelector = (state: RootState) => state.filter;
-export const { setFilter, setSelectedClasses, toggleFilter, clearFilters } = filterSlice.actions;
+export const {
+  setFilter,
+  setSelectedClasses,
+  toggleFilter,
+  clearFilters,
+  toggleHighlightedOnly,
+  setHighlightedOnly
+} = filterSlice.actions;
 
 export const selectSelectedItems = (state: RootState) => state.filter.selectedItems;
 export const selectAccountFilters = (state: RootState) => state.filter.accountFilters;
+export const selectShowHighlightedOnly = (state: RootState) => state.filter.showHighlightedOnly;
 
 export const getCharacterFilterByAccount = createSelector(
   selectAccountFilters,

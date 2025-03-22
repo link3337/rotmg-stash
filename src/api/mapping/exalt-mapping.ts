@@ -3,13 +3,13 @@ import { ExaltUIModel } from '../models/exalt-ui-model';
 
 type ExaltsRaw =
   | {
-    class: string;
-    '#text': string;
-  }[]
+      class: string;
+      '#text': string;
+    }[]
   | {
-    class: string;
-    '#text': string;
-  }
+      class: string;
+      '#text': string;
+    }
   | null;
 
 /**

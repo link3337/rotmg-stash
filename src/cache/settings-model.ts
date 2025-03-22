@@ -1,10 +1,10 @@
 import { SortDirection } from '@/utils/sorting';
-import { SortFields } from '@store/slices/SettingsSlice';
 
 export interface SettingsModel {
   itemSort: SortCriteria;
   displaySettings: DisplaySettingsModel;
   experimental: ExperimentalSettingsModel;
+  totalSettings: TotalSettingsModel;
   theme: Theme;
   queueFetchInterval: number;
 }
@@ -28,6 +28,12 @@ export interface DisplaySettingsModel {
   compactVaults: boolean;
 }
 
+export interface TotalSettingsModel {
+  usePagination: boolean;
+  itemsPerPage: number;
+  customPageSize?: number;
+}
+
 export interface SortCriteria {
   field: SortFields;
   direction: SortDirection;
@@ -42,4 +48,16 @@ export interface ExperimentalSettingsModel {
   isDebugMode: boolean;
   exaltPath?: string;
   deviceToken?: string;
+}
+
+export enum SortFields {
+  id = 'id',
+  name = 'name',
+  slotType = 'slotType',
+  fameBonus = 'fameBonus',
+  feedPower = 'feedPower',
+  bagType = 'bagType',
+  soulbound = 'soulbound',
+  tier = 'tier',
+  shiny = 'shiny'
 }

@@ -51,7 +51,8 @@ export const { initRateLimitState, setRateLimit, clearRateLimit } = rateLimitSli
 export const selectRateLimit = createSelector(
   (state: RootState) => state.rateLimit,
   (rateLimit) => ({
-    isLimited: rateLimit.timestamp != null && Date.now() - rateLimit.timestamp < RATE_LIMIT_DURATION,
+    isLimited:
+      rateLimit.timestamp != null && Date.now() - rateLimit.timestamp < RATE_LIMIT_DURATION,
     timestamp: rateLimit.timestamp
   })
 );

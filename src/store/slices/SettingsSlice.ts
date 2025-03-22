@@ -1,11 +1,18 @@
 import {
-  getSettingsFromLocalStorage,
-  saveSettingsToLocalStorage
-} from '@cache/localstorage-service';
+  defaultDisplaySettings,
+  defaultExperimentalSettings,
+  defaultQueueFetchIntervalSetting,
+  defaultSortSettings,
+  defaultThemeSetting,
+  defaultTotalSettings
+} from '@/cache/migration/default-settings';
+import { migrateSettings } from '@/cache/migration/settings-migration';
+import { saveSettingsToLocalStorage } from '@cache/localstorage-service';
 import {
   DisplaySettingsModel,
   ExperimentalSettingsModel,
   SettingsModel,
+  SortFields,
   Theme
 } from '@cache/settings-model';
 import { createListenerMiddleware, createSlice, isAnyOf, PayloadAction } from '@reduxjs/toolkit';
@@ -13,76 +20,39 @@ import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 
-// Sort fields
-export enum SortFields {
-  id = 'id',
-  name = 'name',
-  slotType = 'slotType',
-  fameBonus = 'fameBonus',
-  feedPower = 'feedPower',
-  bagType = 'bagType',
-  soulbound = 'soulbound',
-  tier = 'tier',
-  shiny = 'shiny'
-}
-
 export interface SettingsState extends SettingsModel {}
 
 const initialState: SettingsState = {
-  displaySettings: {
-    showTotals: true,
-    showAccountInfo: true,
-    showExalts: true,
-    showCharacters: true,
-    showVault: true,
-    showGiftChest: true,
-    showSeasonalSpoils: true,
-    showMaterials: true,
-    showPotions: true,
-    showConsumables: true,
-    showItemTooltips: true,
-    showAccountName: true,
-    showIngameNameInQueue: true,
-    compactVaults: true
-  },
-  experimental: {
-    lazyLoading: false,
-    lazyLoadingKeepRendered: false,
-    lazyLoadingHeight: 1000,
-    lazyLoadingOffset: 1500,
-    isStreamerMode: false,
-    isDebugMode: false,
-    deviceToken: '',
-    exaltPath: ''
-  },
-  itemSort: {
-    field: SortFields.id,
-    direction: 'asc'
-  },
-  theme: 'dark',
-  queueFetchInterval: 70000
+  displaySettings: defaultDisplaySettings,
+  totalSettings: defaultTotalSettings,
+  experimental: defaultExperimentalSettings,
+  itemSort: defaultSortSettings,
+  theme: defaultThemeSetting,
+  queueFetchInterval: defaultQueueFetchIntervalSetting
 };
 
-const loadSettings = (): SettingsState => {
-  const settingsState = getSettingsFromLocalStorage();
-  return settingsState ?? initialState;
+const loadInitialState = (): SettingsState => {
+  const savedSettings = localStorage.getItem('settings');
+  if (savedSettings) {
+    const parsedSettings = JSON.parse(savedSettings);
+    return migrateSettings(parsedSettings);
+  }
+
+  return initialState;
 };
 
 const featureKey = 'settings';
 
 const settingsSlice = createSlice({
   name: featureKey,
-  initialState: loadSettings(),
+  initialState: loadInitialState(),
   reducers: {
     toggleSetting: (state, action: PayloadAction<keyof DisplaySettingsModel>) => {
       state.displaySettings[action.payload] = !state.displaySettings[action.payload];
     },
     updateItemSort: (
       state,
-      action: PayloadAction<{
-        field: SortFields;
-        direction: 'asc' | 'desc';
-      }>
+      action: PayloadAction<{ field: SortFields; direction: 'asc' | 'desc' }>
     ) => {
       const { field, direction } = action.payload;
       state.itemSort = {
@@ -121,6 +91,13 @@ const settingsSlice = createSlice({
     },
     updateQueueFetchInterval: (state, action: PayloadAction<number>) => {
       state.queueFetchInterval = action.payload;
+    },
+    updateItemsPerPage: (state, action: PayloadAction<number>) => {
+      const value = Math.max(1, Math.min(action.payload, 10000));
+      state.totalSettings.itemsPerPage = value;
+    },
+    togglePagination: (state) => {
+      state.totalSettings.usePagination = !state.totalSettings.usePagination;
     }
   }
 });
@@ -134,7 +111,9 @@ export const {
   toggleStreamerMode,
   toggleDebugMode,
   updateQueueFetchInterval,
-  setSettings
+  setSettings,
+  updateItemsPerPage,
+  togglePagination
 } = settingsSlice.actions;
 
 // middleware listener to update localStorage when settings state changes
@@ -151,7 +130,9 @@ settingsStateListener.startListening({
     toggleStreamerMode,
     toggleDebugMode,
     setSettings,
-    updateQueueFetchInterval
+    updateQueueFetchInterval,
+    updateItemsPerPage,
+    togglePagination
   ),
   effect: (_action, listenerApi) => {
     const state = listenerApi.getState() as RootState;
@@ -170,6 +151,10 @@ export const selectIsStreamerMode = (state: RootState) =>
 
 export const selectExperimentalSettings = (state: RootState) =>
   settingsSelector(state).experimental;
+
+export const selectDisplaySettings = (state: RootState) => settingsSelector(state).displaySettings;
+
+export const selectTotalSettings = (state: RootState) => settingsSelector(state).totalSettings;
 
 export const selectTheme = (state: RootState) => settingsSelector(state).theme;
 

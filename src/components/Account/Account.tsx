@@ -8,6 +8,7 @@ import { refreshAccount, skipAccountFromQueue, useAccounts } from '@store/slices
 import { selectSelectedItems } from '@store/slices/FilterSlice';
 import { QueueStatus } from '@store/slices/QueueSlice';
 import { info } from 'console';
+import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useMemo } from 'react';
 import Characters from '../Character/Characters';
@@ -92,11 +93,16 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
 
   const AccountContent = () => (
     <Card className="m-2">
-      {!data && !loading[account.id] && (
+      {!data && (
         <>
           <div className={styles.accountinfoContainer} style={{ width: '100%' }}>
             <div className={styles.header}>
               <div>{settings.experimental.isStreamerMode ? account.id : account.email}</div>
+              <div className="text-center">
+                <Button onClick={handleRefresh} disabled={loading[account.id]}>
+                  Fetch Account Data
+                </Button>
+              </div>
               {account?.error && (
                 <div>
                   Data mapping or request failed for account with email/id:

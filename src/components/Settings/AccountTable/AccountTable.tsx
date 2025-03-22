@@ -485,10 +485,9 @@ export const AccountTable: React.FC = () => {
   const handleImportConfirm = (confirmed: boolean) => {
     if (confirmed && pendingImport) {
       dispatch(setSettings(pendingImport.settings));
-
-      setShowImportDialog(false);
-      setPendingImport(null);
     }
+    setShowImportDialog(false);
+    setPendingImport(null);
   };
 
   const validateInput = (input: string) => {

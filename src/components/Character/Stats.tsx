@@ -65,12 +65,15 @@ export const Stats: React.FC<StatsProps> = ({ stats, classId, exalts }) => {
   const paddedStats =
     stats.length % 2 === 0 ? stats : [...stats, { name: '', value: 0, maxed: false, toMax: 0 }];
 
-  const statPairs = paddedStats.reduce<[MappedCharacterStats, MappedCharacterStats][]>((pairs, stat, index) => {
-    if (index % 2 === 0) {
-      pairs.push([stat, paddedStats[index + 1]]);
-    }
-    return pairs;
-  }, []);
+  const statPairs = paddedStats.reduce<[MappedCharacterStats, MappedCharacterStats][]>(
+    (pairs, stat, index) => {
+      if (index % 2 === 0) {
+        pairs.push([stat, paddedStats[index + 1]]);
+      }
+      return pairs;
+    },
+    []
+  );
 
   return (
     <table className={styles.stats} role="table" aria-label="Character Statistics">
@@ -83,14 +86,16 @@ export const Stats: React.FC<StatsProps> = ({ stats, classId, exalts }) => {
                   {stat.name && (
                     <>
                       <span className={styles.statName}>{stat.name}</span>
-                      <span>
-                        {stat.value}
-                        <span className={styles.exaltBonus}>
-                          {renderExaltBonus(classId, stat.name, exalts)}
-                        </span>
-                      </span>
                     </>
                   )}
+                </td>
+                <td className={getStatClassName(stat)}>
+                  <span>
+                    {stat.value}
+                    <span className={styles.exaltBonus}>
+                      {renderExaltBonus(classId, stat.name, exalts)}
+                    </span>
+                  </span>
                 </td>
               </React.Fragment>
             ))}

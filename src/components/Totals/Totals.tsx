@@ -1,5 +1,6 @@
+import { ItemUIModel } from '@/api/models/char-ui-model';
 import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/localstorage-service';
-import { SortCriteria } from '@/cache/settings-model';
+import { SortCriteria, SortFields } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
 import { itemAliases } from '@/realm/renders/aliases';
 import { booleanSort, numberSort } from '@/utils/sorting';
@@ -7,11 +8,16 @@ import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
 import { items } from '@realm/renders/items';
-import { clearFilters, selectSelectedItems } from '@store/slices/FilterSlice';
-import { selectItemSort, SortFields } from '@store/slices/SettingsSlice';
+import {
+  clearFilters,
+  selectSelectedItems,
+  selectShowHighlightedOnly,
+  setHighlightedOnly,
+  toggleHighlightedOnly
+} from '@store/slices/FilterSlice';
+import { selectDisplaySettings, selectItemSort, selectTotalSettings } from '@store/slices/SettingsSlice';
 import { debug } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
-import { Skeleton } from 'primereact/skeleton';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ItemList } from '../Item/ItemList';
@@ -35,7 +41,6 @@ const calculateTotalsOfAllAccounts = (accounts: AccountModel[]): TotalsUIModel[]
   }));
 };
 
-
 interface TotalProps {
   accounts: AccountModel[];
 }
@@ -43,15 +48,18 @@ interface TotalProps {
 const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const dispatch = useDispatch();
 
+  const activeFilters = useAppSelector(selectSelectedItems);
+  const itemSort = useAppSelector(selectItemSort);
+  const { showTotals } = useAppSelector(selectDisplaySettings);
+  const showHighlightedOnly = useAppSelector(selectShowHighlightedOnly);
+  const selectedItems = useAppSelector(selectSelectedItems);
+
+  const [selectedItemsUI, setSelectedItemsUI] = useState<ItemUIModel[]>([]);
+
   const [totalItems, setTotalItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
   const [filteredItems, setFilteredItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
   const [totalItemsNameMap, setTotalItemsNameMap] = useState<Map<string, number>>(new Map());
-
-  const activeFilters = useAppSelector(selectSelectedItems);
-  const itemSort = useAppSelector(selectItemSort);
-
-  const [showHighlighted, setShowHighlighted] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const { usePagination, itemsPerPage } = useAppSelector(selectTotalSettings);
 
   const sortItems = useCallback(
     (toBeSortedItems: TotalsUIModel[], sort: SortCriteria): TotalsUIModel[] => {
@@ -88,6 +96,12 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
     dispatch(clearFilters());
   };
 
+  useEffect(() => {
+    const mappedSelectedItems: ItemUIModel[] = selectedItems.map((itemId) => ({ itemId }));
+    setSelectedItemsUI(mappedSelectedItems);
+  }, [selectedItems]);
+
+
   // Calculate total items from accounts
   useEffect(() => {
     const newTotalItems = calculateTotalsOfAllAccounts(accounts);
@@ -97,7 +111,6 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
       saveTotalsToLocalStorage(newTotalItems);
       // set local state
       setTotalItems(newTotalItems);
-      setLoading(false);
     }
   }, [accounts]);
 
@@ -147,8 +160,8 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
   // reset showHighlighted when filters are cleared
   useEffect(() => {
-    if (activeFilters.length === 0 && showHighlighted) {
-      setShowHighlighted(false);
+    if (activeFilters.length === 0 && showHighlightedOnly) {
+      dispatch(setHighlightedOnly(false));
     }
   }, [activeFilters]);
 
@@ -157,26 +170,33 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
       <div className="flex container justify-content-end">
         <ItemSearch totalItemsNameMap={totalItemsNameMap} />
       </div>
+
+      <div>
+        {/* Always show selected items if they exist and user has "show totals off", so it is known which items are currently selected */}
+        {!showTotals && selectedItems.length > 0 && (
+          <div className="text-left">
+            <span className="ml-1 text-800 w-full">Selected Items:</span>
+            <ItemList items={selectedItemsUI} />
+          </div>
+        )}
+      </div>
       <div className="flex justify-content-end mb-2">
         {filteredItems.length > 0 && (
           <Button className="mr-2" label="Clear" onClick={handleClearFilters} />
         )}
         <Button
           disabled={activeFilters.length === 0}
-          label={showHighlighted ? 'Show All' : 'Show Highlighted Only'}
-          onClick={() => setShowHighlighted(!showHighlighted)}
+          label={showHighlightedOnly ? 'Show All' : 'Show Highlighted Only'}
+          onClick={() => dispatch(toggleHighlightedOnly())}
         />
       </div>
-      {loading ? (
-        <div className="p-grid">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="p-col-12 p-md-6 p-lg-4">
-              <Skeleton width="100%" height="2rem" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <ItemList items={showHighlighted ? filteredItems : totalItems} />
+
+      {showTotals && (
+        <ItemList
+          items={showHighlightedOnly ? filteredItems : totalItems}
+          paginated={usePagination}
+          itemsPerPage={itemsPerPage}
+        />
       )}
     </div>
   );

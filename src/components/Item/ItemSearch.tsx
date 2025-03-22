@@ -63,7 +63,9 @@ const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
           className="p-button-primary"
         />
       </div>
-      {filteredItems && filteredItems.length > 0 && <ItemList items={filteredItems} />}
+      <div className="mt-2 flex flex-column gap-2">
+        {filteredItems.length > 0 && <ItemList items={filteredItems} />}
+      </div>
     </div>
   );
 };
