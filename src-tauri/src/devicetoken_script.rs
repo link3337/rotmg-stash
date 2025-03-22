@@ -29,5 +29,6 @@ $bytes = [System.Text.Encoding]::UTF8.GetBytes($hardwareInfo)
 $hashBytes = $sha1.ComputeHash($bytes)
 $deviceToken = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
 
-Write-Output $deviceToken
+# Output the device token without the \r\n
+Write-Host -NoNewline $deviceToken
 "#;

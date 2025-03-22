@@ -25,13 +25,10 @@ if ([string]::IsNullOrEmpty($hardwareInfo)) {
     exit 1
 }
 
-# Log out the raw hardware info
-Write-Output "Hardware Info: $hardwareInfo"
-
-# Compute the SHA1 hash of the concatenated hardware info.
 $sha1 = [System.Security.Cryptography.SHA1]::Create()
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($hardwareInfo)
 $hashBytes = $sha1.ComputeHash($bytes)
-$hashString = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
+$deviceToken = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
 
-Write-Output $hashString
+# Output the device token without the \r\n
+Write-Host -NoNewline $deviceToken
