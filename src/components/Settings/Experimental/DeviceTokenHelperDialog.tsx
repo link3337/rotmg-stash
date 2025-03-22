@@ -37,7 +37,7 @@ const DeviceTokenHelperDialog: React.FC<DeviceTokenHelperDialog> = ({
 
   return (
     <Dialog
-      header="Run this PowerShell script to get your device token"
+      header='Run this PowerShell script on your own and paste the output or press the "Run Script" button'
       visible={show}
       onHide={() => onClose()}
       closeOnEscape

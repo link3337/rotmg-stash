@@ -1,3 +1,4 @@
+import { useLazyExecutePowershellQuery } from '@/api/tauri/tauriApi';
 import { ExperimentalSettingsModel } from '@/cache/settings-model';
 import { useAppDispatch } from '@/hooks/redux';
 import {
@@ -6,6 +7,7 @@ import {
   updateExperimentalSetting
 } from '@store/slices/SettingsSlice';
 import { open } from '@tauri-apps/plugin-dialog';
+import { debug, error } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
 import { InputNumber } from 'primereact/inputnumber';
@@ -21,6 +23,20 @@ const ExperimentalSettings: React.FC<ExperimentalSettingsProps> = ({ experimenta
   const dispatch = useAppDispatch();
 
   const [showDeviceTokenHelp, setShowDeviceTokenHelp] = useState(false);
+
+  const [executePowershell] = useLazyExecutePowershellQuery();
+
+  const handleRunPowershellScript = () => async () => {
+    try {
+      const deviceToken = await executePowershell().unwrap();
+
+      dispatch(updateExperimentalSetting({ key: 'deviceToken', value: deviceToken }));
+
+      debug(`[PowerShell Output] Devicetoken: ${deviceToken}`);
+    } catch (err) {
+      error(`Failed to execute script: ${err}`);
+    }
+  };
 
   return (
     <>
@@ -161,6 +177,12 @@ const ExperimentalSettings: React.FC<ExperimentalSettingsProps> = ({ experimenta
                 icon="pi pi-question-circle"
                 className="p-button-text p-button-rounded p-button-sm"
                 onClick={() => setShowDeviceTokenHelp(true)}
+              />
+              <Button
+                label="Run Script"
+                icon="pi pi-play"
+                className="p-button-sm"
+                onClick={handleRunPowershellScript()}
               />
             </div>
             <InputText

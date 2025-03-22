@@ -1,10 +1,11 @@
-import { DisplaySettingsModel } from '@cache/settings-model';
+import { DisplaySettingsModel, SortFields } from '@cache/settings-model';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import {
-  SortFields,
+  togglePagination,
   toggleSetting,
   toggleSortDirection,
   updateItemSort,
+  updateItemsPerPage,
   updateQueueFetchInterval,
   updateTheme
 } from '@store/slices/SettingsSlice';
@@ -13,6 +14,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { InputNumber } from 'primereact/inputnumber';
 import ExperimentalSettings from './Experimental/ExperimentalSettings';
 
 export interface DisplayOption {
@@ -70,6 +72,11 @@ const sortOptions: SortOption[] = [
 const queueFetchIntervalOptions = Array.from({ length: 31 }, (_, i) => ({
   label: `${60 + i} seconds`,
   value: (60 + i) * 1000
+}));
+
+const itemsPerPageOptions = Array.from({ length: 10 }, (_, i) => ({
+  label: `${(i + 1) * 10} items`,
+  value: (i + 1) * 10
 }));
 
 const Settings: React.FC = () => {
@@ -157,7 +164,8 @@ const Settings: React.FC = () => {
               />
             </div>
           </div>
-          <div className="flex flex-column">
+
+          <div className="flex flex-column mt-4">
             <h4>Queue Interval</h4>
             <Dropdown
               id="queueFetchInterval"
@@ -167,6 +175,47 @@ const Settings: React.FC = () => {
               placeholder="Select Interval"
               appendTo="self"
             />
+          </div>
+
+          <div className="flex flex-column mt-4">
+            <h4>Totals Settings</h4>
+            <div className="flex flex-column gap-3">
+              <div className="flex align-items-center">
+                <Checkbox
+                  inputId="showPagination"
+                  checked={settings.totalSettings.usePagination}
+                  onChange={() => dispatch(togglePagination())}
+                />
+                <label htmlFor="showPagination" className="ml-2">
+                  Enable Pagination
+                </label>
+              </div>
+
+              <div className="flex flex-column gap-2">
+                <Dropdown
+                  value={settings.totalSettings.itemsPerPage}
+                  options={itemsPerPageOptions}
+                  onChange={(e) => dispatch(updateItemsPerPage(e.value))}
+                  placeholder="Items per page"
+                  className="w-full"
+                  appendTo="self"
+                  disabled={!settings.totalSettings.usePagination}
+                />
+
+                <div className="flex align-items-center gap-2">
+                  <label htmlFor="customPageSize">Custom page size:</label>
+                  <InputNumber
+                    id="customPageSize"
+                    value={settings.totalSettings.itemsPerPage}
+                    onValueChange={(e) => dispatch(updateItemsPerPage(e.value || 50))}
+                    min={1}
+                    max={10000}
+                    disabled={!settings.totalSettings.usePagination}
+                    className="w-8rem"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

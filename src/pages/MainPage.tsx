@@ -9,13 +9,12 @@ import { shallowEqual } from 'react-redux';
 
 const MainPage: React.FC = () => {
   const activeAccounts = useAppSelector(selectActiveAccounts, shallowEqual);
-  const showTotals = useAppSelector((state) => state.settings.displaySettings.showTotals);
   const rateLimit = useAppSelector(selectRateLimit);
 
   return (
     <>
       <Queue accounts={activeAccounts} />
-      {showTotals && <Totals accounts={activeAccounts} />}
+      <Totals accounts={activeAccounts} />
       {activeAccounts?.map((account) => (
         <Account key={account.id} account={account} isRateLimited={rateLimit.isLimited} />
       ))}

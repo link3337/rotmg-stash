@@ -18,7 +18,6 @@ export const booleanSort = (a: any, b: any, direction: SortDirection): number =>
   return direction === 'asc' ? valA - valB : valB - valA;
 };
 
-
 const toNumber = (value: any): number => {
   return Number(value) || 0;
 };
@@ -27,4 +26,4 @@ export const numberSort = (a: any, b: any, direction: SortDirection): number => 
   a = toNumber(a);
   b = toNumber(b);
   return direction === 'asc' ? a - b : b - a;
-}
+};

@@ -1,5 +1,5 @@
 .character {
-  width: 180px;
+  width: 190px;
   padding: 15px;
 
   .seasonal {
@@ -40,10 +40,10 @@
     width: 100%;
     margin-bottom: 15px;
     font-size: 0.8rem;
-    text-align: right;
+    text-align: left;
 
     .statName {
-      padding: 4px;
+      font-weight: bold;
     }
 
     .stat {
@@ -59,7 +59,6 @@
     .exaltBonus {
       color: #4a9eff;
       margin-left: 4px;
-      font-size: 0.9em;
     }
   }
 
@@ -70,7 +69,7 @@
     .equipment {
       display: grid;
       grid-template-columns: repeat(4, 40px);
-      gap: 1.2px;
+      gap: 2px;
     }
   }
 

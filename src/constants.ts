@@ -33,5 +33,6 @@ export const displayErrorMessages = {
 export const TAURI_COMMANDS = {
   GET_ACCOUNT_DATA: 'get_account_data',
   LAUNCH_EXALT: 'launch_exalt',
-  GET_SETTINGS: 'get_settings'
+  GET_SETTINGS: 'get_settings',
+  EXECUTE_POWERSHELL: 'execute_powershell'
 };

@@ -1,4 +1,4 @@
-import { ClassID } from "@/realm/renders/classes";
+import { ClassID } from '@/realm/renders/classes';
 
 export interface CharUIModel {
   id: number;

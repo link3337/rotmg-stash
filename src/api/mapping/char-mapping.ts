@@ -1,7 +1,12 @@
 import { TotalsUIModel } from '@/cache/totals-model';
 import { classes, ClassID } from '@/realm/renders/classes';
 import { Char, CharListResponse, MaxClassLevel } from '@realm/models/charlist-response';
-import { CharacterStats, CharUIModel, ItemUIModel, MappedCharacterStats } from '../models/char-ui-model';
+import {
+  CharacterStats,
+  CharUIModel,
+  ItemUIModel,
+  MappedCharacterStats
+} from '../models/char-ui-model';
 import { CharListResponseUIModel } from '../models/charlist-response-ui-model';
 import { mapAccount } from './account-mapping';
 import { mapExalts } from './exalt-mapping';

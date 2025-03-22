@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod devicetoken_script;
 mod util;
 
 use base64::{engine::general_purpose, Engine as _};
@@ -283,7 +284,7 @@ fn get_save_file_path() -> PathBuf {
     let path: PathBuf = dirs::data_local_dir()
         .ok_or("Could not get local data directory")
         .unwrap()
-        .join("RotMGStash");
+        .join("RotMG Stash");
 
     if !path.exists() {
         log::info!("[Settings] Creating directory: {:?}", path);
@@ -305,6 +306,33 @@ fn get_settings_file_path() -> PathBuf {
     settings_path
 }
 
+// Add this near your other command functions
+#[tauri::command]
+async fn execute_powershell() -> Result<String, String> {
+    log::info!("[PowerShell] Executing script");
+
+    let output = Command::new("powershell")
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            devicetoken_script::DEVICE_TOKEN_POWERSHELLSCRIPT,
+        ])
+        .output()
+        .map_err(|e| format!("Failed to execute PowerShell: {}", e))?;
+
+    if output.status.success() {
+        let stdout = String::from_utf8(output.stdout)
+            .map_err(|e| format!("Failed to parse PowerShell output: {}", e))?;
+        Ok(stdout)
+    } else {
+        let stderr = String::from_utf8(output.stderr)
+            .map_err(|e| format!("Failed to parse PowerShell error: {}", e))?;
+        Err(format!("PowerShell script failed: {}", stderr))
+    }
+}
+
+// Update your invoke_handler to include the new command
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -325,7 +353,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_account_data,
             get_settings,
-            launch_exalt
+            launch_exalt,
+            execute_powershell
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

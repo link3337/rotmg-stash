@@ -25,6 +25,11 @@ export const tauriApi = createApi({
       query: () => ({
         commandName: TAURI_COMMANDS.GET_SETTINGS
       })
+    }),
+    executePowershell: builder.query<string, void>({
+      query: () => ({
+        commandName: TAURI_COMMANDS.EXECUTE_POWERSHELL
+      })
     })
   })
 });
@@ -40,4 +45,9 @@ export interface TauriSettingsModel {
   secret_key: string | null;
 }
 
-export const { useLaunchExaltMutation, useGetSettingsQuery, useLazyGetSettingsQuery } = tauriApi;
+export const {
+  useLaunchExaltMutation,
+  useLazyExecutePowershellQuery,
+  useGetSettingsQuery,
+  useLazyGetSettingsQuery
+} = tauriApi;

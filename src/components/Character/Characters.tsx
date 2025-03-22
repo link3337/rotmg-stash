@@ -7,15 +7,16 @@ import {
   FilterType,
   getCharacterFilterByAccount,
   getSelectedClassesByAccount,
+  selectShowHighlightedOnly,
   setFilter,
   setSelectedClasses,
   useFilter
 } from '@store/slices/FilterSlice';
-import { useSettings } from '@store/slices/SettingsSlice';
 import { MultiSelect } from 'primereact/multiselect';
 import { SelectButton, SelectButtonChangeEvent } from 'primereact/selectbutton';
 import React from 'react';
 import { Character } from './Character';
+import './Characters.module.scss';
 import CharactersInfo from './CharactersInfo';
 
 interface CharacterProps {
@@ -30,11 +31,9 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
 
   const selectedClasses = useAppSelector((state) => getSelectedClassesByAccount(state, accountId));
   const characterFilter = useAppSelector((state) => getCharacterFilterByAccount(state, accountId));
+  const showHighlightedOnly = useAppSelector(selectShowHighlightedOnly);
 
   const { selectedItems } = useFilter();
-  const {
-    displaySettings: { showTotals }
-  } = useSettings();
 
   const options = [
     { label: 'All', value: 'all' },
@@ -57,17 +56,18 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
           ? char.seasonal
           : !char.seasonal;
 
-    const classFilter = selectedClasses.length === 0 ? true : selectedClasses.includes(char.classId);
+    const classFilter =
+      selectedClasses.length === 0 ? true : selectedClasses.includes(char.classId);
 
-    if (!showTotals) return seasonalFilter && classFilter;
+    if (!showHighlightedOnly) return seasonalFilter && classFilter;
 
     const itemFilter =
       selectedItems.length === 0
         ? true
         : selectedItems.some(
-          (item) =>
-            char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
-        );
+            (item) =>
+              char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
+          );
 
     return seasonalFilter && classFilter && itemFilter;
   });
@@ -100,7 +100,7 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
           placeholder="Select Classes"
           filter
           filterPlaceholder="Search classes..."
-          className="w-20rem"
+          className="w-20rem XD"
         />
       </div>
 
