@@ -2,7 +2,7 @@ import { RealmItemMap } from '@/realm/renders/items';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define the base URL and default to the development server url
-const ASSETS_BASE_URL = import.meta.env.ROTMGSTASH_ASSETS_URL || 'https://rotmgstash.pages.dev';
+const ASSETS_BASE_URL = import.meta.env.ROTMG_STASH_ASSETS_URL || 'https://rotmgstash.pages.dev';
 
 export const itemsApi = createApi({
   reducerPath: 'itemsApi',

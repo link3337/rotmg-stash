@@ -3,7 +3,7 @@ import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/loc
 import { SortCriteria, SortFields } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
 import { useItems } from '@/providers/ItemsProvider';
-import { itemAliases } from '@/realm/renders/aliases';
+import { createTotalMap } from '@/utils/item-name-map';
 import { booleanSort, numberSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
@@ -23,7 +23,6 @@ import {
 } from '@store/slices/SettingsSlice';
 import { debug } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ItemList } from '../Item/ItemList';
@@ -70,8 +69,9 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const [filteredItems, setFilteredItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
   const [totalItemsNameMap, setTotalItemsNameMap] = useState<Map<string, number>>(new Map());
 
-  // Data fetching
-  const { regularItems, aprilFoolsItems, isLoading, error } = useItems();
+  // get items from context
+  const { regularItems, aprilFoolsItems, error } = useItems();
+
   const items = useAprilFoolsItems ? aprilFoolsItems : regularItems;
 
   // Memoized sort function
@@ -153,24 +153,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   // Update name map for search functionality
   useEffect(() => {
     if (items) {
-      const newNameMap = new Map<string, number>();
-
-      // Update the name map with proper item IDs
-      totalItems.forEach((item) => {
-        const itemData = items[item.itemId];
-        if (itemData?.name) {
-          // Use technicalName for shiny items, regular name for non-shiny
-          const searchName = itemData.isShiny ? itemData.technicalName : itemData.name;
-          newNameMap.set(searchName.toLowerCase(), item.itemId);
-        }
-      });
-
-      itemAliases.forEach((itemId, alias) => {
-        if (totalItems.some((item) => item.itemId === itemId)) {
-          newNameMap.set(alias.toLowerCase(), itemId);
-        }
-      });
-
+      const newNameMap = createTotalMap(items, totalItems);
       setTotalItemsNameMap(newNameMap);
     }
   }, [totalItems, items]);
@@ -182,18 +165,12 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
     }
   }, [activeFilters, showHighlightedOnly, dispatch]);
 
-  // Loading and error states
-  if (isLoading) {
-    return (
-      <div className="flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
-        <ProgressSpinner />
-      </div>
-    );
-  }
-
   if (error) {
     return (
-      <div className="flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+      <div
+        className="flex justify-content-center align-items-center"
+        style={{ minHeight: '200px' }}
+      >
         <div className="text-red-500">Error loading items: {error.message}</div>
       </div>
     );

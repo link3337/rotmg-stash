@@ -20,10 +20,12 @@
       left: -100px;
       width: 100px;
       height: 100%;
-      background: linear-gradient(to right,
-          transparent 0%,
-          rgba(255, 255, 255, 0.3) 50%,
-          transparent 100%);
+      background: linear-gradient(
+        to right,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+      );
       animation: shine 5s infinite;
     }
   }

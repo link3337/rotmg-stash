@@ -92,7 +92,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   }
 
   const AccountContent = () => (
-    <Card className="m-2">
+    <Card className="mt-3">
       {!data && (
         <>
           <div className={styles.accountinfoContainer} style={{ width: '100%' }}>

@@ -1,9 +1,14 @@
 const CACHE_NAME = 'rotmg-stash-cache-v1';
+
+// base url for assets
+// todo: make this dynamic eventually
+const ASSETS_BASE_URL = 'https://rotmgstash.pages.dev';
+
 const CACHE_URLS = [
-  'https://rotmgstash.pages.dev/renders-april-fools.png',
-  'https://rotmgstash.pages.dev/renders.png',
-  'https://rotmgstash.pages.dev/items.json',
-  'https://rotmgstash.pages.dev/april-fools-items.json'
+  `${ASSETS_BASE_URL}/renders-april-fools.png`,
+  `${ASSETS_BASE_URL}/renders.png`,
+  `${ASSETS_BASE_URL}/items.json`,
+  `${ASSETS_BASE_URL}/april-fools-items.json`
 ];
 
 // Install event: Cache the images and JSON files

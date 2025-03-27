@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly ROTMGSTASH_ASSETS_URL: string;
+  readonly ROTMG_STASH_ASSETS_URL: string;
 }
 
 interface ImportMeta {

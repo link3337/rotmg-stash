@@ -9,7 +9,7 @@ import './index.scss';
 import { ItemsProvider } from './providers/ItemsProvider.tsx';
 
 console.log(`Mode: ${import.meta.env.MODE}`);
-console.log(`ASSET_URL From env: ${import.meta.env.ROTMGSTASH_ASSETS_URL}`);
+console.log(`ASSETS URL From env: ${import.meta.env.ROTMG_STASH_ASSETS_URL}`);
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker

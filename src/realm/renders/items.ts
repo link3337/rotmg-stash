@@ -1,6 +1,4 @@
-export interface RealmItemMap {
-  [key: string]: RealmItem;
-}
+export type RealmItemMap = Record<string, RealmItem>;
 
 export interface RealmItem {
   /**
