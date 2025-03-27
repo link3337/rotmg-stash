@@ -58,6 +58,8 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ROTMGSTASH_ASSETS_URL: ${{ secrets.ROTMGSTASH_ASSETS_URL }}
+
         with:
           tagName: rotmg-stash-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: 'RotMG Stash v__VERSION__'

@@ -36,7 +36,13 @@ cd rotmg-stash
 npm install
 ```
 
-3. Start the development server:
+3. Rename `.env.example` to `.env`:
+
+```bash
+mv .env.example .env
+```
+
+4. Start the development server:
 
 ```bash
 npm run tauri dev

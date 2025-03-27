@@ -2,12 +2,12 @@ import { ItemUIModel } from '@/api/models/char-ui-model';
 import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/localstorage-service';
 import { SortCriteria, SortFields } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
+import { useItems } from '@/providers/ItemsProvider';
 import { itemAliases } from '@/realm/renders/aliases';
 import { booleanSort, numberSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
-import { items } from '@realm/renders/items';
 import {
   clearFilters,
   selectSelectedItems,
@@ -15,18 +15,25 @@ import {
   setHighlightedOnly,
   toggleHighlightedOnly
 } from '@store/slices/FilterSlice';
-import { selectDisplaySettings, selectItemSort, selectTotalSettings } from '@store/slices/SettingsSlice';
+import {
+  selectDisplaySettings,
+  selectItemSort,
+  selectTotalSettings,
+  selectUseAprilFoolsItems
+} from '@store/slices/SettingsSlice';
 import { debug } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
-import React, { useCallback, useEffect, useState } from 'react';
+import { ProgressSpinner } from 'primereact/progressspinner';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ItemList } from '../Item/ItemList';
+import styles from './Totals.module.scss';
 
+// Memoized calculation function
 const calculateTotalsOfAllAccounts = (accounts: AccountModel[]): TotalsUIModel[] => {
   const totals = new Map<number, number>();
   accounts?.forEach((account) => {
     const mappedData = account.mappedData;
-
     if (!mappedData) return;
 
     mappedData?.totals?.forEach((item) => {
@@ -48,24 +55,31 @@ interface TotalProps {
 const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const dispatch = useDispatch();
 
+  // Selectors
   const activeFilters = useAppSelector(selectSelectedItems);
   const itemSort = useAppSelector(selectItemSort);
   const { showTotals } = useAppSelector(selectDisplaySettings);
   const showHighlightedOnly = useAppSelector(selectShowHighlightedOnly);
   const selectedItems = useAppSelector(selectSelectedItems);
+  const useAprilFoolsItems = useAppSelector(selectUseAprilFoolsItems);
+  const { usePagination, itemsPerPage } = useAppSelector(selectTotalSettings);
 
+  // State
   const [selectedItemsUI, setSelectedItemsUI] = useState<ItemUIModel[]>([]);
-
   const [totalItems, setTotalItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
   const [filteredItems, setFilteredItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
   const [totalItemsNameMap, setTotalItemsNameMap] = useState<Map<string, number>>(new Map());
-  const { usePagination, itemsPerPage } = useAppSelector(selectTotalSettings);
 
+  // Data fetching
+  const { regularItems, aprilFoolsItems, isLoading, error } = useItems();
+  const items = useAprilFoolsItems ? aprilFoolsItems : regularItems;
+
+  // Memoized sort function
   const sortItems = useCallback(
     (toBeSortedItems: TotalsUIModel[], sort: SortCriteria): TotalsUIModel[] => {
       return [...toBeSortedItems].sort((a, b) => {
-        const itemA = items[a.itemId];
-        const itemB = items[b.itemId];
+        const itemA = items?.[a.itemId];
+        const itemB = items?.[b.itemId];
 
         switch (sort.field) {
           case SortFields.id:
@@ -89,44 +103,44 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
         }
       });
     },
-    []
+    [items]
   );
 
-  const handleClearFilters = () => {
+  // Memoized handlers
+  const handleClearFilters = useCallback(() => {
     dispatch(clearFilters());
-  };
+  }, [dispatch]);
 
+  const handleToggleHighlightedOnly = useCallback(() => {
+    dispatch(toggleHighlightedOnly());
+  }, [dispatch]);
+
+  // Effects
   useEffect(() => {
     const mappedSelectedItems: ItemUIModel[] = selectedItems.map((itemId) => ({ itemId }));
     setSelectedItemsUI(mappedSelectedItems);
   }, [selectedItems]);
-
 
   // Calculate total items from accounts
   useEffect(() => {
     const newTotalItems = calculateTotalsOfAllAccounts(accounts);
     if (JSON.stringify(newTotalItems) !== JSON.stringify(totalItems)) {
       debug('Totals were recalculated and updated');
-      // override local storage with new totals
       saveTotalsToLocalStorage(newTotalItems);
-      // set local state
       setTotalItems(newTotalItems);
     }
   }, [accounts]);
 
-  // sort total items and update filtered items
+  // Sort total items and update filtered items
   useEffect(() => {
-    if (totalItems.length > 0) {
-      // sort the items
+    if (totalItems.length > 0 && items) {
       const sortedItems = sortItems(totalItems, itemSort);
 
-      // update totalItems if sort changed the order
       if (JSON.stringify(sortedItems) !== JSON.stringify(totalItems)) {
         debug('Totals were sorted and updated');
         setTotalItems(sortedItems);
       }
 
-      // filter items based on active filters
       const filtered =
         activeFilters.length > 0
           ? sortedItems.filter((item) => activeFilters.includes(item.itemId))
@@ -134,45 +148,83 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
       setFilteredItems(filtered);
     }
-  }, [totalItems, itemSort, activeFilters, sortItems]);
+  }, [totalItems, itemSort, activeFilters, sortItems, items]);
 
-  // update name map for search functionality
+  // Update name map for search functionality
   useEffect(() => {
-    const newNameMap = new Map<string, number>();
+    if (items) {
+      const newNameMap = new Map<string, number>();
 
-    // add base item names
-    totalItems.forEach((item) => {
-      const itemData = items[item.itemId];
-      if (itemData?.name) {
-        newNameMap.set(itemData.name.toLowerCase(), item.itemId);
-      }
-    });
+      // Update the name map with proper item IDs
+      totalItems.forEach((item) => {
+        const itemData = items[item.itemId];
+        if (itemData?.name) {
+          // Use technicalName for shiny items, regular name for non-shiny
+          const searchName = itemData.isShiny ? itemData.technicalName : itemData.name;
+          newNameMap.set(searchName.toLowerCase(), item.itemId);
+        }
+      });
 
-    // add item aliases for existing items
-    itemAliases.forEach((itemId, alias) => {
-      if (totalItems.some((item) => item.itemId === itemId)) {
-        newNameMap.set(alias.toLowerCase(), itemId);
-      }
-    });
+      itemAliases.forEach((itemId, alias) => {
+        if (totalItems.some((item) => item.itemId === itemId)) {
+          newNameMap.set(alias.toLowerCase(), itemId);
+        }
+      });
 
-    setTotalItemsNameMap(newNameMap);
-  }, [totalItems]);
+      setTotalItemsNameMap(newNameMap);
+    }
+  }, [totalItems, items]);
 
-  // reset showHighlighted when filters are cleared
+  // Reset showHighlighted when filters are cleared
   useEffect(() => {
     if (activeFilters.length === 0 && showHighlightedOnly) {
       dispatch(setHighlightedOnly(false));
     }
-  }, [activeFilters]);
+  }, [activeFilters, showHighlightedOnly, dispatch]);
+
+  // Loading and error states
+  if (isLoading) {
+    return (
+      <div className="flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+        <ProgressSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+        <div className="text-red-500">Error loading items: {error.message}</div>
+      </div>
+    );
+  }
+
+  // Memoized button props
+  const clearButtonProps = useMemo(
+    () => ({
+      className: 'mr-2',
+      label: 'Clear',
+      onClick: handleClearFilters
+    }),
+    [handleClearFilters]
+  );
+
+  const highlightButtonProps = useMemo(
+    () => ({
+      disabled: activeFilters.length === 0,
+      label: showHighlightedOnly ? 'Show All' : 'Show Highlighted Only',
+      onClick: handleToggleHighlightedOnly
+    }),
+    [activeFilters.length, showHighlightedOnly, handleToggleHighlightedOnly]
+  );
 
   return (
-    <div>
+    <div className={styles.totalsContainer}>
       <div className="flex container justify-content-end">
         <ItemSearch totalItemsNameMap={totalItemsNameMap} />
       </div>
 
       <div>
-        {/* Always show selected items if they exist and user has "show totals off", so it is known which items are currently selected */}
         {!showTotals && selectedItems.length > 0 && (
           <div className="text-left">
             <span className="ml-1 text-800 w-full">Selected Items:</span>
@@ -180,15 +232,10 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
           </div>
         )}
       </div>
+
       <div className="flex justify-content-end mb-2">
-        {filteredItems.length > 0 && (
-          <Button className="mr-2" label="Clear" onClick={handleClearFilters} />
-        )}
-        <Button
-          disabled={activeFilters.length === 0}
-          label={showHighlightedOnly ? 'Show All' : 'Show Highlighted Only'}
-          onClick={() => dispatch(toggleHighlightedOnly())}
-        />
+        {filteredItems.length > 0 && <Button {...clearButtonProps} />}
+        <Button {...highlightButtonProps} />
       </div>
 
       {showTotals && (

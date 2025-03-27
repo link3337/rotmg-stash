@@ -26,6 +26,7 @@ export interface DisplaySettingsModel {
   showAccountName: boolean;
   showIngameNameInQueue: boolean;
   compactVaults: boolean;
+  useAprilFoolsItems: boolean;
 }
 
 export interface TotalSettingsModel {

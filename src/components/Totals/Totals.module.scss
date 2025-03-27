@@ -1,0 +1,53 @@
+.totalsContainer {
+    padding: 1rem;
+    background-color: var(--surface-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1rem;
+
+    .flex {
+        display: flex;
+    }
+
+    .container {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .justify-content-end {
+        justify-content: flex-end;
+    }
+
+    .justify-content-center {
+        justify-content: center;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .text-left {
+        text-align: left;
+    }
+
+    .text-800 {
+        color: var(--text-color-secondary);
+    }
+
+    .mb-2 {
+        margin-bottom: 0.5rem;
+    }
+
+    .ml-1 {
+        margin-left: 0.25rem;
+    }
+
+    .mr-2 {
+        margin-right: 0.5rem;
+    }
+
+    .w-full {
+        width: 100%;
+    }
+}
