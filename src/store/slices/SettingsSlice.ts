@@ -98,6 +98,9 @@ const settingsSlice = createSlice({
     },
     togglePagination: (state) => {
       state.totalSettings.usePagination = !state.totalSettings.usePagination;
+    },
+    toggleAprilFoolsItems: (state) => {
+      state.displaySettings.useAprilFoolsItems = !state.displaySettings.useAprilFoolsItems;
     }
   }
 });
@@ -113,7 +116,8 @@ export const {
   updateQueueFetchInterval,
   setSettings,
   updateItemsPerPage,
-  togglePagination
+  togglePagination,
+  toggleAprilFoolsItems
 } = settingsSlice.actions;
 
 // middleware listener to update localStorage when settings state changes
@@ -132,7 +136,8 @@ settingsStateListener.startListening({
     setSettings,
     updateQueueFetchInterval,
     updateItemsPerPage,
-    togglePagination
+    togglePagination,
+    toggleAprilFoolsItems
   ),
   effect: (_action, listenerApi) => {
     const state = listenerApi.getState() as RootState;
@@ -166,6 +171,9 @@ export const selectShowAccountName = (state: RootState) =>
 
 export const selectDisplayIgnInQueue = (state: RootState) =>
   settingsSelector(state).displaySettings.showIngameNameInQueue;
+
+export const selectUseAprilFoolsItems = (state: RootState) =>
+  state.settings.displaySettings.useAprilFoolsItems;
 
 // hook
 export function useSettings(): SettingsState {

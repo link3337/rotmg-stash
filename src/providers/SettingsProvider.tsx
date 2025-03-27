@@ -5,23 +5,21 @@ interface Settings {
   secret_key: string | null;
 }
 
-interface SettingsContextType {
+interface SettingsContext {
   settings: Settings | null;
   loading: boolean;
   error: string | null;
 }
 
-const SettingsContext = createContext<SettingsContextType>({
+const SettingsContext = createContext<SettingsContext>({
   settings: null,
   loading: true,
   error: null
 });
 
-export const useSettings = () => useContext(SettingsContext);
-
 export const SettingsProvider = ({ children }: { children: React.ReactNode }) => {
   const [settings, setSettings] = useState<Settings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [getSettings] = useLazyGetSettingsQuery();
@@ -34,7 +32,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load settings');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -42,8 +40,16 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
   }, []);
 
   return (
-    <SettingsContext.Provider value={{ settings, loading, error }}>
+    <SettingsContext.Provider value={{ settings, loading: isLoading, error }}>
       {children}
     </SettingsContext.Provider>
   );
+};
+
+export const useSettings = (): SettingsContext => {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error('useSettings must be used within a SettingsProvider');
+  }
+  return context;
 };

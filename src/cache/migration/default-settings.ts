@@ -26,7 +26,8 @@ export const defaultDisplaySettings: DisplaySettingsModel = {
   showItemTooltips: true,
   showAccountName: true,
   showIngameNameInQueue: true,
-  compactVaults: true
+  compactVaults: true,
+  useAprilFoolsItems: false
 };
 
 export const defaultExperimentalSettings: ExperimentalSettingsModel = {

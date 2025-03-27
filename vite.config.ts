@@ -10,7 +10,7 @@ const ReactCompilerConfig = {
 };
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig({
   plugins: [
     react({
       babel: {
@@ -49,4 +49,4 @@ export default defineConfig(async () => ({
     }
   },
   envPrefix: ['VITE_', 'ROTMG_STASH_', 'TAURI_']
-}));
+});

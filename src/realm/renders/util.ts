@@ -1,10 +1,13 @@
-import { itemNameMap } from '@utils/item-name-map';
+import { createItemNameMap } from '@/utils/item-name-map';
+import { RealmItemMap } from './items';
+// import assets like this for debugging / finding item ids by names (e.g for mapping consumable names to ids)
+// import * as items from '@assets/items.json';
 
 // util functions for debugging
-export function itemNamesToIds(names: string[]): number[] {
-  return names.map(itemNameToId);
+export function itemNamesToIds(items: RealmItemMap, names: string[]): number[] {
+  return names.map((name) => itemNameToId(items, name));
 }
 
-function itemNameToId(name: string): number {
-  return itemNameMap.get(name) || -1;
+function itemNameToId(items: RealmItemMap, name: string): number {
+  return createItemNameMap(items).get(name) || -1;
 }

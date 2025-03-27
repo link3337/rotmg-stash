@@ -50,7 +50,7 @@
 }
 
 .item:not(.silhouette) {
-  background: url(../renders.png) var(--gray-500);
+  background: var(--gray-500);
 }
 
 @keyframes shine {

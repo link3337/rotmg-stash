@@ -1,8 +1,9 @@
 import { EMPTY_SLOT_ITEM_ID } from '@/constants';
+import { useItems } from '@/providers/ItemsProvider';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
-import { items } from '@realm/renders/items';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
-import { info } from '@tauri-apps/plugin-log';
+import { selectUseAprilFoolsItems } from '@store/slices/SettingsSlice';
+import { debug, info } from '@tauri-apps/plugin-log';
 import { FC, useRef, useState } from 'react';
 import styles from './Item.module.scss';
 import ItemTooltip, { ItemInfo } from './ItemTooltip';
@@ -19,13 +20,24 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
   const showItemTooltips = useAppSelector(
     (state) => state.settings.displaySettings.showItemTooltips
   );
+  const useAprilFoolsItems = useAppSelector(selectUseAprilFoolsItems);
+
+  const { regularItems, aprilFoolsItems } = useItems();
 
   const [showTooltip, setShowTooltip] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
 
-  let itemIdentifier = itemId;
+  // choose the correct item set based on the setting
+  const items = useAprilFoolsItems ? aprilFoolsItems : regularItems;
 
-  const item = items[itemIdentifier];
+  if (!items) {
+    debug('Items not loaded yet');
+    return null;
+  }
+
+  const item = items[itemId];
+
+  // if the item is not found, show the unknown item
   if (!item) return <UnknownItem itemId={itemId} amount={amount} />;
 
   const isHighlighted = activeFilters.includes(itemId);
@@ -76,9 +88,18 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
         ref={itemRef}
         onMouseOver={() => showItemTooltips && handleMouseOver()}
         onMouseLeave={() => setShowTooltip(false)}
-        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${isShiny ? styles.shiny : ''}`}
+        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${
+          isShiny ? styles.shiny : ''
+        }`}
         data-itemid={itemId}
-        style={{ backgroundPosition }}
+        style={{
+          backgroundPosition,
+          backgroundImage: `url(${
+            useAprilFoolsItems
+              ? 'https://rotmgstash.pages.dev/renders-april-fools.png'
+              : 'https://rotmgstash.pages.dev/renders.png'
+          })`
+        }}
         onClick={handleClick}
       >
         <div className={styles.nonSelectable}>{amount && amount > 0 ? amount : ''}</div>

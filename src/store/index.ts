@@ -1,3 +1,4 @@
+import { itemsApi } from '@api/items/itemsApi';
 import { tauriApi } from '@api/tauri/tauriApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
@@ -20,7 +21,7 @@ export const store = configureStore({
     getDefaultMiddleware()
       .prepend(accountsStateListener.middleware)
       .prepend(settingsStateListener.middleware)
-      .concat([logger].concat(tauriApi.middleware)),
+      .concat([logger].concat(tauriApi.middleware).concat(itemsApi.middleware)),
   reducer: combineReducers({
     filter: filterReducer,
     layout: layoutReducer,
@@ -30,7 +31,8 @@ export const store = configureStore({
     settings: settingsReducer,
 
     // apis
-    tauriApi: tauriApi.reducer
+    [tauriApi.reducerPath]: tauriApi.reducer,
+    [itemsApi.reducerPath]: itemsApi.reducer
   })
 });
 

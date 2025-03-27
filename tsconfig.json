@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "@assets/*": ["./assets/*"],
       "@/*": ["src/*"],
       "@api/*": ["src/api/*"],
       "@cache/*": ["src/cache/*"],

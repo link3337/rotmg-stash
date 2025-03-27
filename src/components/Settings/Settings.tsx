@@ -1,6 +1,7 @@
 import { DisplaySettingsModel, SortFields } from '@cache/settings-model';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import {
+  toggleAprilFoolsItems,
   togglePagination,
   toggleSetting,
   toggleSortDirection,
@@ -133,6 +134,16 @@ const Settings: React.FC = () => {
                   </label>
                 </div>
               ))}
+              <div className="flex align-items-center">
+                <Checkbox
+                  inputId="useAprilFoolsItems"
+                  checked={settings.displaySettings.useAprilFoolsItems}
+                  onChange={() => dispatch(toggleAprilFoolsItems())}
+                />
+                <label htmlFor="useAprilFoolsItems" className="ml-2">
+                  Use April Fools Items
+                </label>
+              </div>
             </div>
           </div>
         </div>
