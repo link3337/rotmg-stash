@@ -3,6 +3,7 @@ import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/loc
 import { SortCriteria, SortFields } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
 import { useItems } from '@/providers/ItemsProvider';
+import { itemAliases } from '@/realm/renders/aliases';
 import { createTotalMap } from '@/utils/item-name-map';
 import { booleanSort, numberSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
@@ -154,6 +155,14 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   useEffect(() => {
     if (items) {
       const newNameMap = createTotalMap(items, totalItems);
+
+      // add item aliases
+      itemAliases.forEach((itemId, alias) => {
+        if (!newNameMap.has(alias)) {
+          newNameMap.set(alias, itemId);
+        }
+      });
+
       setTotalItemsNameMap(newNameMap);
     }
   }, [totalItems, items]);
