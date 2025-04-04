@@ -159,11 +159,11 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
       const newNameMap = createTotalMap(items, totalItems);
 
       // add item aliases
-      itemAliases.forEach((itemId, alias) => {
+      for (const [alias, itemId] of itemAliases.entries()) {
         if (!newNameMap.has(alias)) {
           newNameMap.set(alias, itemId);
         }
-      });
+      }
 
       setTotalItemsNameMap(newNameMap);
     }

@@ -19,17 +19,17 @@ export const ItemList: React.FC<ItemListProps> = ({
   currentPage,
   onPageChange
 }) => {
-  const [first, setFirst] = useState(0);
+  const [startIndex, setStartIndex] = useState(0);
 
-  // Update 'first' when currentPage changes externally
+  // Update 'startIndex' when currentPage changes externally
   useEffect(() => {
     if (currentPage !== undefined) {
-      setFirst((currentPage - 1) * itemsPerPage);
+      setStartIndex((currentPage - 1) * itemsPerPage);
     }
   }, [currentPage, itemsPerPage]);
 
   const handlePageChange = (e: { first: number }) => {
-    setFirst(e.first);
+    setStartIndex(e.first);
 
     if (onPageChange) {
       const newPage = Math.floor(e.first / itemsPerPage) + 1;
@@ -37,7 +37,7 @@ export const ItemList: React.FC<ItemListProps> = ({
     }
   };
 
-  const displayedItems = paginated ? items.slice(first, first + itemsPerPage) : items;
+  const displayedItems = paginated ? items.slice(startIndex, startIndex + itemsPerPage) : items;
 
   return (
     <div className="flex flex-column gap-2">
@@ -48,7 +48,7 @@ export const ItemList: React.FC<ItemListProps> = ({
       </div>
       {paginated && items.length > itemsPerPage && (
         <Paginator
-          first={first}
+          first={startIndex}
           rows={itemsPerPage}
           totalRecords={items.length}
           onPageChange={handlePageChange}
