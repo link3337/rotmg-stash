@@ -3,6 +3,7 @@ import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/loc
 import { SortCriteria, SortFields } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
 import { useItems } from '@/providers/ItemsProvider';
+import { itemAliases } from '@/realm/renders/aliases';
 import { createTotalMap } from '@/utils/item-name-map';
 import { booleanSort, numberSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
@@ -53,6 +54,8 @@ interface TotalProps {
 
 const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const dispatch = useDispatch();
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Selectors
   const activeFilters = useAppSelector(selectSelectedItems);
@@ -154,6 +157,14 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   useEffect(() => {
     if (items) {
       const newNameMap = createTotalMap(items, totalItems);
+
+      // add item aliases
+      for (const [alias, itemId] of itemAliases.entries()) {
+        if (!newNameMap.has(alias)) {
+          newNameMap.set(alias, itemId);
+        }
+      }
+
       setTotalItemsNameMap(newNameMap);
     }
   }, [totalItems, items]);
@@ -164,6 +175,16 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
       dispatch(setHighlightedOnly(false));
     }
   }, [activeFilters, showHighlightedOnly, dispatch]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeFilters, showHighlightedOnly]);
+
+  // Add onPageChange handler
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
 
   if (error) {
     return (
@@ -205,7 +226,11 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
         {!showTotals && selectedItems.length > 0 && (
           <div className="text-left">
             <span className="ml-1 text-800 w-full">Selected Items:</span>
-            <ItemList items={selectedItemsUI} />
+            <ItemList
+              items={selectedItemsUI}
+              paginated={usePagination}
+              itemsPerPage={itemsPerPage}
+            />
           </div>
         )}
       </div>
@@ -220,6 +245,8 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
           items={showHighlightedOnly ? filteredItems : totalItems}
           paginated={usePagination}
           itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={handlePageChange}
         />
       )}
     </div>

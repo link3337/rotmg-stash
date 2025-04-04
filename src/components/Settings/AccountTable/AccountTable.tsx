@@ -603,7 +603,7 @@ export const AccountTable: React.FC = () => {
             tooltipOptions={{ position: 'top', showDelay: 150 }}
             tooltip="Import Accounts"
             icon="pi pi-upload"
-            onClick={() => fileUploadRef.current?.getInput().click()}
+            onClick={() => fileUploadRef.current && fileUploadRef.current.getInput()?.click()}
             className={`mr-1 p-button-rounded p-button-outlined`}
           />
 
