@@ -213,7 +213,7 @@ export const classes: Classes = {
   ]
 };
 
-export const exaltStats: string[] = ['VIT', 'SPD', 'WIS', 'DEX', 'DEF', 'ATT', 'MP', 'HP'];
+export const exaltStats: string[] = ['DEX', 'SPD', 'VIT', 'WIS', 'DEF', 'ATT', 'MP', 'HP'];
 export const exaltRanges: { max: number; value: number }[] = [
   { max: 5, value: 0 },
   { max: 15, value: 1 },
