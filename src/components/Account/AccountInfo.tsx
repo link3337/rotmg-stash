@@ -89,7 +89,14 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
             ★
           </span>
           <span>{showAccountName ? accountData?.name : account?.id}</span>
-          <span className="text-sm text-600">
+          <span
+            className="text-sm text-600"
+            title={
+              account?.lastLaunched
+                ? `Last saved: ${account?.lastSaved ? formatDate(account?.lastSaved) : '-'}\nLast launched: ${formatDate(account.lastLaunched)}`
+                : `Last saved: ${account?.lastSaved ? formatDate(account?.lastSaved) : '-'}\nLast launched: Never`
+            }
+          >
             Last saved: {account?.lastSaved ? formatDate(account?.lastSaved) : '-'}
           </span>
           {loading && (

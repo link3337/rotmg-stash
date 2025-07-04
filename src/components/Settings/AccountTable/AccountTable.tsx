@@ -13,6 +13,7 @@ import {
   toggleAccountActive,
   updateAccount,
   updateAccounts,
+  updateAccountLastLaunched,
   useAccounts
 } from '@store/slices/AccountsSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
@@ -69,8 +70,17 @@ export const AccountTable: React.FC = () => {
       timeStyle: 'short'
     }).format(date);
 
+    // Create tooltip content that includes both last fetched and last launched
+    let tooltipContent = `Last Fetched: ${date.toLocaleString()}`;
+    if (rowData.lastLaunched) {
+      const launchedDate = new Date(rowData.lastLaunched);
+      tooltipContent += `\nLast Launched: ${launchedDate.toLocaleString()}`;
+    } else {
+      tooltipContent += `\nLast Launched: Never`;
+    }
+
     return (
-      <span className="text-sm" title={date.toLocaleString()}>
+      <span className="text-sm" title={tooltipContent}>
         {formattedDate}
       </span>
     );
@@ -227,8 +237,10 @@ export const AccountTable: React.FC = () => {
     if (!event?.data) return [];
 
     return [...event.data].sort((a: AccountModel, b: AccountModel) => {
+      // Sort by lastSaved for lastFetched column
       const dateA = a.lastSaved ? new Date(a.lastSaved).getTime() : 0;
       const dateB = b.lastSaved ? new Date(b.lastSaved).getTime() : 0;
+
       return (dateA - dateB) * (event.order ?? 1);
     });
   };
@@ -309,6 +321,9 @@ export const AccountTable: React.FC = () => {
         guid: account.email,
         password: decrypt(account.password)
       }).unwrap();
+
+      // Update lastLaunched timestamp after successful launch
+      dispatch(updateAccountLastLaunched(account.id));
 
       toast.current?.show({
         severity: 'success',
