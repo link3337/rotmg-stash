@@ -61,24 +61,32 @@ export const AccountTable: React.FC = () => {
   const toast = useRef<Toast>(null);
   const fileUploadRef = useRef<FileUpload>(null);
 
+  const formatDate = (date: string | Date) => {
+    return new Intl.DateTimeFormat(navigator.language, {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }).format(new Date(date));
+  };
+
+  const getTooltipContent = (account: AccountModel) => {
+    const lastSaved = account?.lastSaved ? formatDate(account.lastSaved) : '-';
+    const lastLaunched = account?.lastLaunched ? formatDate(account.lastLaunched) : 'Never';
+    return `Last Fetched: ${lastSaved}\nLast Launched: ${lastLaunched}`;
+  };
+
   // Add date formatter template
   const lastFetchedBodyTemplate = (rowData: AccountModel) => {
     if (!rowData.lastSaved) return '-';
 
     const date = new Date(rowData.lastSaved);
-    const formattedDate = new Intl.DateTimeFormat(navigator.language, {
-      dateStyle: 'short',
-      timeStyle: 'short'
-    }).format(date);
+    const formattedDate = formatDate(date);
 
-    // create tooltip content that includes both last fetched and last launched
-    let tooltipContent = `Last Fetched: ${date.toLocaleString()}`;
-    tooltipContent += `\nLast Launched: ${rowData.lastLaunched ? new Date(rowData.lastLaunched).toLocaleString() : 'Never'}`;
+    const tooltipContent = getTooltipContent(rowData);
 
     return (
       <>
-        <Tooltip target={`.tooltip-target-a-${rowData.id}`} content={tooltipContent} />
-        <span className={`text-sm cursor-pointer tooltip-target-a-${rowData.id}`}>
+        <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
+        <span className={`text-sm cursor-pointer tooltip-target-${rowData.id}`}>
           {formattedDate}
         </span>
       </>
