@@ -12,8 +12,8 @@ import {
   refreshAccount,
   toggleAccountActive,
   updateAccount,
-  updateAccounts,
   updateAccountLastLaunched,
+  updateAccounts,
   useAccounts
 } from '@store/slices/AccountsSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
@@ -31,6 +31,7 @@ import { Dialog } from 'primereact/dialog';
 import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
+import { Tooltip } from 'primereact/tooltip';
 import React, { useRef, useState } from 'react';
 import PasswordEditor from './PasswordEditor';
 
@@ -70,19 +71,17 @@ export const AccountTable: React.FC = () => {
       timeStyle: 'short'
     }).format(date);
 
-    // Create tooltip content that includes both last fetched and last launched
+    // create tooltip content that includes both last fetched and last launched
     let tooltipContent = `Last Fetched: ${date.toLocaleString()}`;
-    if (rowData.lastLaunched) {
-      const launchedDate = new Date(rowData.lastLaunched);
-      tooltipContent += `\nLast Launched: ${launchedDate.toLocaleString()}`;
-    } else {
-      tooltipContent += `\nLast Launched: Never`;
-    }
+    tooltipContent += `\nLast Launched: ${rowData.lastLaunched ? new Date(rowData.lastLaunched).toLocaleString() : 'Never'}`;
 
     return (
-      <span className="text-sm" title={tooltipContent}>
-        {formattedDate}
-      </span>
+      <>
+        <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
+        <span className={`text-sm cursor-pointer tooltip-target-${rowData.id}`}>
+          {formattedDate}
+        </span>
+      </>
     );
   };
 
