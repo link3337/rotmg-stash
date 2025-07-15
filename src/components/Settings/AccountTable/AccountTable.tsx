@@ -77,8 +77,8 @@ export const AccountTable: React.FC = () => {
 
     return (
       <>
-        <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
-        <span className={`text-sm cursor-pointer tooltip-target-${rowData.id}`}>
+        <Tooltip target={`.tooltip-target-a-${rowData.id}`} content={tooltipContent} />
+        <span className={`text-sm cursor-pointer tooltip-target-a-${rowData.id}`}>
           {formattedDate}
         </span>
       </>
