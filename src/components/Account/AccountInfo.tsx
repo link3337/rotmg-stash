@@ -96,8 +96,8 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
             ★
           </span>
           <span>{showAccountName ? accountData?.name : account?.id}</span>
-          <Tooltip target={`.tooltip-target-${account?.id}`} content={getTooltipContent()} />
-          <span className={`text-sm text-600 tooltip-target-${account?.id}`}>
+          <Tooltip target={tooltipRef} content={getTooltipContent()} />
+          <span ref={tooltipRef} className="text-sm text-600 tooltip-target">
             Last saved: {account?.lastSaved ? formatDate(account?.lastSaved) : '-'}
           </span>
           {loading && (
