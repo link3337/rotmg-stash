@@ -28,6 +28,11 @@ export interface AccountModel {
   lastSaved?: string;
 
   /**
+   * The last launched timestamp for the account.
+   */
+  lastLaunched?: string;
+
+  /**
    * The mapped data from the character list response.
    */
   mappedData?: CharListResponseUIModel;

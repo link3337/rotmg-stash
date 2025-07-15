@@ -12,6 +12,7 @@ import {
   refreshAccount,
   toggleAccountActive,
   updateAccount,
+  updateAccountLastLaunched,
   updateAccounts,
   useAccounts
 } from '@store/slices/AccountsSlice';
@@ -30,6 +31,7 @@ import { Dialog } from 'primereact/dialog';
 import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
+import { Tooltip } from 'primereact/tooltip';
 import React, { useRef, useState } from 'react';
 import PasswordEditor from './PasswordEditor';
 
@@ -59,20 +61,35 @@ export const AccountTable: React.FC = () => {
   const toast = useRef<Toast>(null);
   const fileUploadRef = useRef<FileUpload>(null);
 
+  const formatDate = (date: string | Date) => {
+    return new Intl.DateTimeFormat(navigator.language, {
+      dateStyle: 'short',
+      timeStyle: 'short'
+    }).format(new Date(date));
+  };
+
+  const getTooltipContent = (account: AccountModel) => {
+    const lastSaved = account?.lastSaved ? formatDate(account.lastSaved) : '-';
+    const lastLaunched = account?.lastLaunched ? formatDate(account.lastLaunched) : 'Never';
+    return `Last Fetched: ${lastSaved}\nLast Launched: ${lastLaunched}`;
+  };
+
   // Add date formatter template
   const lastFetchedBodyTemplate = (rowData: AccountModel) => {
     if (!rowData.lastSaved) return '-';
 
     const date = new Date(rowData.lastSaved);
-    const formattedDate = new Intl.DateTimeFormat(navigator.language, {
-      dateStyle: 'short',
-      timeStyle: 'short'
-    }).format(date);
+    const formattedDate = formatDate(date);
+
+    const tooltipContent = getTooltipContent(rowData);
 
     return (
-      <span className="text-sm" title={date.toLocaleString()}>
-        {formattedDate}
-      </span>
+      <>
+        <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
+        <span className={`text-sm cursor-pointer tooltip-target-${rowData.id}`}>
+          {formattedDate}
+        </span>
+      </>
     );
   };
 
@@ -227,8 +244,10 @@ export const AccountTable: React.FC = () => {
     if (!event?.data) return [];
 
     return [...event.data].sort((a: AccountModel, b: AccountModel) => {
+      // Sort by lastSaved for lastFetched column
       const dateA = a.lastSaved ? new Date(a.lastSaved).getTime() : 0;
       const dateB = b.lastSaved ? new Date(b.lastSaved).getTime() : 0;
+
       return (dateA - dateB) * (event.order ?? 1);
     });
   };
@@ -309,6 +328,9 @@ export const AccountTable: React.FC = () => {
         guid: account.email,
         password: decrypt(account.password)
       }).unwrap();
+
+      // Update lastLaunched timestamp after successful launch
+      dispatch(updateAccountLastLaunched(account.id));
 
       toast.current?.show({
         severity: 'success',

@@ -8,6 +8,7 @@ import { QueueStatus } from '@store/slices/QueueSlice';
 import { selectExperimentalSettings, selectShowAccountName } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import { Tooltip } from 'primereact/tooltip';
 import React from 'react';
 import styles from './AccountInfo.module.scss';
 
@@ -45,6 +46,12 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
       dateStyle: 'short',
       timeStyle: 'medium'
     }).format(new Date(date));
+  };
+
+  const getTooltipContent = () => {
+    const lastSaved = account?.lastSaved ? formatDate(account.lastSaved) : '-';
+    const lastLaunched = account?.lastLaunched ? formatDate(account.lastLaunched) : 'Never';
+    return `Last saved: ${lastSaved}\nLast launched: ${lastLaunched}`;
   };
 
   const usedVaultSlots = accountData?.vault?.filter((item) => item !== -1).length ?? 0;
@@ -89,7 +96,8 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
             ★
           </span>
           <span>{showAccountName ? accountData?.name : account?.id}</span>
-          <span className="text-sm text-600">
+          <Tooltip target={`.tooltip-target-${account?.id}`} content={getTooltipContent()} />
+          <span className={`text-sm text-600 tooltip-target-${account?.id}`}>
             Last saved: {account?.lastSaved ? formatDate(account?.lastSaved) : '-'}
           </span>
           {loading && (

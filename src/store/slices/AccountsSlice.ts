@@ -201,6 +201,13 @@ const accountsSlice = createSlice({
         ...account,
         queueStatus: account.active ? action.payload : account.queueStatus
       }));
+    },
+    // update lastLaunched timestamp for an account
+    updateAccountLastLaunched: (state, action: PayloadAction<string>) => {
+      const account = state.items.find((acc) => acc.id === action.payload);
+      if (account) {
+        account.lastLaunched = new Date().toISOString();
+      }
     }
   },
   extraReducers: (builder) => {
@@ -259,7 +266,8 @@ export const {
   updateAccount,
   changeAccountOrder,
   toggleAccountActive,
-  deleteAccount
+  deleteAccount,
+  updateAccountLastLaunched
 } = accountsSlice.actions;
 
 // middleware listener to update localStorage when accounts.items state changes
@@ -274,6 +282,7 @@ accountsStateListener.startListening({
     changeAccountOrder,
     toggleAccountActive,
     setAccountsQueueStatus,
+    updateAccountLastLaunched,
     importAccounts.fulfilled,
     refreshAccount.fulfilled,
     updateAccounts.fulfilled,

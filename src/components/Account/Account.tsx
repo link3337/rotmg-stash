@@ -4,7 +4,12 @@ import { AccountModel } from '@cache/account-model';
 import useCrypto from '@hooks/crypto';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import RenderIfVisible from '@hooks/renderIfVisible';
-import { refreshAccount, skipAccountFromQueue, useAccounts } from '@store/slices/AccountsSlice';
+import {
+  refreshAccount,
+  skipAccountFromQueue,
+  useAccounts,
+  updateAccountLastLaunched
+} from '@store/slices/AccountsSlice';
 import { selectSelectedItems } from '@store/slices/FilterSlice';
 import { QueueStatus } from '@store/slices/QueueSlice';
 import { info } from 'console';
@@ -62,12 +67,19 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
       return;
     }
 
-    await launchAccount({
-      exaltPath,
-      deviceToken,
-      guid: account.email,
-      password: decrypt(account.password)
-    }).unwrap();
+    try {
+      await launchAccount({
+        exaltPath,
+        deviceToken,
+        guid: account.email,
+        password: decrypt(account.password)
+      }).unwrap();
+
+      // Update lastLaunched timestamp after successful launch
+      dispatch(updateAccountLastLaunched(account.id));
+    } catch (error) {
+      console.error('Failed to launch account:', error);
+    }
   };
 
   const handleRefresh = async () => {
