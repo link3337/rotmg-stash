@@ -25,6 +25,7 @@ export interface DisplaySettingsModel {
   showItemTooltips: boolean;
   showAccountName: boolean;
   showIngameNameInQueue: boolean;
+  showLastLaunched: boolean;
   compactVaults: boolean;
   useAprilFoolsItems: boolean;
 }

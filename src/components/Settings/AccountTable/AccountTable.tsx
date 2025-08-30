@@ -85,10 +85,25 @@ export const AccountTable: React.FC = () => {
 
     return (
       <>
-        <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
+        {!settings.displaySettings.showLastLaunched && (
+          <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
+        )}
         <span className={`text-sm cursor-pointer tooltip-target-${rowData.id}`}>
           {formattedDate}
         </span>
+      </>
+    );
+  };
+
+  const lastLaunchedBodyTemplate = (rowData: AccountModel) => {
+    if (!rowData.lastLaunched) return '-';
+
+    const date = new Date(rowData.lastLaunched);
+    const formattedDate = formatDate(date);
+
+    return (
+      <>
+        <span className={`text-sm cursor-pointer`}>{formattedDate}</span>
       </>
     );
   };
@@ -590,7 +605,6 @@ export const AccountTable: React.FC = () => {
           className={`p-button-rounded`}
           onClick={() => setDialogVisible(true)}
         />
-
         {/* hide this control and use the upload button to trigger the file upload */}
         <FileUpload
           ref={fileUploadRef}
@@ -673,6 +687,15 @@ export const AccountTable: React.FC = () => {
           sortable
           sortFunction={dateSort}
         />
+        {settings.displaySettings.showLastLaunched && (
+          <Column
+            field="lastLaunched"
+            header="Last Launched"
+            body={lastLaunchedBodyTemplate}
+            sortable
+            sortFunction={dateSort}
+          />
+        )}
         <Column
           rowEditor
           headerStyle={{ width: '10%', minWidth: '8rem' }}

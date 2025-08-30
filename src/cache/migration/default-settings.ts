@@ -26,6 +26,7 @@ export const defaultDisplaySettings: DisplaySettingsModel = {
   showItemTooltips: true,
   showAccountName: true,
   showIngameNameInQueue: true,
+  showLastLaunched: false,
   compactVaults: true,
   useAprilFoolsItems: false
 };
