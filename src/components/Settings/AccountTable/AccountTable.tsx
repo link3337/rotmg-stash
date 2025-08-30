@@ -661,6 +661,7 @@ export const AccountTable: React.FC = () => {
       </div>
 
       <DataTable
+        key={`showExtraActions-${showExtraActions}`}
         value={accounts}
         tableStyle={{ minWidth: '50rem' }}
         editMode="row"
