@@ -7,12 +7,12 @@ interface Library {
 export const libraries: Library[] = [
   {
     name: 'Vite',
-    version: '7.0.4',
+    version: '7.1.3',
     icon: 'vite'
   },
   {
     name: 'Tauri',
-    version: '2.6.0',
+    version: '2.8.0',
     icon: 'tauri'
   },
   {
