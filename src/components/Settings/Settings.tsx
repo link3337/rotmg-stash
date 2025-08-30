@@ -102,6 +102,7 @@ const Settings: React.FC = () => {
     { label: 'Show Item Tooltips', key: 'showItemTooltips' },
     { label: 'Show Account Name', key: 'showAccountName' },
     { label: 'Show IGN in Queue Status', key: 'showIngameNameInQueue' },
+    { label: 'Show Last Launched Column', key: 'showLastLaunched' },
     { label: 'Compact Vaults', key: 'compactVaults' }
   ];
 

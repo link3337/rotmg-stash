@@ -85,10 +85,25 @@ export const AccountTable: React.FC = () => {
 
     return (
       <>
-        <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
+        {!settings.displaySettings.showLastLaunched && (
+          <Tooltip target={`.tooltip-target-${rowData.id}`} content={tooltipContent} />
+        )}
         <span className={`text-sm cursor-pointer tooltip-target-${rowData.id}`}>
           {formattedDate}
         </span>
+      </>
+    );
+  };
+
+  const lastLaunchedBodyTemplate = (rowData: AccountModel) => {
+    if (!rowData.lastLaunched) return '-';
+
+    const date = new Date(rowData.lastLaunched);
+    const formattedDate = formatDate(date);
+
+    return (
+      <>
+        <span className={`text-sm cursor-pointer`}>{formattedDate}</span>
       </>
     );
   };
@@ -244,9 +259,16 @@ export const AccountTable: React.FC = () => {
     if (!event?.data) return [];
 
     return [...event.data].sort((a: AccountModel, b: AccountModel) => {
-      // Sort by lastSaved for lastFetched column
-      const dateA = a.lastSaved ? new Date(a.lastSaved).getTime() : 0;
-      const dateB = b.lastSaved ? new Date(b.lastSaved).getTime() : 0;
+      // Sort by lastSaved for lastFetched column, lastLaunched for lastLaunched column
+      let dateA: number, dateB: number;
+
+      if (event.field === 'lastLaunched') {
+        dateA = a.lastLaunched ? new Date(a.lastLaunched).getTime() : 0;
+        dateB = b.lastLaunched ? new Date(b.lastLaunched).getTime() : 0;
+      } else {
+        dateA = a.lastSaved ? new Date(a.lastSaved).getTime() : 0;
+        dateB = b.lastSaved ? new Date(b.lastSaved).getTime() : 0;
+      }
 
       return (dateA - dateB) * (event.order ?? 1);
     });
@@ -590,7 +612,6 @@ export const AccountTable: React.FC = () => {
           className={`p-button-rounded`}
           onClick={() => setDialogVisible(true)}
         />
-
         {/* hide this control and use the upload button to trigger the file upload */}
         <FileUpload
           ref={fileUploadRef}
@@ -640,6 +661,7 @@ export const AccountTable: React.FC = () => {
       </div>
 
       <DataTable
+        key={`showExtraActions-${showExtraActions}`}
         value={accounts}
         tableStyle={{ minWidth: '50rem' }}
         editMode="row"
@@ -673,6 +695,15 @@ export const AccountTable: React.FC = () => {
           sortable
           sortFunction={dateSort}
         />
+        {settings.displaySettings.showLastLaunched && (
+          <Column
+            field="lastLaunched"
+            header="Last Launched"
+            body={lastLaunchedBodyTemplate}
+            sortable
+            sortFunction={dateSort}
+          />
+        )}
         <Column
           rowEditor
           headerStyle={{ width: '10%', minWidth: '8rem' }}
