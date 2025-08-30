@@ -259,9 +259,16 @@ export const AccountTable: React.FC = () => {
     if (!event?.data) return [];
 
     return [...event.data].sort((a: AccountModel, b: AccountModel) => {
-      // Sort by lastSaved for lastFetched column
-      const dateA = a.lastSaved ? new Date(a.lastSaved).getTime() : 0;
-      const dateB = b.lastSaved ? new Date(b.lastSaved).getTime() : 0;
+      // Sort by lastSaved for lastFetched column, lastLaunched for lastLaunched column
+      let dateA: number, dateB: number;
+
+      if (event.field === 'lastLaunched') {
+        dateA = a.lastLaunched ? new Date(a.lastLaunched).getTime() : 0;
+        dateB = b.lastLaunched ? new Date(b.lastLaunched).getTime() : 0;
+      } else {
+        dateA = a.lastSaved ? new Date(a.lastSaved).getTime() : 0;
+        dateB = b.lastSaved ? new Date(b.lastSaved).getTime() : 0;
+      }
 
       return (dateA - dateB) * (event.order ?? 1);
     });
