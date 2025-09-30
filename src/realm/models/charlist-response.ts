@@ -628,7 +628,7 @@ export interface Char {
   /**
    * The unique item information of the character.
    */
-  UniqueItemInfo: UniqueItemInfoSecondary;
+  UniqueItemInfo: UniqueItemInfo | null;
 
   /**
    * The number of backpack slots of the character.
@@ -674,15 +674,6 @@ export interface Char {
    * The shader of the character.
    */
   Shader?: string;
-}
-
-interface UniqueItemInfoSecondary {
-  ItemData: ItemDataSecondary[];
-}
-
-interface ItemDataSecondary {
-  type: string;
-  '#text'?: string;
 }
 
 interface AccountName {

@@ -3,7 +3,6 @@ import { tauriApi } from '@api/tauri/tauriApi';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { combineReducers } from 'redux';
-import { createLogger } from 'redux-logger';
 import accountsReducer, { accountsStateListener } from './slices/AccountsSlice';
 import filterReducer from './slices/FilterSlice';
 import layoutReducer from './slices/LayoutSlice';
@@ -11,9 +10,9 @@ import queueReducer from './slices/QueueSlice';
 import rateLimitReducer from './slices/RateLimitSlice';
 import settingsReducer, { settingsStateListener } from './slices/SettingsSlice';
 
-const logger = createLogger({
-  collapsed: true
-});
+import reduxLogger from './middleware/redux-logger';
+
+const middleware = [reduxLogger];
 
 export const store = configureStore({
   devTools: process.env.NODE_ENV === 'development',
@@ -21,7 +20,7 @@ export const store = configureStore({
     getDefaultMiddleware()
       .prepend(accountsStateListener.middleware)
       .prepend(settingsStateListener.middleware)
-      .concat([logger].concat(tauriApi.middleware).concat(itemsApi.middleware)),
+      .concat(middleware.concat(tauriApi.middleware).concat(itemsApi.middleware)),
   reducer: combineReducers({
     filter: filterReducer,
     layout: layoutReducer,
