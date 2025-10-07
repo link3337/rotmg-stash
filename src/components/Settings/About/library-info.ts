@@ -7,7 +7,7 @@ interface Library {
 export const libraries: Library[] = [
   {
     name: 'Vite',
-    version: '7.1.3',
+    version: '7.1.9',
     icon: 'vite'
   },
   {
@@ -17,12 +17,12 @@ export const libraries: Library[] = [
   },
   {
     name: 'React',
-    version: '19.1.0',
+    version: '19.2.0',
     icon: 'react'
   },
   {
     name: 'Redux',
-    version: '2.8.2',
+    version: '2.9.0',
     icon: 'redux'
   },
   {
