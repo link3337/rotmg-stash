@@ -15,9 +15,12 @@ export async function getAccountData(
     password
   });
 
+  console.log(apiResponse);
   const parser = new DOMParser();
   let xml: any = parser.parseFromString(apiResponse, 'text/xml');
+
   const json: CharListResponse = xmlToJson(xml);
+  console.log(json);
 
   return json;
 }

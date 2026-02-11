@@ -65,6 +65,40 @@ export function mapAccount(account: Account, charList: CharUIModel[]): AccountUI
   const seasonalSpoilsUIModel: ItemUIModel[] = mapToCompactVaultUIModel(mappedSeasonalSpoils);
   const materialStorageUIModel: ItemUIModel[] = mapToCompactVaultUIModel(mappedMaterialStorage);
 
+  // // Parse unique item info and attach enchantments to vault UI model entries
+  // try {
+  //   const uniqueItemInfo = (account.UniqueItemInfo as any)?.ItemData || [];
+  //   const uniqueMap = new Map<number, Array<[number, number]>>();
+
+  //   // ensure it's an array
+  //   const itemDatas = Array.isArray(uniqueItemInfo) ? uniqueItemInfo : [uniqueItemInfo];
+  //   itemDatas.forEach((itemData: any) => {
+  //     if (!itemData) return;
+  //     const type = itemData.type ? parseInt(itemData.type, 10) : undefined;
+  //     console.log(itemData);
+  //     const raw = itemData['#text'] || itemData['#text'] === '' ? itemData['#text'] : itemData['text'] || null;
+  //     if (!type) return;
+  //     console.log(raw);
+  //     const parsed = parseEnchantments(raw);
+  //     console.log(parsed);
+  //     if (!uniqueMap.has(type)) uniqueMap.set(type, []);
+  //     // store parsed enchantments; if none parsed, store empty array to indicate presence
+  //     uniqueMap.get(type)!.push(...(parsed.length ? parsed : []));
+  //   });
+
+  //   // attach enchantments to vaultUIModel items (aggregate)
+  //   vaultUIModel.forEach((item) => {
+  //     const ench = uniqueMap.get(item.itemId);
+  //     if (ench && ench.length) {
+  //       item.enchantments = ench;
+  //     }
+  //   });
+  //   console.log(vaultUIModel)
+  // } catch (e) {
+  //   // non-fatal
+  //   console.debug('Failed to attach enchantments to vault items', e);
+  // }
+
   const totalItemsCount =
     (mappedVaultItems?.flat().filter((x) => x !== -1).length ?? 0) +
     (mappedGiftItems?.length ?? 0) +

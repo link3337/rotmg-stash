@@ -55,6 +55,8 @@ export interface CharUIModel {
 export interface ItemUIModel {
   itemId: number;
   amount?: number;
+  // optional parsed enchantments for unique items (array of [key, value])
+  enchantments?: Array<[number, number]>;
 }
 
 export interface CharacterStats {
