@@ -18,9 +18,9 @@
   "dependencies": {
     "@reduxjs/toolkit": "~2.11.0",
     "@tauri-apps/api": "^2.10.1",
-    "@tauri-apps/plugin-dialog": "~2.4.2",
+    "@tauri-apps/plugin-dialog": "~2.6.0",
     "@tauri-apps/plugin-global-shortcut": "~2.3.1",
-    "@tauri-apps/plugin-log": "~2.7.1",
+    "@tauri-apps/plugin-log": "~2.8.0",
     "@tauri-apps/plugin-shell": "~2.3.3",
     "crypto-js": "~4.2.0",
     "file-saver": "~2.0.5",
@@ -48,14 +48,14 @@
     "eslint": "^9.39.3",
     "eslint-plugin-react-compiler": "^19.1.0-rc.2",
     "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.26",
-    "globals": "~17.0.0",
-    "prettier": "~3.7.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "~17.3.0",
+    "prettier": "~3.8.1",
     "sass": "^1.97.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
-    "vite-plugin-node-polyfills": "^0.24.0",
-    "vite-tsconfig-paths": "~6.0.3"
+    "vite-plugin-node-polyfills": "^0.25.0",
+    "vite-tsconfig-paths": "~6.1.1"
   }
 }
