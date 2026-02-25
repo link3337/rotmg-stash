@@ -32,7 +32,8 @@ export enum ClassID {
   Sorcerer = 805,
   Ninja = 806,
   Summoner = 817,
-  Kensei = 818
+  Kensei = 818,
+  Druid = 819,
 }
 
 /** class names as enum*/
@@ -54,7 +55,8 @@ export enum ClassName {
   Sorcerer = 'Sorcerer',
   Ninja = 'Ninja',
   Summoner = 'Summoner',
-  Kensei = 'Kensei'
+  Kensei = 'Kensei',
+  Druid = 'Druid'
 }
 
 /** Map of class IDs to class data */
@@ -210,6 +212,13 @@ export const classes: Classes = {
     [675, 195, 45, 9.5, 46, 45, 42, 34],
     [800, 300, 65, 25, 60, 65, 60, 50],
     [24, 30, 7, 9]
+  ],
+  [ClassID.Druid]: [
+    ClassName.Druid,
+    [159, 125, 20, 0, 23, 17, 5, 17],
+    [625, 239, 39, 9, 42, 55, 24, 55],
+    [750, 350, 60, 25, 60, 65, 40, 75],
+    [8, 29, 14, 9]
   ]
 };
 
