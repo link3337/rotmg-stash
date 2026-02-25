@@ -15,6 +15,11 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
     return parseInt(cell) > 75 ? 75 : cell;
   };
 
+  const getClassName = (classId: string) => {
+    const classInfo = classes[parseInt(classId) as ClassID];
+    return classInfo ? classInfo[0] : 'Unknown';
+  };
+
   const orderedExaltStats = ['HP', 'MP', 'ATT', 'DEF', 'SPD', 'DEX', 'VIT', 'WIS'];
 
   const mapToOrderedExalts = (exalts: string[]) => {
@@ -44,7 +49,7 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
           <tbody>
             {exalts?.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                <td>{classes[parseInt(row.classId) as ClassID][0]}</td>
+                <td>{getClassName(row.classId)}</td>
                 {mapToOrderedExalts(row.exalts).map((cell, cellIndex) => (
                   <td key={cellIndex}>{renderValue(cell)}</td>
                 ))}
