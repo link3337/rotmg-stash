@@ -56,6 +56,8 @@ export function mapQuickSlot(quickslots: string): ItemUIModel[] {
 
 const mapStats = (classId: ClassID, rawStats: CharacterStats): MappedCharacterStats[] => {
   const classObj = classes[classId];
+  if (!classObj) return [];
+
   const classMaxStats = classObj[3];
 
   return [
@@ -115,6 +117,7 @@ function mapCharModel(char: Char): CharUIModel | null {
 
   const classId = parseInt(char.ObjectType, 10) as ClassID;
   const classObj = classes[classId];
+  const className = classObj ? classObj[0] : 'Unknown';
 
   const rawStats: CharacterStats = {
     maxHP: char.MaxHitPoints ? parseInt(char.MaxHitPoints, 10) : 0,
@@ -131,8 +134,8 @@ function mapCharModel(char: Char): CharUIModel | null {
 
   return {
     id: char?.id ? parseInt(char?.id, 10) : -1,
-    classId: classId,
-    className: classObj[0],
+    classId,
+    className,
     seasonal: char.Seasonal?.toLowerCase() === 'true',
     level: char.Level ? parseInt(char.Level, 10) : 1,
     exp: char.Exp ? parseInt(char.Exp, 10) : 0,
