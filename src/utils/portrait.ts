@@ -1,6 +1,6 @@
 import { skinsheets, textiles } from '@realm/renders/sheets';
-import { skins } from '@realm/renders/skins';
-import { textures } from '@realm/renders/textures';
+import { SkinData, skins } from '@realm/renders/skins';
+import { TextureData, textures } from '@realm/renders/textures';
 
 // single component
 function p_comp(s: any, x: any, y: any, i: any) {
@@ -218,21 +218,21 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any) {
     skin = type;
   }
 
-  let skinData = (skins as any)[skin];
-  if (!skinData || !(sprites as any)[skinData[3]][skinData[1]]) {
+  let skinData: SkinData = skins[skin];
+  if (!skinData || !(sprites as any)[skinData.sheet][skinData.index]) {
     skin = type;
-    skinData = (skins as any)[skin];
+    skinData = skins[skin];
     if (!skinData) {
       console.error('Default skin not found.');
       return '';
     }
   }
 
-  const tex1 = (textures as any)[tex1Id] ? (textures as any)[tex1Id][0] : null;
-  const tex2 = (textures as any)[tex2Id] ? (textures as any)[tex2Id][2] : null;
+  const tex1: TextureData | null = textures[tex1Id] ? textures[tex1Id] : null;
+  const tex2: TextureData | null = textures[tex2Id] ? textures[tex2Id] : null;
 
-  const size = skinData[2] ? 16 : 8;
-  const ratio = skinData[2] ? 2 : 4;
+  const size = skinData.is16x16 ? 16 : 8;
+  const ratio = skinData.is16x16 ? 2 : 4;
   const fs1 = tex1 ? makeTexPattern(tex1Id, ratio) : 'transparent';
   const fs2 = tex2 ? makeTexPattern(tex2Id, ratio) : 'transparent';
 
@@ -244,8 +244,8 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any) {
   ctx?.clearRect(0, 0, st.width, st.height);
   ctx?.translate(1, 1);
 
-  const i = skinData[1];
-  const sheetName = skinData[3];
+  const i = skinData.index;
+  const sheetName = skinData.sheet;
   const spr = (sprites as any)[sheetName][i];
   const mask = (sprites as any)[sheetName + 'Mask'][i];
 
