@@ -33,7 +33,7 @@ export enum ClassID {
   Ninja = 806,
   Summoner = 817,
   Kensei = 818,
-  Druid = 819,
+  Druid = 819
 }
 
 /** class names as enum*/
