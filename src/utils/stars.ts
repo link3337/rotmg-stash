@@ -12,7 +12,7 @@
 import { StarInfoUIModel } from '@api/models/account-ui-model';
 import { ClassStat } from '@realm/models/charlist-response';
 
-const NUMCLASSES = 18;
+const NUMCLASSES = 19;
 const STARFAME = [20, 500, 1500, 5000, 15000];
 const STARCOLOR = ['#8a98de', '#314ddb', '#c1272d', '#f7931e', '#ffff00', '#ffffff'];
 const DEFAULTCOLOR = '#8a98de';
