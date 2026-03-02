@@ -1,6 +1,6 @@
 [package]
 name = "rotmg-stash"
-version = "1.0.8"
+version = "1.0.9"
 description = "RotMG Stash"
 authors = ["link3337"]
 edition = "2021"
