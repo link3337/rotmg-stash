@@ -1,6 +1,7 @@
 import { MappedCharacterStats } from '@/api/models/char-ui-model';
+import { ClassID } from '@/realm/renders/classes';
+import { exaltRanges, exaltStats } from '@/realm/renders/exalts';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
-import { ClassID, exaltRanges, exaltStats } from '@realm/renders/classes';
 import React from 'react';
 import styles from './../Character/Characters.module.scss';
 
@@ -41,7 +42,7 @@ export const Stats: React.FC<StatsProps> = ({ stats, classId, exalts }) => {
   ): number => {
     if (!exalts || !classId) return 0;
 
-    const classExalts = exalts.find((exalt) => (parseInt(exalt.classId) as ClassID) === classId);
+    const classExalts = exalts.find((exalt) => (exalt.classId as ClassID) === classId);
     if (!classExalts) return 0;
 
     const statIndex = exaltStats.indexOf(statName);

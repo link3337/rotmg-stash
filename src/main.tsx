@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import App from './App.tsx';
 import './index.scss';
-import { ItemsProvider } from './providers/ItemsProvider.tsx';
+import { ConstantsProvider } from './providers/ConstantsProvider.tsx';
 
 console.log(`Mode: ${import.meta.env.MODE}`);
 console.log(`ASSETS URL From env: ${import.meta.env.ROTMG_STASH_ASSETS_URL}`);
@@ -28,11 +28,11 @@ root.render(
   <StrictMode>
     <Provider store={store}>
       <SettingsProvider>
-        <ItemsProvider>
+        <ConstantsProvider>
           <PrimeReactProvider value={{ ripple: true }}>
             <App />
           </PrimeReactProvider>
-        </ItemsProvider>
+        </ConstantsProvider>
       </SettingsProvider>
     </Provider>
   </StrictMode>

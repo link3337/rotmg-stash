@@ -1,6 +1,10 @@
-import { skinsheets, textiles } from '@realm/renders/sheets';
-import { SkinData, skins } from '@realm/renders/skins';
-import { TextureData, textures } from '@realm/renders/textures';
+import { Constants } from '@/realm/renders/constant';
+import { Skin, SkinMap } from '@/realm/renders/skin';
+import { Texture, TextureMap } from '@/realm/renders/texture';
+import {
+  skinsheets as defaultSkinsheets,
+  textiles as defaultTextiles
+} from '@realm/renders/sheets';
 
 // single component
 function p_comp(s: any, x: any, y: any, i: any) {
@@ -23,6 +27,11 @@ function p_css(s: any, x: any, y: any) {
 // Initialize ready state and sprites object
 let ready = false;
 const sprites = {};
+
+let skins: SkinMap = {};
+let textures: TextureMap = {};
+let skinsheets: Record<string, string> = defaultSkinsheets;
+let textiles: Record<string, string> = defaultTextiles;
 
 // Function to extract sprites
 function extract_sprites(img: any, sx: any, sy?: any) {
@@ -208,7 +217,7 @@ function makeTexPattern(tex: any, ratio: any) {
  * The function also handles texture patterns and applies them to the portrait
  * based on the mask data.
  */
-function portrait(type: any, skin: any, tex1Id: any, tex2Id: any) {
+function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
   if (!ready) {
     console.error('Sprites are not ready yet.');
     return '';
@@ -218,7 +227,7 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any) {
     skin = type;
   }
 
-  let skinData: SkinData = skins[skin];
+  let skinData: Skin = skins[skin];
   if (!skinData || !(sprites as any)[skinData.sheet][skinData.index]) {
     skin = type;
     skinData = skins[skin];
@@ -228,8 +237,8 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any) {
     }
   }
 
-  const tex1: TextureData | null = textures[tex1Id] ? textures[tex1Id] : null;
-  const tex2: TextureData | null = textures[tex2Id] ? textures[tex2Id] : null;
+  const tex1: Texture | null = textures[tex1Id] ? textures[tex1Id] : null;
+  const tex2: Texture | null = textures[tex2Id] ? textures[tex2Id] : null;
 
   const size = skinData.is16x16 ? 16 : 8;
   const ratio = skinData.is16x16 ? 2 : 4;
@@ -292,18 +301,34 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any) {
   return imageDataURL;
 }
 
-// Initialize loading sheets
-const preload = load_sheets();
+/**
+ * Initialize portrait module with runtime constants and sheets.
+ * If not called, the module will use the default embedded sheets/textiles.
+ */
+function initPortrait(
+  constants?: Constants,
+  skinsheetsArg?: Record<string, string>,
+  textilesArg?: Record<string, string>
+) {
+  if (constants) {
+    skins = constants.skins || skins;
+    textures = constants.textures || textures;
+  }
+  if (skinsheetsArg) skinsheets = skinsheetsArg;
+  if (textilesArg) textiles = textilesArg;
 
-// Wait for preload to finish
-preload
-  .then(() => {
-    ready = true;
-    (window as any).portraitReady = true;
-  })
-  .catch((error) => {
-    console.error('Failed to load sheets:', error);
-  });
+  const preload = load_sheets();
+  preload
+    .then(() => {
+      ready = true;
+    })
+    .catch((error) => {
+      console.error('Failed to load sheets:', error);
+    });
+}
 
-// Export portrait function and other utilities
-export { portrait };
+// Initialize with defaults on module load to preserve backward compatibility
+initPortrait(undefined, defaultSkinsheets, defaultTextiles);
+
+// Export portrait function and initialization helper
+export { initPortrait, portrait };

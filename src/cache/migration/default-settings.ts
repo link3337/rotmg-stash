@@ -27,8 +27,7 @@ export const defaultDisplaySettings: DisplaySettingsModel = {
   showAccountName: true,
   showIngameNameInQueue: true,
   showLastLaunched: false,
-  compactVaults: true,
-  useAprilFoolsItems: false
+  compactVaults: true
 };
 
 export const defaultExperimentalSettings: ExperimentalSettingsModel = {

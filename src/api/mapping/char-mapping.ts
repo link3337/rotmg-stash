@@ -1,5 +1,5 @@
 import { TotalsUIModel } from '@/cache/totals-model';
-import { classes, ClassID } from '@/realm/renders/classes';
+import { ClassID, ClassMap } from '@/realm/renders/classes';
 import { Char, CharListResponse, MaxClassLevel } from '@realm/models/charlist-response';
 import {
   CharacterStats,
@@ -13,14 +13,17 @@ import { mapExalts } from './exalt-mapping';
 import { mapTotals } from './totals-mapping';
 import { objectToArray } from './util';
 
-export function mapCharListResponse(charListResponse: CharListResponse): CharListResponseUIModel {
+export function mapCharListResponse(
+  charListResponse: CharListResponse,
+  classes?: ClassMap
+): CharListResponseUIModel {
   const charList: Char[] = objectToArray<Char>(charListResponse?.Char);
   const maxClassLevels: MaxClassLevel[] = objectToArray<MaxClassLevel>(
     charListResponse.MaxClassLevelList?.MaxClassLevel
   );
 
   const mappedCharlist: CharUIModel[] = charList
-    ?.map(mapCharModel)
+    ?.map((char) => mapCharModel(char, classes))
     .filter((char) => char !== null)
     .sort((a, b) => a.id - b.id) as CharUIModel[];
 
@@ -54,11 +57,15 @@ export function mapQuickSlot(quickslots: string): ItemUIModel[] {
   });
 }
 
-const mapStats = (classId: ClassID, rawStats: CharacterStats): MappedCharacterStats[] => {
-  const classObj = classes[classId];
+const mapStats = (
+  classId: ClassID,
+  rawStats: CharacterStats,
+  classes?: ClassMap
+): MappedCharacterStats[] => {
+  const classObj = classes?.[classId];
   if (!classObj) return [];
 
-  const classMaxStats = classObj[3];
+  const classMaxStats = classObj.maxes;
 
   return [
     {
@@ -112,12 +119,12 @@ const mapStats = (classId: ClassID, rawStats: CharacterStats): MappedCharacterSt
   ];
 };
 
-function mapCharModel(char: Char): CharUIModel | null {
+function mapCharModel(char: Char, classes?: ClassMap): CharUIModel | null {
   if (!char) return null;
 
-  const classId = parseInt(char.ObjectType, 10) as ClassID;
-  const classObj = classes[classId];
-  const className = classObj ? classObj[0] : 'Unknown';
+  const classId = char.ObjectType as ClassID;
+  const classObj = classes?.[classId];
+  const className = classObj ? classObj.name : 'Unknown';
 
   const rawStats: CharacterStats = {
     maxHP: char.MaxHitPoints ? parseInt(char.MaxHitPoints, 10) : 0,
@@ -199,6 +206,6 @@ function mapCharModel(char: Char): CharUIModel | null {
     crucible: char.CrucibleActive?.toLowerCase() === 'true',
     objectType: char.ObjectType,
     stats: rawStats,
-    mappedStats: mapStats(classId, rawStats)
+    mappedStats: mapStats(classId, rawStats, classes)
   };
 }

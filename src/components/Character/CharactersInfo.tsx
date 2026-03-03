@@ -1,6 +1,7 @@
+import { useConstants } from '@/providers/ConstantsProvider';
+import { ClassID } from '@/realm/renders/classes';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { ClassStat } from '@realm/models/charlist-response';
-import { classes, ClassID } from '@realm/renders/classes';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import React from 'react';
@@ -19,6 +20,8 @@ interface CharacterInfo {
 }
 
 const CharactersInfo: React.FC<CharactersInfoProps> = ({ classStats, characters }) => {
+  const { constants } = useConstants();
+
   const characterInfo: CharacterInfo[] = Object.values(ClassID)
     .filter((id) => !isNaN(Number(id)))
     .map((classId) => {
@@ -26,13 +29,13 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ classStats, characters 
       const totalAliveFame = classCharacters.reduce((acc, char) => acc + (char.fame || 0), 0);
 
       return {
-        name: classes[classId as ClassID][0],
+        name: constants?.classes?.[classId]?.name ?? 'Unknown',
         highestAliveFame: Math.max(0, ...classCharacters.map((char) => char.fame || 0)),
         // parse hexcode (objectType) to number
         highestDeadFame: Math.max(
           0,
           ...classStats
-            .filter((x) => Number(x.objectType) === classId)
+            .filter((x) => Number(x.objectType) === Number(classId))
             .map((char) => parseInt(char.BestTotalFame) || 0)
         ),
         totalAliveFame,

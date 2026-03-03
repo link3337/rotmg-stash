@@ -1,9 +1,10 @@
+import { ClassID } from '@/realm/renders/classes';
 import { portrait } from '@utils/portrait';
 import { Skeleton } from 'primereact/skeleton';
 import { useEffect, useState } from 'react';
 
 interface CharacterPortraitProps {
-  type: number;
+  type: ClassID;
   skin: string;
   tex1: string;
   tex2: string;

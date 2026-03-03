@@ -1,23 +1,30 @@
 const CACHE_NAME = 'rotmg-stash-cache-v1';
 
-// base url for assets
-// todo: make this dynamic eventually
-const ASSETS_BASE_URL = 'https://rotmgstash.pages.dev';
+// Default base url for assets (used as a fallback)
+const DEFAULT_ASSETS_BASE_URL = 'https://rotmgstash.pages.dev';
 
-const CACHE_URLS = [
-  `${ASSETS_BASE_URL}/renders-april-fools.png`,
-  `${ASSETS_BASE_URL}/renders.png`,
-  `${ASSETS_BASE_URL}/items.json`,
-  `${ASSETS_BASE_URL}/april-fools-items.json`
-];
+let ASSETS_BASE_URL = DEFAULT_ASSETS_BASE_URL;
+let CACHE_URLS = [`${ASSETS_BASE_URL}/renders.png`, `${ASSETS_BASE_URL}/constants.json`];
 
-// Install event: Cache the images and JSON files
+// Install event: Cache the images and JSON files (read runtime config if available)
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Caching resources during install');
-      return cache.addAll(CACHE_URLS);
-    })
+    (async () => {
+      try {
+        const response = await fetch('/assets-config.json');
+        const cfg = response.ok ? await response.json() : null;
+        ASSETS_BASE_URL = cfg?.ASSETS_BASE_URL || DEFAULT_ASSETS_BASE_URL;
+      } catch (err) {
+        // Use default if config isn't reachable
+        ASSETS_BASE_URL = DEFAULT_ASSETS_BASE_URL;
+        console.warn('[Service Worker] Could not load assets-config.json, using default', err);
+      }
+
+      CACHE_URLS = [`${ASSETS_BASE_URL}/renders.png`, `${ASSETS_BASE_URL}/constants.json`];
+      const cache = await caches.open(CACHE_NAME);
+      console.log('[Service Worker] Caching resources during install', CACHE_URLS);
+      await cache.addAll(CACHE_URLS);
+    })()
   );
 });
 

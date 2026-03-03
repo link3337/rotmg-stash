@@ -1,5 +1,7 @@
+import { useConstants } from '@/providers/ConstantsProvider';
+import { ClassID } from '@/realm/renders/classes';
+import { exaltStats } from '@/realm/renders/exalts';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
-import { classes, ClassID, exaltStats } from '@realm/renders/classes';
 import styles from './Exalts.module.scss';
 import './Stats.scss';
 
@@ -15,9 +17,11 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
     return parseInt(cell) > 75 ? 75 : cell;
   };
 
+  const { constants } = useConstants();
+
   const getClassName = (classId: string) => {
-    const classInfo = classes[parseInt(classId) as ClassID];
-    return classInfo ? classInfo[0] : 'Unknown';
+    const classInfo = constants?.classes?.[classId as ClassID];
+    return classInfo ? classInfo.name : 'Unknown';
   };
 
   const orderedExaltStats = ['HP', 'MP', 'ATT', 'DEF', 'SPD', 'DEX', 'VIT', 'WIS'];
