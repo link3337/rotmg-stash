@@ -1,5 +1,5 @@
 import { TotalsUIModel } from '@/cache/totals-model';
-import { RealmItem, RealmItemMap } from '@/realm/renders/items';
+import { RealmItem, RealmItemMap } from '@/realm/renders/item';
 
 /**
  * Creates a map of item names to their IDs, specifically for items in the totals list.

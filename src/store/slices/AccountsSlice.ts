@@ -1,4 +1,5 @@
 import { backendErrorMessages } from '@/constants';
+import { itemsApi } from '@api/items/itemsApi';
 import { mapCharListResponse } from '@api/mapping/char-mapping';
 import { getAccountData } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
@@ -135,11 +136,16 @@ export const refreshAccount = createAsyncThunk<
       const backendResponse = await getAccountData(account.email, account.password);
       const result = processBackendResponse(backendResponse, dispatch);
 
+      const constantsResult = itemsApi.endpoints.fetchConstants.select()(getState() as any);
+      const runtimeConstants = constantsResult?.data ?? undefined;
+
       const updatedAccounts = accounts.map((acc: AccountModel) =>
         acc.id === account.id
           ? {
               ...acc,
-              mappedData: result.success ? mapCharListResponse(result.data!) : acc.mappedData,
+              mappedData: result.success
+                ? mapCharListResponse(result.data!, runtimeConstants?.classes)
+                : acc.mappedData,
               error: result.error,
               lastSaved: new Date().toISOString(),
               queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR

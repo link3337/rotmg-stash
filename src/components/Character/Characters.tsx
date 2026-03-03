@@ -1,8 +1,9 @@
+import { useConstants } from '@/providers/ConstantsProvider';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { ClassStat } from '@realm/models/charlist-response';
-import { classes, ClassID } from '@realm/renders/classes';
+import { ClassID } from '@realm/renders/classes';
 import {
   FilterType,
   getCharacterFilterByAccount,
@@ -34,6 +35,7 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
   const showHighlightedOnly = useAppSelector(selectShowHighlightedOnly);
 
   const { selectedItems } = useFilter();
+  const { constants } = useConstants();
 
   const options = [
     { label: 'All', value: 'all' },
@@ -41,10 +43,10 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
     { label: 'Regular', value: 'regular' }
   ];
 
-  const classOptions = Object.entries(classes)
-    .map(([id, [name]]) => ({
-      label: name,
-      value: parseInt(id) as ClassID
+  const classOptions = Object.entries(constants?.classes ?? {})
+    .map(([id, classObj]) => ({
+      label: classObj?.name ?? 'Unknown',
+      value: id as ClassID
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 

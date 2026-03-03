@@ -2,7 +2,7 @@ import { ItemUIModel } from '@/api/models/char-ui-model';
 import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/localstorage-service';
 import { SortCriteria, SortFields } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
-import { useItems } from '@/providers/ItemsProvider';
+import { useConstants } from '@/providers/ConstantsProvider';
 import { itemAliases } from '@/realm/renders/aliases';
 import { createTotalMap } from '@/utils/item-name-map';
 import { booleanSort, numberSort } from '@/utils/sorting';
@@ -19,8 +19,7 @@ import {
 import {
   selectDisplaySettings,
   selectItemSort,
-  selectTotalSettings,
-  selectUseAprilFoolsItems
+  selectTotalSettings
 } from '@store/slices/SettingsSlice';
 import { debug } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
@@ -63,7 +62,6 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const { showTotals } = useAppSelector(selectDisplaySettings);
   const showHighlightedOnly = useAppSelector(selectShowHighlightedOnly);
   const selectedItems = useAppSelector(selectSelectedItems);
-  const useAprilFoolsItems = useAppSelector(selectUseAprilFoolsItems);
   const { usePagination, itemsPerPage } = useAppSelector(selectTotalSettings);
 
   // State
@@ -72,10 +70,10 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const [filteredItems, setFilteredItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
   const [totalItemsNameMap, setTotalItemsNameMap] = useState<Map<string, number>>(new Map());
 
-  // get items from context
-  const { regularItems, aprilFoolsItems, error } = useItems();
+  // get items/constants from context
+  const { items: regularItems, error } = useConstants();
 
-  const items = useAprilFoolsItems ? aprilFoolsItems : regularItems;
+  const items = regularItems;
 
   // Memoized sort function
   const sortItems = useCallback(

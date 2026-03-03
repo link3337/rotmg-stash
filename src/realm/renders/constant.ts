@@ -1,0 +1,19 @@
+import { ClassMap } from './classes';
+import { RealmItemMap } from './item';
+import { PetMap } from './pet';
+import { PetAbilityMap } from './pet-abilitiy';
+import { PetSkinMap } from './pet-skin';
+import { SkinMap } from './skin';
+import { TextureMap } from './texture';
+
+export interface Constants {
+  version: string;
+  gameVersion: string;
+  items: RealmItemMap;
+  classes: ClassMap;
+  skins: SkinMap;
+  petAbilities: PetAbilityMap;
+  textures: TextureMap;
+  pets: PetMap;
+  petSkins: PetSkinMap;
+}
