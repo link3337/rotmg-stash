@@ -84,7 +84,11 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
 
   return (
     <>
-      <div>{classStats && <CharactersInfo characters={characters} classStats={classStats} />}</div>
+      <div>
+        {classStats && (
+          <CharactersInfo accountId={accountId} characters={characters} classStats={classStats} />
+        )}
+      </div>
       <div className="flex align-items-center gap-2 mt-3 mb-3">
         <SelectButton
           value={characterFilter}
@@ -108,7 +112,12 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
 
       <div className="flex grid">
         {filteredCharacters.map((character) => (
-          <Character key={character.id} exalts={exalts} char={character} />
+          <Character
+            key={`${accountId}-${character.id}`}
+            accountId={accountId}
+            exalts={exalts}
+            char={character}
+          />
         ))}
       </div>
     </>
