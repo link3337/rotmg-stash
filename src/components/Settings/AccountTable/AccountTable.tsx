@@ -18,9 +18,8 @@ import {
 } from '@store/slices/AccountsSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
 import { setSettings, useSettings } from '@store/slices/SettingsSlice';
-import { debug } from '@tauri-apps/plugin-log';
+import { debug, info } from '@tauri-apps/plugin-log';
 import { maskEmail } from '@utils/masking';
-import { info } from 'console';
 import { saveAs } from 'file-saver';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';

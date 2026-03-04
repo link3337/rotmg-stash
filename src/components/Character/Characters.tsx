@@ -102,7 +102,7 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
           placeholder="Select Classes"
           filter
           filterPlaceholder="Search classes..."
-          className="w-20rem XD"
+          className="w-20rem"
         />
       </div>
 

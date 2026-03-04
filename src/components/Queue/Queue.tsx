@@ -62,7 +62,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
   }, [timestamp]);
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval> | undefined;
 
     const processQueueItem = async () => {
       info('Processing next queue item');
@@ -75,7 +75,6 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
 
       if (!isQueuePaused) {
         // Process next queue item
-
         const queuedAccountId = await dispatch(processQueue({ decrypt })).unwrap();
 
         // If no more items to process, stop queue
