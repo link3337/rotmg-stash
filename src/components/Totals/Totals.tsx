@@ -68,7 +68,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   const [selectedItemsUI, setSelectedItemsUI] = useState<ItemUIModel[]>([]);
   const [totalItems, setTotalItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
   const [filteredItems, setFilteredItems] = useState<TotalsUIModel[]>(getTotalsFromLocalStorage());
-  const [totalItemsNameMap, setTotalItemsNameMap] = useState<Map<string, number>>(new Map());
+  const [totalItemsNameMap, setTotalItemsNameMap] = useState<Map<string, number[]>>(new Map());
 
   // get items/constants from context
   const { items: regularItems, error } = useConstants();
@@ -158,8 +158,14 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
       // add item aliases
       for (const [alias, itemId] of itemAliases.entries()) {
-        if (!newNameMap.has(alias)) {
-          newNameMap.set(alias, itemId);
+        const normalizedAlias = alias.toLowerCase();
+        const existingItemIds = newNameMap.get(normalizedAlias);
+        if (existingItemIds) {
+          if (!existingItemIds.includes(itemId)) {
+            existingItemIds.push(itemId);
+          }
+        } else {
+          newNameMap.set(normalizedAlias, [itemId]);
         }
       }
 

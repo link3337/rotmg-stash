@@ -6,9 +6,10 @@ import { RealmItemMap } from './item';
 
 // util functions for debugging
 export function itemNamesToIds(items: RealmItemMap, names: string[]): number[] {
-  return names.map((name) => itemNameToId(items, name));
+  return names.flatMap((name) => itemNameToId(items, name));
 }
 
-function itemNameToId(items: RealmItemMap, name: string): number {
-  return createItemNameMap(items).get(name) || -1;
+function itemNameToId(items: RealmItemMap, name: string): number[] {
+  const matchingIds = createItemNameMap(items).get(name.trim().toLowerCase());
+  return matchingIds ?? [];
 }

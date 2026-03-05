@@ -7,7 +7,7 @@ import { ItemList } from './ItemList';
 import styles from './ItemSearch.module.scss';
 
 interface ItemSearchProps {
-  totalItemsNameMap: Map<string, number>;
+  totalItemsNameMap: Map<string, number[]>;
 }
 
 const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
@@ -21,9 +21,13 @@ const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
     (term: string) => {
       if (!term || term.length < 3) return [];
 
-      return Array.from(totalItemsNameMap.entries())
+      const itemIdSet = new Set<number>();
+
+      Array.from(totalItemsNameMap.entries())
         .filter(([key]) => key.toLowerCase().includes(term.toLowerCase()))
-        .map(([, value]) => ({ itemId: value }));
+        .forEach(([, values]) => values.forEach((itemId) => itemIdSet.add(itemId)));
+
+      return Array.from(itemIdSet).map((itemId) => ({ itemId }));
     },
     [totalItemsNameMap]
   );

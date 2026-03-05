@@ -3,7 +3,9 @@ import { ClassID } from '@/realm/renders/classes';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { ClassStat } from '@realm/models/charlist-response';
 import { Column } from 'primereact/column';
+import { ColumnGroup } from 'primereact/columngroup';
 import { DataTable } from 'primereact/datatable';
+import { Row } from 'primereact/row';
 import React from 'react';
 
 interface CharactersInfoProps {
@@ -26,6 +28,140 @@ interface CharacterInfo {
   topFamePct?: number;
   avgMaxedStats?: number;
 }
+
+interface CharacterInfoTableBaseRow {
+  name: string;
+  highestAliveFame: number;
+  totalAliveFame: number;
+  averageFame: number;
+  averageWithoutTop: number;
+  topCharacterName: string;
+  topCharacterId: number;
+  topCharacterFame: number;
+  avgMaxedStats: number;
+  highestDeadFame: number;
+  characters: number;
+}
+
+interface CharacterInfoTableRow extends CharacterInfoTableBaseRow {
+  fameShare: number;
+  topFamePct: number;
+}
+
+interface CharacterInfoColumnConfig {
+  field: keyof CharacterInfoSummaryRow;
+  header: string;
+  align?: 'right';
+  sortable?: boolean;
+  frozen?: boolean;
+  style?: React.CSSProperties;
+  body?: (row: CharacterInfoTableRow) => React.ReactNode;
+}
+
+interface CharacterInfoSummaryRow {
+  name: string;
+  highestAliveFame: number;
+  totalAliveFame: number;
+  averageFame: number;
+  averageWithoutTop: number;
+  topCharacterFame: number;
+  fameShare: number;
+  topFamePct: number;
+  avgMaxedStats: number;
+  highestDeadFame: number;
+  characters: number;
+}
+
+type CharacterInfoSummaryValues = Omit<CharacterInfoSummaryRow, 'name'>;
+
+const round = (value: number, decimals = 0) => {
+  const factor = Math.pow(10, decimals);
+  return Math.round(value * factor) / factor;
+};
+
+const buildAveragesRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRow => {
+  const classCount = rows.length;
+
+  const sumRow = rows.reduce<CharacterInfoSummaryValues>(
+    (acc, row) => ({
+      highestAliveFame: acc.highestAliveFame + row.highestAliveFame,
+      totalAliveFame: acc.totalAliveFame + row.totalAliveFame,
+      averageFame: acc.averageFame + row.averageFame,
+      averageWithoutTop: acc.averageWithoutTop + row.averageWithoutTop,
+      topCharacterFame: acc.topCharacterFame + row.topCharacterFame,
+      fameShare: acc.fameShare + row.fameShare,
+      topFamePct: acc.topFamePct + row.topFamePct,
+      avgMaxedStats: acc.avgMaxedStats + row.avgMaxedStats,
+      highestDeadFame: acc.highestDeadFame + row.highestDeadFame,
+      characters: acc.characters + row.characters
+    }),
+    {
+      highestAliveFame: 0,
+      totalAliveFame: 0,
+      averageFame: 0,
+      averageWithoutTop: 0,
+      topCharacterFame: 0,
+      fameShare: 0,
+      topFamePct: 0,
+      avgMaxedStats: 0,
+      highestDeadFame: 0,
+      characters: 0
+    }
+  );
+
+  const average = (value: number) => (classCount > 0 ? value / classCount : 0);
+
+  return {
+    name: 'Averages',
+    highestAliveFame: round(average(sumRow.highestAliveFame)),
+    totalAliveFame: round(average(sumRow.totalAliveFame)),
+    averageFame: round(average(sumRow.averageFame)),
+    averageWithoutTop: round(average(sumRow.averageWithoutTop)),
+    topCharacterFame: round(average(sumRow.topCharacterFame)),
+    fameShare: round(average(sumRow.fameShare), 2),
+    topFamePct: round(average(sumRow.topFamePct), 2),
+    avgMaxedStats: round(average(sumRow.avgMaxedStats), 1),
+    highestDeadFame: round(average(sumRow.highestDeadFame)),
+    characters: round(average(sumRow.characters), 2)
+  };
+};
+
+const buildTotalsRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRow => {
+  const totals = rows.reduce<CharacterInfoSummaryValues>(
+    (acc, row) => ({
+      highestAliveFame: acc.highestAliveFame + row.highestAliveFame,
+      totalAliveFame: acc.totalAliveFame + row.totalAliveFame,
+      averageFame: acc.averageFame + row.averageFame,
+      averageWithoutTop: acc.averageWithoutTop + row.averageWithoutTop,
+      topCharacterFame: acc.topCharacterFame + row.topCharacterFame,
+      fameShare: acc.fameShare + row.fameShare,
+      topFamePct: acc.topFamePct + row.topFamePct,
+      avgMaxedStats: acc.avgMaxedStats + row.avgMaxedStats,
+      highestDeadFame: acc.highestDeadFame + row.highestDeadFame,
+      characters: acc.characters + row.characters
+    }),
+    {
+      highestAliveFame: 0,
+      totalAliveFame: 0,
+      averageFame: 0,
+      averageWithoutTop: 0,
+      topCharacterFame: 0,
+      fameShare: 0,
+      topFamePct: 0,
+      avgMaxedStats: 0,
+      highestDeadFame: 0,
+      characters: 0
+    }
+  );
+
+  return {
+    name: 'Totals',
+    ...totals,
+    fameShare: round(totals.fameShare, 2),
+    topFamePct: round(totals.topFamePct, 2),
+    avgMaxedStats: round(totals.avgMaxedStats, 1)
+  };
+};
 
 const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, characters }) => {
   const { constants } = useConstants();
@@ -77,7 +213,7 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
     .filter((info) => info.amount > 0); // Only include classes with characters
 
   // Each row is a class; columns are the metrics
-  const tableData = characterInfo.map((info) => ({
+  const tableData: CharacterInfoTableBaseRow[] = characterInfo.map((info) => ({
     name: info.name,
     highestAliveFame: info.highestAliveFame,
     totalAliveFame: info.totalAliveFame,
@@ -94,11 +230,84 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
   const totalAllAliveFame = characterInfo.reduce((acc, i) => acc + (i.totalAliveFame || 0), 0);
 
   // add percentage fields based on totalAllAliveFame
-  const tableDataWithPct = tableData.map((row) => ({
+  const tableDataWithPct: CharacterInfoTableRow[] = tableData.map((row) => ({
     ...row,
-    fameShare: totalAllAliveFame > 0 ? Math.round((row.totalAliveFame / totalAllAliveFame) * 1000) / 10 : 0,
-    topFamePct: row.totalAliveFame > 0 ? Math.round((row.topCharacterFame / row.totalAliveFame) * 1000) / 10 : 0
+    fameShare: totalAllAliveFame > 0 ? Math.round((row.totalAliveFame / totalAllAliveFame) * 10000) / 100 : 0,
+    topFamePct: row.totalAliveFame > 0 ? Math.round((row.topCharacterFame / row.totalAliveFame) * 10000) / 100 : 0
   }));
+
+  const averagesRow = buildAveragesRow(tableDataWithPct);
+  const totalsRow = buildTotalsRow(tableDataWithPct);
+
+  const topCharacterBody = (row: CharacterInfoTableRow) => {
+    const id = row.topCharacterId;
+    const name = row.topCharacterName;
+    const fame = row.topCharacterFame;
+    if (!id) return null;
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault();
+      const domId = `${accountId}-character-${id}`;
+      const el = document.getElementById(domId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    return (
+      <a href={`#${accountId}-character-${id}`} onClick={handleClick}>
+        {name} #{id} ({fame})
+      </a>
+    );
+  };
+
+  const columns: CharacterInfoColumnConfig[] = [
+    {
+      field: 'name',
+      header: 'Class',
+      frozen: true,
+      style: { fontWeight: 'bold' },
+      sortable: true
+    },
+    { field: 'topCharacterFame', header: 'Top Character', align: 'right', sortable: true, body: topCharacterBody },
+    { field: 'totalAliveFame', header: 'Total Alive Fame', align: 'right', sortable: true },
+    { field: 'fameShare', header: 'Fame Share %', align: 'right', sortable: true },
+    { field: 'topFamePct', header: 'Top Fame %', align: 'right', sortable: true },
+    { field: 'avgMaxedStats', header: 'Avg Maxed Stats', align: 'right', sortable: true },
+    { field: 'averageFame', header: 'Avg Fame per Character', align: 'right', sortable: true },
+    { field: 'averageWithoutTop', header: 'Avg without Top', align: 'right', sortable: true },
+    { field: 'highestDeadFame', header: 'Highest Dead Fame', align: 'right', sortable: true },
+    { field: 'characters', header: 'Characters', align: 'right', sortable: true }
+  ];
+
+  const footerValue = (
+    field: CharacterInfoColumnConfig['field'],
+    label: string,
+    summaryRow: CharacterInfoSummaryRow
+  ) => {
+    if (field === 'name') return label;
+    if (label === 'Totals' && (field === 'topFamePct' || field === 'avgMaxedStats')) return '-';
+    return summaryRow[field];
+  };
+
+  const footerColumnGroup = (
+    <ColumnGroup>
+      <Row>
+        {columns.map((column) => (
+          <Column
+            key={`avg-${column.field}`}
+            align={column.align}
+            footer={footerValue(column.field, 'Averages', averagesRow)}
+          />
+        ))}
+      </Row>
+      <Row>
+        {columns.map((column) => (
+          <Column
+            key={`total-${column.field}`}
+            align={column.align}
+            footer={footerValue(column.field, 'Totals', totalsRow)}
+          />
+        ))}
+      </Row>
+    </ColumnGroup>
+  );
 
   return (
     <DataTable
@@ -110,44 +319,20 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
       sortMode="single"
       sortField="name"
       sortOrder={1}
+      footerColumnGroup={footerColumnGroup}
     >
-      <Column field="name" header="Class" frozen style={{ fontWeight: 'bold' }} sortable />
-      <Column
-        field="topCharacterFame"
-        header="Top Character"
-        align="right"
-        sortable
-        body={(row: {
-          topCharacterId: number;
-          topCharacterName: string;
-          topCharacterFame: number;
-          topFamePct?: number;
-        }) => {
-          const id = row.topCharacterId;
-          const name = row.topCharacterName;
-          const fame = row.topCharacterFame;
-          if (!id) return null;
-          const handleClick = (e: React.MouseEvent) => {
-            e.preventDefault();
-            const domId = `${accountId}-character-${id}`;
-            const el = document.getElementById(domId);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          };
-          return (
-            <a href={`#${accountId}-character-${id}`} onClick={handleClick}>
-              {name} #{id} ({fame})
-            </a>
-          );
-        }}
-      />
-      <Column field="totalAliveFame" header="Total Alive Fame" align="right" sortable />
-      <Column field="fameShare" header="Fame Share %" align="right" sortable />
-      <Column field="topFamePct" header="Top Fame %" align="right" sortable />
-      <Column field="avgMaxedStats" header="Avg Maxed Stats" align="right" sortable />
-      <Column field="averageFame" header="Average Fame per Character" align="right" sortable />
-      <Column field="averageWithoutTop" header="Avg without Top" align="right" sortable />
-      <Column field="highestDeadFame" header="Highest Dead Fame" align="right" sortable />
-      <Column field="characters" header="Characters" align="right" sortable />
+      {columns.map((column) => (
+        <Column
+          key={column.field}
+          field={column.field}
+          header={column.header}
+          align={column.align}
+          sortable={column.sortable}
+          frozen={column.frozen}
+          style={column.style}
+          body={column.body}
+        />
+      ))}
     </DataTable>
   );
 };
