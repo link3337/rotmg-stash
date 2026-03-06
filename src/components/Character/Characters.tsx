@@ -1,8 +1,9 @@
+import { useConstants } from '@/providers/ConstantsProvider';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { ClassStat } from '@realm/models/charlist-response';
-import { classes, ClassID } from '@realm/renders/classes';
+import { ClassID } from '@realm/renders/classes';
 import {
   FilterType,
   getCharacterFilterByAccount,
@@ -34,6 +35,7 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
   const showHighlightedOnly = useAppSelector(selectShowHighlightedOnly);
 
   const { selectedItems } = useFilter();
+  const { constants } = useConstants();
 
   const options = [
     { label: 'All', value: 'all' },
@@ -41,10 +43,10 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
     { label: 'Regular', value: 'regular' }
   ];
 
-  const classOptions = Object.entries(classes)
-    .map(([id, [name]]) => ({
-      label: name,
-      value: parseInt(id) as ClassID
+  const classOptions = Object.entries(constants?.classes ?? {})
+    .map(([id, classObj]) => ({
+      label: classObj?.name ?? 'Unknown',
+      value: id as ClassID
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -65,9 +67,9 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
       selectedItems.length === 0
         ? true
         : selectedItems.some(
-          (item) =>
-            char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
-        );
+            (item) =>
+              char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
+          );
 
     return seasonalFilter && classFilter && itemFilter;
   });
@@ -82,7 +84,11 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
 
   return (
     <>
-      <div>{classStats && <CharactersInfo characters={characters} classStats={classStats} />}</div>
+      <div>
+        {classStats && (
+          <CharactersInfo accountId={accountId} characters={characters} classStats={classStats} />
+        )}
+      </div>
       <div className="flex align-items-center gap-2 mt-3 mb-3">
         <SelectButton
           value={characterFilter}
@@ -100,13 +106,18 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
           placeholder="Select Classes"
           filter
           filterPlaceholder="Search classes..."
-          className="w-20rem XD"
+          className="w-20rem"
         />
       </div>
 
       <div className="flex grid">
         {filteredCharacters.map((character) => (
-          <Character key={character.id} exalts={exalts} char={character} />
+          <Character
+            key={`${accountId}-${character.id}`}
+            accountId={accountId}
+            exalts={exalts}
+            char={character}
+          />
         ))}
       </div>
     </>

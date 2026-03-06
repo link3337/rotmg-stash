@@ -1,8 +1,7 @@
-import { EMPTY_SLOT_ITEM_ID } from '@/constants';
-import { useItems } from '@/providers/ItemsProvider';
+import { ASSETS_RENDER_URL, EMPTY_SLOT_ITEM_ID } from '@/constants';
+import { useConstants } from '@/providers/ConstantsProvider';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
-import { selectUseAprilFoolsItems } from '@store/slices/SettingsSlice';
 import { debug, info } from '@tauri-apps/plugin-log';
 import { FC, useRef, useState } from 'react';
 import styles from './Item.module.scss';
@@ -20,15 +19,11 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
   const showItemTooltips = useAppSelector(
     (state) => state.settings.displaySettings.showItemTooltips
   );
-  const useAprilFoolsItems = useAppSelector(selectUseAprilFoolsItems);
 
-  const { regularItems, aprilFoolsItems } = useItems();
+  const { items } = useConstants();
 
   const [showTooltip, setShowTooltip] = useState(false);
   const itemRef = useRef<HTMLDivElement>(null);
-
-  // choose the correct item set based on the setting
-  const items = useAprilFoolsItems ? aprilFoolsItems : regularItems;
 
   if (!items) {
     debug('Items not loaded yet');
@@ -94,11 +89,7 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
         data-itemid={itemId}
         style={{
           backgroundPosition,
-          backgroundImage: `url(${
-            useAprilFoolsItems
-              ? 'https://rotmgstash.pages.dev/renders-april-fools.png'
-              : 'https://rotmgstash.pages.dev/renders.png'
-          })`
+          backgroundImage: `url('${ASSETS_RENDER_URL}')`
         }}
         onClick={handleClick}
       >

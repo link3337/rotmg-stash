@@ -18,6 +18,7 @@ interface AccountInfoProps {
   characters: CharUIModel[];
   loading: boolean;
   characterAmount: number;
+  seasonalCharacterAmount: number;
   characterMaxAmount: number;
   refreshButtonClicked: () => void;
   skipQueueButtonClicked: () => void;
@@ -31,6 +32,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   accountData,
   loading,
   characterAmount,
+  seasonalCharacterAmount,
   characterMaxAmount,
   refreshButtonClicked,
   launchButtonClicked,
@@ -60,6 +62,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
     { name: 'Account Fame', value: accountData?.fame },
     { name: 'Account Gold', value: accountData?.credits },
     { name: 'Characters', value: `${characterAmount}/${characterMaxAmount}` },
+    { name: 'Seasonal Characters', value: seasonalCharacterAmount },
     { name: 'Unique Items', value: accountData?.uniqueItems?.length },
     { name: 'Total Items', value: accountData?.totalItems },
     { name: 'Vault Slots', value: `${usedVaultSlots}/${accountData?.vault?.length}` },

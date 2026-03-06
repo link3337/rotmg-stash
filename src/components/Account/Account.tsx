@@ -7,12 +7,12 @@ import RenderIfVisible from '@hooks/renderIfVisible';
 import {
   refreshAccount,
   skipAccountFromQueue,
-  useAccounts,
-  updateAccountLastLaunched
+  updateAccountLastLaunched,
+  useAccounts
 } from '@store/slices/AccountsSlice';
 import { selectSelectedItems } from '@store/slices/FilterSlice';
 import { QueueStatus } from '@store/slices/QueueSlice';
-import { info } from 'console';
+import { info } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useMemo } from 'react';
@@ -133,6 +133,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
             accountData={data.account}
             characters={data.charList}
             characterAmount={data.charList?.length}
+            seasonalCharacterAmount={data.charList?.filter((x) => x.seasonal).length}
             characterMaxAmount={data.maxNumChars}
             refreshButtonClicked={handleRefresh}
             skipQueueButtonClicked={handleSkipQueue}

@@ -10,6 +10,7 @@ import { Stats } from './Stats';
 interface CharacterProps {
   char?: CharUIModel;
   exalts: ExaltUIModel[] | null;
+  accountId?: string;
 }
 
 const getMaxedStatsCount = (stats: MappedCharacterStats[]): string => {
@@ -17,7 +18,7 @@ const getMaxedStatsCount = (stats: MappedCharacterStats[]): string => {
   return `${maxedCount}/8`;
 };
 
-export const Character: React.FC<CharacterProps> = ({ char, exalts }) => {
+export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId }) => {
   const items = char?.equipment ?? [];
 
   const equipment = items?.slice(0, 4) ?? [];
@@ -55,7 +56,7 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts }) => {
   );
 
   return (
-    <div className={styles.character}>
+    <div id={`${accountId}-character-${char?.id}`} className={styles.character}>
       <div className={styles.header}>
         <CharacterPortrait
           type={char?.classId!}

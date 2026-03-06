@@ -22,7 +22,7 @@ const ItemTooltip: React.FC<ItemTooltipProps> = ({ itemInfo }) => {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<'left' | 'right' | 'top' | 'bottom'>('top');
   const [isVisible, setIsVisible] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     timeoutRef.current = setTimeout(() => {
@@ -31,7 +31,7 @@ const ItemTooltip: React.FC<ItemTooltipProps> = ({ itemInfo }) => {
 
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        clearTimeout(timeoutRef.current as unknown as number | undefined);
       }
     };
   }, []);

@@ -1,4 +1,4 @@
-import { RealmItemMap } from '@/realm/renders/items';
+import { Constants } from '@/realm/renders/constant';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define the base URL and default to the development server url
@@ -8,13 +8,10 @@ export const itemsApi = createApi({
   reducerPath: 'itemsApi',
   baseQuery: fetchBaseQuery({ baseUrl: ASSETS_BASE_URL }),
   endpoints: (builder) => ({
-    fetchItems: builder.query<RealmItemMap, void>({
-      query: () => '/items.json' // Endpoint to fetch the items JSON
-    }),
-    fetchAprilFoolsItems: builder.query<RealmItemMap, void>({
-      query: () => '/april-fools-items.json' // Endpoint to fetch the april fools items JSON
+    fetchConstants: builder.query<Constants, void>({
+      query: () => '/constants.json'
     })
   })
 });
 
-export const { useFetchItemsQuery, useFetchAprilFoolsItemsQuery } = itemsApi;
+export const { useFetchConstantsQuery } = itemsApi;

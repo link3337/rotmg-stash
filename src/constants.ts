@@ -1,3 +1,7 @@
+export const ASSETS_RENDER_URL = import.meta.env.ROTMG_STASH_ASSETS_URL
+  ? `${import.meta.env.ROTMG_STASH_ASSETS_URL}/renders.png`
+  : 'https://rotmgstash.pages.dev/renders.png';
+
 export const localStorageAccountsKey = 'accounts';
 export const localStorageSettingsKey = 'settings';
 export const localStorageTotalsKey = 'totals';
