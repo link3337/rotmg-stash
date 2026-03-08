@@ -1,3 +1,4 @@
+import UpdateChecker from '@/components/Update/UpdateChecker';
 import MainLayout from '@components/Layout/MainLayout';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import DebugPage from '@pages/DebugPage';
@@ -14,6 +15,7 @@ import './App.scss';
 
 function App() {
   const dispatch = useAppDispatch();
+  const isProd = import.meta.env.PROD;
 
   const { changeTheme } = useContext(PrimeReactContext);
 
@@ -37,6 +39,7 @@ function App() {
 
   return (
     <div className="App">
+      {isProd && <UpdateChecker />}
       <MainLayout>
         {isDebugMode && (
           <Button

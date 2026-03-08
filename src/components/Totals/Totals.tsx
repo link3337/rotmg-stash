@@ -223,7 +223,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   return (
     <div className={styles.totalsContainer}>
       <div className="flex container justify-content-end">
-        <ItemSearch totalItemsNameMap={totalItemsNameMap} />
+        <ItemSearch totalItemsNameMap={totalItemsNameMap} totals={totalItems} />
       </div>
 
       <div>

@@ -1,4 +1,5 @@
 import { ItemUIModel } from '@api/models/char-ui-model';
+import { TotalsUIModel } from '@cache/totals-model';
 import useDebounce from '@hooks/debounce';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
@@ -8,13 +9,18 @@ import styles from './ItemSearch.module.scss';
 
 interface ItemSearchProps {
   totalItemsNameMap: Map<string, number[]>;
+  totals: TotalsUIModel[];
 }
 
-const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
+const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap, totals }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [filteredItems, setFilteredItems] = useState<ItemUIModel[]>([]);
   const overlayRef = useRef<HTMLDivElement>(null);
+
+  const totalAmountsByItemId = useMemo(() => {
+    return new Map(totals.map((total) => [total.itemId, total.amount]));
+  }, [totals]);
 
   // Memoize the filtering logic
   const filterItems = useCallback(
@@ -27,9 +33,12 @@ const ItemSearch: React.FC<ItemSearchProps> = ({ totalItemsNameMap }) => {
         .filter(([key]) => key.toLowerCase().includes(term.toLowerCase()))
         .forEach(([, values]) => values.forEach((itemId) => itemIdSet.add(itemId)));
 
-      return Array.from(itemIdSet).map((itemId) => ({ itemId }));
+      return Array.from(itemIdSet).map((itemId) => ({
+        itemId,
+        amount: totalAmountsByItemId.get(itemId) ?? 0
+      }));
     },
-    [totalItemsNameMap]
+    [totalItemsNameMap, totalAmountsByItemId]
   );
 
   // Combined effect for handling search term changes

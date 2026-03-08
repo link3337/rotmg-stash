@@ -173,7 +173,9 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
       const fameList = classCharacters.map((char) => char.fame || 0).sort((a, b) => a - b);
       const totalAliveFame = fameList.reduce((acc, f) => acc + f, 0);
       const highestAliveFame = fameList.length > 0 ? Math.max(0, ...fameList) : 0;
-      const maxedCounts = classCharacters.map((c) => (c.mappedStats ?? []).reduce((s, m) => s + (m.maxed ? 1 : 0), 0));
+      const maxedCounts = classCharacters.map((c) =>
+        (c.mappedStats ?? []).reduce((s, m) => s + (m.maxed ? 1 : 0), 0)
+      );
 
       // average without top (robust average)
       const averageWithoutTop =
@@ -189,7 +191,10 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
       const topCharacterName = topChar?.className ?? '';
       const topCharacterId = topChar?.id ?? 0;
       const topCharacterFame = topChar?.fame ?? 0;
-      const avgMaxedStats = maxedCounts.length > 0 ? Math.round((maxedCounts.reduce((a, b) => a + b, 0) / maxedCounts.length) * 10) / 10 : 0;
+      const avgMaxedStats =
+        maxedCounts.length > 0
+          ? Math.round((maxedCounts.reduce((a, b) => a + b, 0) / maxedCounts.length) * 10) / 10
+          : 0;
 
       return {
         name: constants?.classes?.[classId]?.name ?? 'Unknown',
@@ -207,7 +212,7 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
         topCharacterName,
         topCharacterId,
         topCharacterFame,
-        avgMaxedStats,
+        avgMaxedStats
       } as CharacterInfo;
     })
     .filter((info) => info.amount > 0); // Only include classes with characters
@@ -232,8 +237,14 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
   // add percentage fields based on totalAllAliveFame
   const tableDataWithPct: CharacterInfoTableRow[] = tableData.map((row) => ({
     ...row,
-    fameShare: totalAllAliveFame > 0 ? Math.round((row.totalAliveFame / totalAllAliveFame) * 10000) / 100 : 0,
-    topFamePct: row.totalAliveFame > 0 ? Math.round((row.topCharacterFame / row.totalAliveFame) * 10000) / 100 : 0
+    fameShare:
+      totalAllAliveFame > 0
+        ? Math.round((row.totalAliveFame / totalAllAliveFame) * 10000) / 100
+        : 0,
+    topFamePct:
+      row.totalAliveFame > 0
+        ? Math.round((row.topCharacterFame / row.totalAliveFame) * 10000) / 100
+        : 0
   }));
 
   const averagesRow = buildAveragesRow(tableDataWithPct);
@@ -265,7 +276,13 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
       style: { fontWeight: 'bold' },
       sortable: true
     },
-    { field: 'topCharacterFame', header: 'Top Character', align: 'right', sortable: true, body: topCharacterBody },
+    {
+      field: 'topCharacterFame',
+      header: 'Top Character',
+      align: 'right',
+      sortable: true,
+      body: topCharacterBody
+    },
     { field: 'totalAliveFame', header: 'Total Alive Fame', align: 'right', sortable: true },
     { field: 'fameShare', header: 'Fame Share %', align: 'right', sortable: true },
     { field: 'topFamePct', header: 'Top Fame %', align: 'right', sortable: true },

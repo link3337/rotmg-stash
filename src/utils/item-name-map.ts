@@ -40,7 +40,10 @@ function addItemToMap(nameMap: Map<string, RealmItem[]>, key: string, item: Real
  * @param totals - The list of items that are in the totals
  * @returns A map where the keys are item names and technical names and the values are item ID arrays
  */
-export function createTotalMap(items: RealmItemMap, totals: TotalsUIModel[]): Map<string, number[]> {
+export function createTotalMap(
+  items: RealmItemMap,
+  totals: TotalsUIModel[]
+): Map<string, number[]> {
   const nameMap = new Map<string, number[]>();
 
   // Create a set of item IDs that are in the totals for faster lookup

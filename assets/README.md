@@ -5,9 +5,7 @@
 The following assets are hosted and cached to ensure a seamless user experience with fast, reliable, and up-to-date resources:
 
 - **`renders.png`**: The main sprite sheet containing all regular item images.
-- **`renders-april-fools.png`**: Sprite sheet containing April Fools item variants.
-- **`items.json`**: JSON data containing properties of RotMG items.
-- **`april-fools-items.json`**: JSON data for April Fools item variants.
+- **`constants.json`**: JSON data of constants (including items, classes, etc.).
 
 ## Service Worker Responsibilities
 
