@@ -22,16 +22,16 @@
 export function xmlToJson(xml: any) {
   var X = {
     toObj: function (xml: any) {
-      var o: any = {};
+      let o: any = {};
       if (xml.nodeType == 1) {
         // element node ..
         if (xml.attributes.length)
           // element with attributes  ..
-          for (var i = 0; i < xml.attributes.length; i++)
+          for (let i = 0; i < xml.attributes.length; i++)
             o[xml.attributes[i].nodeName] = (xml.attributes[i].nodeValue || '').toString();
         if (xml.firstChild) {
           // element has child nodes ..
-          var textChild = 0,
+          let textChild = 0,
             cdataChild = 0,
             hasElementChild = false;
           for (var n = xml.firstChild; n; n = n.nextSibling) {
@@ -84,14 +84,14 @@ export function xmlToJson(xml: any) {
       return o;
     },
     innerXml: function (node: any) {
-      var s = '';
+      let s = '';
       if ('innerHTML' in node) s = node.innerHTML;
       else {
-        var asXml = function (n: any) {
-          var s = '';
+        const asXml = function (n: any) {
+          let s = '';
           if (n.nodeType == 1) {
             s += '<' + n.nodeName;
-            for (var i = 0; i < n.attributes.length; i++)
+            for (let i = 0; i < n.attributes.length; i++)
               s +=
                 ' ' +
                 n.attributes[i].nodeName +
@@ -100,14 +100,14 @@ export function xmlToJson(xml: any) {
                 '"';
             if (n.firstChild) {
               s += '>';
-              for (var c = n.firstChild; c; c = c.nextSibling) s += asXml(c);
+              for (let c = n.firstChild; c; c = c.nextSibling) s += asXml(c);
               s += '</' + n.nodeName + '>';
             } else s += '/>';
           } else if (n.nodeType == 3) s += n.nodeValue;
           else if (n.nodeType == 4) s += '<![CDATA[' + n.nodeValue + ']]>';
           return s;
         };
-        for (var c = node.firstChild; c; c = c.nextSibling) s += asXml(c);
+        for (let c = node.firstChild; c; c = c.nextSibling) s += asXml(c);
       }
       return s;
     },
@@ -121,12 +121,12 @@ export function xmlToJson(xml: any) {
 
     removeWhite: function (e: any) {
       e.normalize();
-      for (var n = e.firstChild; n; ) {
+      for (let n = e.firstChild; n; ) {
         if (n.nodeType == 3) {
           // text node
           if (!n.nodeValue.match(/[^ \f\n\r\t\v]/)) {
             // pure whitespace text node
-            var nxt = n.nextSibling;
+            const nxt = n.nextSibling;
             e.removeChild(n);
             n = nxt;
           } else n = n.nextSibling;

@@ -28,15 +28,18 @@ const getMaxedStatsCount = (stats: MappedCharacterStats[]): string => {
 export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId }) => {
   const items = char?.equipment ?? [];
 
-  const slotsByItemId = (char?.unique_item_info ?? []).reduce<Map<number, number[]>>((acc, info) => {
-    const slotCount = info.enchantments?.slotCount ?? 0;
-    if (slotCount <= 0) return acc;
+  const slotsByItemId = (char?.unique_item_info ?? []).reduce<Map<number, number[]>>(
+    (acc, info) => {
+      const slotCount = info.enchantments?.slotCount ?? 0;
+      if (slotCount <= 0) return acc;
 
-    const existing = acc.get(info.itemId) ?? [];
-    existing.push(Math.min(Math.max(slotCount, 0), 4));
-    acc.set(info.itemId, existing);
-    return acc;
-  }, new Map<number, number[]>());
+      const existing = acc.get(info.itemId) ?? [];
+      existing.push(Math.min(Math.max(slotCount, 0), 4));
+      acc.set(info.itemId, existing);
+      return acc;
+    },
+    new Map<number, number[]>()
+  );
 
   const enchantmentsByItemId = (char?.unique_item_info ?? []).reduce<Map<number, number[][]>>(
     (acc, info) => {

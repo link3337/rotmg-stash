@@ -8,6 +8,21 @@ import styles from './Item.module.scss';
 import ItemTooltip, { ItemInfo } from './ItemTooltip';
 import UnknownItem from './UnknownItem';
 
+// static lookup tables hoisted to module scope to avoid recreating on every render
+const RARITY_IMAGE_BY_SLOTS: Record<number, string> = {
+  1: '/Uncommon.png',
+  2: '/Rare.png',
+  3: '/Legendary.png',
+  4: '/Divine.png'
+};
+
+const RARITY_CLASS_BY_SLOTS: Record<number, string> = {
+  1: styles.rarityUncommon,
+  2: styles.rarityRare,
+  3: styles.rarityLegendary,
+  4: styles.rarityDivine
+};
+
 interface ItemProps {
   itemId: number;
   amount?: number;
@@ -82,20 +97,8 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
   };
 
   const slotCount = Math.min(Math.max(enchantmentSlots, 0), 4);
-  const rarityImageBySlots: Record<number, string> = {
-    1: '/Uncommon.png',
-    2: '/Rare.png',
-    3: '/Legendary.png',
-    4: '/Divine.png'
-  };
-  const rarityClassBySlots: Record<number, string> = {
-    1: styles.rarityUncommon,
-    2: styles.rarityRare,
-    3: styles.rarityLegendary,
-    4: styles.rarityDivine
-  };
-  const rarityImage = rarityImageBySlots[slotCount];
-  const rarityClass = rarityClassBySlots[slotCount] ?? '';
+  const rarityImage = RARITY_IMAGE_BY_SLOTS[slotCount];
+  const rarityClass = RARITY_CLASS_BY_SLOTS[slotCount] ?? '';
 
   return (
     <div style={{ position: 'relative', height: '43px', display: 'inline-block' }}>

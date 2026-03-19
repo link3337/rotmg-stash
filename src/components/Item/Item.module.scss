@@ -49,7 +49,6 @@
     }
   }
 
-  
   &.rarityUncommon {
     .itemSprite {
       filter: drop-shadow(0 0 1px hsl(100, 50%, 50%));
@@ -57,6 +56,7 @@
 
     .enchantmentSlots {
       bottom: 2px;
+
       .slotIcon {
         width: 8px;
       }
@@ -67,8 +67,10 @@
     .itemSprite {
       filter: drop-shadow(0 0 3px hsl(215, 50%, 50%));
     }
+
     .enchantmentSlots {
       bottom: 4px;
+
       .slotIcon {
         width: 14px;
       }
@@ -79,8 +81,10 @@
     .itemSprite {
       filter: drop-shadow(0 0 3px hsl(280, 50%, 50%));
     }
+
     .enchantmentSlots {
       bottom: 2px;
+
       .slotIcon {
         width: 14px;
       }
@@ -91,8 +95,10 @@
     .itemSprite {
       filter: drop-shadow(0 0 3px hsl(35, 70%, 50%));
     }
+
     .enchantmentSlots {
       bottom: 2px;
+
       .slotIcon {
         width: 12px;
       }

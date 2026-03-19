@@ -16,7 +16,7 @@ export async function getAccountData(
   });
 
   const parser = new DOMParser();
-  let xml: any = parser.parseFromString(apiResponse, 'text/xml');
+  const xml: any = parser.parseFromString(apiResponse, 'text/xml');
   const json: CharListResponse = xmlToJson(xml);
 
   return json;

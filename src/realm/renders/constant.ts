@@ -19,4 +19,3 @@ export interface Constants {
   pets: PetMap;
   petSkins: PetSkinMap;
 }
-
