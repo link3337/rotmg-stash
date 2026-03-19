@@ -13,14 +13,14 @@ function p_comp(s: any, x: any, y: any, i: any) {
 
 // single pixel
 function p_dict(s: any, x: any, y: any) {
-  var offset = (s.width * y + x) << 2;
+  const offset = (s.width * y + x) << 2;
   for (var i = 0, d = []; i < 4; i++) d[i] = s.data[offset + i];
   return d;
 }
 
 // css-compatible
 function p_css(s: any, x: any, y: any) {
-  var d = p_dict(s, x, y);
+  const d = p_dict(s, x, y);
   d[3] /= 255;
   return 'rgba(' + d.join(',') + ')';
 }

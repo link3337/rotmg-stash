@@ -1,5 +1,6 @@
 import { TotalsUIModel } from '@/cache/totals-model';
 import { ClassID, ClassMap } from '@/realm/renders/classes';
+import { decodeItemEnchantments } from '@/utils/item-enchantments';
 import { Char, CharListResponse, MaxClassLevel } from '@realm/models/charlist-response';
 import {
   CharacterStats,
@@ -12,7 +13,6 @@ import { mapAccount } from './account-mapping';
 import { mapExalts } from './exalt-mapping';
 import { mapTotals } from './totals-mapping';
 import { objectToArray } from './util';
-import { decodeItemEnchantments } from '@/utils/item-enchantments';
 
 export function mapCharListResponse(
   charListResponse: CharListResponse,

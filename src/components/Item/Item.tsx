@@ -106,8 +106,9 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
         ref={itemRef}
         onMouseOver={() => showItemTooltips && handleMouseOver()}
         onMouseLeave={() => setShowTooltip(false)}
-        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${isShiny ? styles.shiny : ''
-          } ${rarityClass}`}
+        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${
+          isShiny ? styles.shiny : ''
+        } ${rarityClass}`}
         data-rarity-slots={slotCount > 0 ? slotCount : undefined}
         data-itemid={itemId}
         onClick={handleClick}

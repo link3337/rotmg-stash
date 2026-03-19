@@ -6,8 +6,9 @@ interface UnknownItemProps {
   amount?: number;
 }
 
+const backgroundPosition = '-50px -5px';
+
 const UnknownItem: FC<UnknownItemProps> = ({ itemId, amount }) => {
-  let backgroundPosition = '-50px -5px';
   return (
     <div style={{ position: 'relative', height: '43px', display: 'inline-block' }}>
       <div className={`${styles.item}`} data-itemid={itemId} style={{ backgroundPosition }}>
