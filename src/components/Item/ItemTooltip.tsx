@@ -1,4 +1,5 @@
 import { bagPositionMap } from '@/constants';
+import { useConstants } from '@/providers/ConstantsProvider';
 import React, { useEffect, useRef, useState } from 'react';
 import styles from './ItemTooltip.module.scss';
 
@@ -12,6 +13,7 @@ export interface ItemInfo {
   utst: number;
   isShiny: boolean;
   id: number;
+  enchantmentIds: number[];
 }
 
 interface ItemTooltipProps {
@@ -19,6 +21,7 @@ interface ItemTooltipProps {
 }
 
 const ItemTooltip: React.FC<ItemTooltipProps> = ({ itemInfo }) => {
+  const { constants } = useConstants();
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<'left' | 'right' | 'top' | 'bottom'>('top');
   const [isVisible, setIsVisible] = useState(false);
@@ -58,6 +61,34 @@ const ItemTooltip: React.FC<ItemTooltipProps> = ({ itemInfo }) => {
   if (!isVisible) return null;
 
   const bagPosition = bagPositionMap[itemInfo.bagType] || '0px 0px';
+  const resolveEnchantment = (id: number) => {
+    const direct = constants?.enchantments?.[String(id)];
+    if (direct) return { rawId: id, resolvedId: id, data: direct };
+
+    // Some payloads appear with swapped 16-bit order (e.g. 26116 -> 1126).
+    const swappedId = ((id & 0xff) << 8) | ((id >> 8) & 0xff);
+    const swapped = constants?.enchantments?.[String(swappedId)];
+    if (swapped) return { rawId: id, resolvedId: swappedId, data: swapped };
+
+    return null;
+  };
+
+  const resolvedEnchantments = itemInfo.enchantmentIds.map((id) => ({
+    rawId: id,
+    resolved: resolveEnchantment(id)
+  }));
+
+  const enchantments = resolvedEnchantments
+    .map((entry) => entry.resolved)
+    .filter(
+      (
+        entry
+      ): entry is {
+        rawId: number;
+        resolvedId: number;
+        data: NonNullable<typeof entry>['data'];
+      } => !!entry
+    );
 
   return (
     <div
@@ -95,6 +126,14 @@ const ItemTooltip: React.FC<ItemTooltipProps> = ({ itemInfo }) => {
         <div className={styles.stat}>
           <span>Item ID:{itemInfo.id}</span>
         </div>
+        {enchantments.map((entry) => (
+          <div className={styles.enchantment} key={`${entry.rawId}-${entry.resolvedId}`}>
+            <div className={styles.enchantmentText}>
+              <div className={styles.enchantmentName}>{entry.data!.displayId}</div>
+              <div className={styles.enchantmentDescription}>{entry.data!.description}</div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

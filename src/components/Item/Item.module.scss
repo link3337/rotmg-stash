@@ -1,4 +1,5 @@
 .item {
+  position: relative;
   overflow: hidden;
   width: 40px; // Fixed width
   height: 40px; // Fixed height
@@ -29,14 +30,85 @@
       animation: shine 5s infinite;
     }
   }
+
+  .enchantmentSlots {
+    position: absolute;
+    right: 2px;
+    bottom: -13px;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    z-index: 60;
+    pointer-events: none;
+
+    .slotIcon {
+      height: auto;
+      display: block;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.75));
+    }
+  }
+
+  
+  &.rarityUncommon {
+    .itemSprite {
+      filter: drop-shadow(0 0 1px hsl(100, 50%, 50%));
+    }
+
+    .enchantmentSlots {
+      bottom: 2px;
+      .slotIcon {
+        width: 8px;
+      }
+    }
+  }
+
+  &.rarityRare {
+    .itemSprite {
+      filter: drop-shadow(0 0 3px hsl(215, 50%, 50%));
+    }
+    .enchantmentSlots {
+      bottom: 4px;
+      .slotIcon {
+        width: 14px;
+      }
+    }
+  }
+
+  &.rarityLegendary {
+    .itemSprite {
+      filter: drop-shadow(0 0 3px hsl(280, 50%, 50%));
+    }
+    .enchantmentSlots {
+      bottom: 2px;
+      .slotIcon {
+        width: 14px;
+      }
+    }
+  }
+
+  &.rarityDivine {
+    .itemSprite {
+      filter: drop-shadow(0 0 3px hsl(35, 70%, 50%));
+    }
+    .enchantmentSlots {
+      bottom: 2px;
+      .slotIcon {
+        width: 12px;
+      }
+    }
+  }
 }
 
-.item div {
+.itemSprite {
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
+}
+
+.nonSelectable {
   color: var(--primary-50);
   font:
     bold 15px Arial,
@@ -47,6 +119,7 @@
     -1px 1px 1px var(--gray-900),
     1px 1px 1px var(--gray-900);
   z-index: 50;
+  user-select: none;
 }
 
 .item:not(.silhouette) {
@@ -65,8 +138,4 @@
   100% {
     left: 100%;
   }
-}
-
-.nonSelectable {
-  user-select: none;
 }

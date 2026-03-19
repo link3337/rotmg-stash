@@ -11,9 +11,11 @@ import UnknownItem from './UnknownItem';
 interface ItemProps {
   itemId: number;
   amount?: number;
+  enchantmentSlots?: number;
+  enchantmentIds?: number[];
 }
 
-const Item: FC<ItemProps> = ({ itemId, amount }) => {
+const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantmentIds = [] }) => {
   const dispatch = useAppDispatch();
   const activeFilters = useAppSelector(selectSelectedItems);
   const showItemTooltips = useAppSelector(
@@ -47,6 +49,7 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
     soulbound: false,
     utst: -1,
     isShiny,
+    enchantmentIds,
     id: EMPTY_SLOT_ITEM_ID // default -1
   };
 
@@ -62,6 +65,7 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
       soulbound: item.isSoulbound,
       utst: item.utst,
       isShiny: item.isShiny,
+      enchantmentIds,
       id: itemId
     };
   }
@@ -77,6 +81,22 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
     setShowTooltip(true);
   };
 
+  const slotCount = Math.min(Math.max(enchantmentSlots, 0), 4);
+  const rarityImageBySlots: Record<number, string> = {
+    1: '/Uncommon.png',
+    2: '/Rare.png',
+    3: '/Legendary.png',
+    4: '/Divine.png'
+  };
+  const rarityClassBySlots: Record<number, string> = {
+    1: styles.rarityUncommon,
+    2: styles.rarityRare,
+    3: styles.rarityLegendary,
+    4: styles.rarityDivine
+  };
+  const rarityImage = rarityImageBySlots[slotCount];
+  const rarityClass = rarityClassBySlots[slotCount] ?? '';
+
   return (
     <div style={{ position: 'relative', height: '43px', display: 'inline-block' }}>
       <div
@@ -85,15 +105,25 @@ const Item: FC<ItemProps> = ({ itemId, amount }) => {
         onMouseLeave={() => setShowTooltip(false)}
         className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${
           isShiny ? styles.shiny : ''
-        }`}
+        } ${rarityClass}`}
+        data-rarity-slots={slotCount > 0 ? slotCount : undefined}
         data-itemid={itemId}
-        style={{
-          backgroundPosition,
-          backgroundImage: `url('${ASSETS_RENDER_URL}')`
-        }}
         onClick={handleClick}
       >
-        <div className={styles.nonSelectable}>{amount && amount > 0 ? amount : ''}</div>
+        <div
+          className={styles.itemSprite}
+          style={{
+            backgroundPosition,
+            backgroundImage: `url('${ASSETS_RENDER_URL}')`
+          }}
+        >
+          <div className={styles.nonSelectable}>{amount && amount > 0 ? amount : ''}</div>
+        </div>
+        {slotCount > 0 && rarityImage && (
+          <div className={styles.enchantmentSlots}>
+            <img className={styles.slotIcon} src={rarityImage} alt="" aria-hidden="true" />
+          </div>
+        )}
       </div>
       {showItemTooltips && showTooltip && (
         <div
