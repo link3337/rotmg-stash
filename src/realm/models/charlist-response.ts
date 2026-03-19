@@ -706,5 +706,5 @@ interface Ability {
 }
 
 interface UniqueItemInfo {
-  ItemData: ItemData[];
+  ItemData: ItemData | ItemData[];
 }

@@ -12,6 +12,7 @@ import { mapAccount } from './account-mapping';
 import { mapExalts } from './exalt-mapping';
 import { mapTotals } from './totals-mapping';
 import { objectToArray } from './util';
+import { decodeItemEnchantments } from '@/utils/item-enchantments';
 
 export function mapCharListResponse(
   charListResponse: CharListResponse,
@@ -203,6 +204,11 @@ function mapCharModel(char: Char, classes?: ClassMap): CharUIModel | null {
     xptimer: char.XpTimer ? parseInt(char.XpTimer, 10) : 0,
     lootDrop: char.LDTimer ? parseInt(char.LDTimer, 10) : 0,
     lootTier: char.LTTimer ? parseInt(char.LTTimer, 10) : 0,
+    unique_item_info: objectToArray(char.UniqueItemInfo?.ItemData).map((item) => ({
+      itemId: item.type ? parseInt(item.type, 10) : -1,
+      data: item['#text'] ?? '',
+      enchantments: decodeItemEnchantments(item['#text'] ?? '')
+    })),
     crucible: char.CrucibleActive?.toLowerCase() === 'true',
     objectType: char.ObjectType,
     stats: rawStats,

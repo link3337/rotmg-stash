@@ -1,4 +1,5 @@
 import { ClassMap } from './classes';
+import { EnchantmentMap } from './enchantment';
 import { RealmItemMap } from './item';
 import { PetMap } from './pet';
 import { PetAbilityMap } from './pet-abilitiy';
@@ -10,6 +11,7 @@ export interface Constants {
   version: string;
   gameVersion: string;
   items: RealmItemMap;
+  enchantments: EnchantmentMap;
   classes: ClassMap;
   skins: SkinMap;
   petAbilities: PetAbilityMap;
@@ -17,3 +19,4 @@ export interface Constants {
   pets: PetMap;
   petSkins: PetSkinMap;
 }
+

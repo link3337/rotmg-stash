@@ -47,9 +47,23 @@ export interface CharUIModel {
   xptimer: number;
   lootDrop: number;
   lootTier: number;
+  unique_item_info: UniqueItemInfoUIModel[];
   crucible: boolean | null;
   objectType: string;
   mappedStats: MappedCharacterStats[];
+}
+
+export interface UniqueItemInfoUIModel {
+  itemId: number;
+  data: string;
+  enchantments: ItemEnchantmentDataUIModel | null;
+}
+
+export interface ItemEnchantmentDataUIModel {
+  formatVersion: number;
+  slotCount: number;
+  enchantmentIds: number[];
+  tradeoffModifiers: number[];
 }
 
 export interface ItemUIModel {
