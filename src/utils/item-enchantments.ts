@@ -23,9 +23,7 @@ const decodeBase64 = (input: string): Uint8Array | null => {
   }
 };
 
-export const decodeItemEnchantments = (
-  encodedData: string
-): ItemEnchantmentDataUIModel | null => {
+export const decodeItemEnchantments = (encodedData: string): ItemEnchantmentDataUIModel | null => {
   const bytes = decodeBase64(encodedData);
   if (!bytes || bytes.length < 2) return null;
 
