@@ -4,6 +4,7 @@ import { CharUIModel } from '@api/models/char-ui-model';
 import { ClassStat } from '@realm/models/charlist-response';
 import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
+import { Accordion, AccordionTab } from 'primereact/accordion';
 import { DataTable } from 'primereact/datatable';
 import { Row } from 'primereact/row';
 import React from 'react';
@@ -12,6 +13,7 @@ interface CharactersInfoProps {
   accountId: string;
   classStats: ClassStat[];
   characters: CharUIModel[];
+  useAccordionMenu?: boolean;
 }
 
 interface CharacterInfo {
@@ -163,7 +165,12 @@ const buildTotalsRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRow 
   };
 };
 
-const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, characters }) => {
+const CharactersInfo: React.FC<CharactersInfoProps> = ({
+  accountId,
+  classStats,
+  characters,
+  useAccordionMenu = false
+}) => {
   const { constants } = useConstants();
 
   const characterInfo: CharacterInfo[] = Object.values(ClassID)
@@ -326,7 +333,7 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
     </ColumnGroup>
   );
 
-  return (
+  const table = (
     <DataTable
       value={tableDataWithPct}
       stripedRows
@@ -351,6 +358,16 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({ accountId, classStats, 
         />
       ))}
     </DataTable>
+  );
+
+  if (!useAccordionMenu) {
+    return table;
+  }
+
+  return (
+    <Accordion className="accordion-title-white">
+      <AccordionTab header="Character Class Summary">{table}</AccordionTab>
+    </Accordion>
   );
 };
 

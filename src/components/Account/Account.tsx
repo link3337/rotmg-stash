@@ -13,6 +13,7 @@ import {
 import { selectSelectedItems } from '@store/slices/FilterSlice';
 import { QueueStatus } from '@store/slices/QueueSlice';
 import { info } from '@tauri-apps/plugin-log';
+import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { useMemo } from 'react';
@@ -143,7 +144,15 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
           />
           {settings.displaySettings.showExalts && (
             <div className="pt-3">
-              <Exalts exalts={data?.exalts} />
+              {settings.displaySettings.useAccordionMenu ? (
+                <Accordion className="accordion-title-white">
+                  <AccordionTab header="Exalts">
+                    <Exalts exalts={data?.exalts} />
+                  </AccordionTab>
+                </Accordion>
+              ) : (
+                <Exalts exalts={data?.exalts} />
+              )}
             </div>
           )}
           {settings.displaySettings.showCharacters && (

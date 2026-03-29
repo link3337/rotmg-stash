@@ -11,11 +11,23 @@ import {
 export const migrateSettings = (settings: Partial<SettingsState>): SettingsState => {
   return {
     ...settings,
-    totalSettings: settings.totalSettings || defaultTotalSettings,
+    totalSettings: {
+      ...defaultTotalSettings,
+      ...settings.totalSettings
+    },
     theme: settings.theme || defaultThemeSetting,
-    displaySettings: settings.displaySettings || defaultDisplaySettings,
-    experimental: settings.experimental || defaultExperimentalSettings,
-    itemSort: settings.itemSort || defaultSortSettings,
+    displaySettings: {
+      ...defaultDisplaySettings,
+      ...settings.displaySettings
+    },
+    experimental: {
+      ...defaultExperimentalSettings,
+      ...settings.experimental
+    },
+    itemSort: {
+      ...defaultSortSettings,
+      ...settings.itemSort
+    },
     queueFetchInterval: settings.queueFetchInterval || defaultQueueFetchIntervalSetting
   };
 };

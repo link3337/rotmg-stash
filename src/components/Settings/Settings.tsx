@@ -92,6 +92,7 @@ const Settings: React.FC = () => {
     { label: 'Show Account Info', key: 'showAccountInfo' },
     { label: 'Show Exalts', key: 'showExalts' },
     { label: 'Show Characters', key: 'showCharacters' },
+    { label: 'Use Accordion Menu for Character Info and Exalts', key: 'useAccordionMenu' },
     { label: 'Show Vault', key: 'showVault' },
     { label: 'Show Gift Chest', key: 'showGiftChest' },
     { label: 'Show Seasonal Spoils', key: 'showSeasonalSpoils' },
