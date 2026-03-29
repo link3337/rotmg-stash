@@ -50,6 +50,18 @@
   min-width: 100px;
 }
 
+.statButton {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--surface-ground);
+  border-radius: 4px;
+  min-width: 100px;
+  align-items: center;
+}
+
 .statName {
   color: var(--text-color-secondary);
   font-size: 0.875rem;

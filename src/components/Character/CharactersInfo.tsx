@@ -2,21 +2,24 @@ import { useConstants } from '@/providers/ConstantsProvider';
 import { ClassID } from '@/realm/renders/classes';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { ClassStat } from '@realm/models/charlist-response';
+import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
-import { Accordion, AccordionTab } from 'primereact/accordion';
 import { DataTable } from 'primereact/datatable';
 import { Row } from 'primereact/row';
 import React from 'react';
+import OwnedSkinsDialog from '../Account/OwnedSkinsDialog';
 
 interface CharactersInfoProps {
   accountId: string;
   classStats: ClassStat[];
   characters: CharUIModel[];
   useAccordionMenu?: boolean;
+  ownedSkins?: string;
 }
 
 interface CharacterInfo {
+  classId: ClassID;
   name: string;
   highestAliveFame: number;
   totalAliveFame: number;
@@ -32,6 +35,7 @@ interface CharacterInfo {
 }
 
 interface CharacterInfoTableBaseRow {
+  classId: ClassID;
   name: string;
   highestAliveFame: number;
   totalAliveFame: number;
@@ -43,6 +47,7 @@ interface CharacterInfoTableBaseRow {
   avgMaxedStats: number;
   highestDeadFame: number;
   characters: number;
+  skinsCount: number;
 }
 
 interface CharacterInfoTableRow extends CharacterInfoTableBaseRow {
@@ -72,6 +77,7 @@ interface CharacterInfoSummaryRow {
   avgMaxedStats: number;
   highestDeadFame: number;
   characters: number;
+  skinsCount: number;
 }
 
 type CharacterInfoSummaryValues = Omit<CharacterInfoSummaryRow, 'name'>;
@@ -95,7 +101,8 @@ const buildAveragesRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRo
       topFamePct: acc.topFamePct + row.topFamePct,
       avgMaxedStats: acc.avgMaxedStats + row.avgMaxedStats,
       highestDeadFame: acc.highestDeadFame + row.highestDeadFame,
-      characters: acc.characters + row.characters
+      characters: acc.characters + row.characters,
+      skinsCount: acc.skinsCount + row.skinsCount
     }),
     {
       highestAliveFame: 0,
@@ -107,7 +114,8 @@ const buildAveragesRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRo
       topFamePct: 0,
       avgMaxedStats: 0,
       highestDeadFame: 0,
-      characters: 0
+      characters: 0,
+      skinsCount: 0
     }
   );
 
@@ -124,7 +132,8 @@ const buildAveragesRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRo
     topFamePct: round(average(sumRow.topFamePct), 2),
     avgMaxedStats: round(average(sumRow.avgMaxedStats), 1),
     highestDeadFame: round(average(sumRow.highestDeadFame)),
-    characters: round(average(sumRow.characters), 2)
+    characters: round(average(sumRow.characters), 2),
+    skinsCount: round(average(sumRow.skinsCount), 2)
   };
 };
 
@@ -140,7 +149,8 @@ const buildTotalsRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRow 
       topFamePct: acc.topFamePct + row.topFamePct,
       avgMaxedStats: acc.avgMaxedStats + row.avgMaxedStats,
       highestDeadFame: acc.highestDeadFame + row.highestDeadFame,
-      characters: acc.characters + row.characters
+      characters: acc.characters + row.characters,
+      skinsCount: acc.skinsCount + row.skinsCount
     }),
     {
       highestAliveFame: 0,
@@ -152,7 +162,8 @@ const buildTotalsRow = (rows: CharacterInfoTableRow[]): CharacterInfoSummaryRow 
       topFamePct: 0,
       avgMaxedStats: 0,
       highestDeadFame: 0,
-      characters: 0
+      characters: 0,
+      skinsCount: 0
     }
   );
 
@@ -169,9 +180,44 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
   accountId,
   classStats,
   characters,
-  useAccordionMenu = false
+  useAccordionMenu = false,
+  ownedSkins
 }) => {
+  const [showOwnedSkinsDialog, setShowOwnedSkinsDialog] = React.useState(false);
+  const [selectedClassFilter, setSelectedClassFilter] = React.useState<string | undefined>(
+    undefined
+  );
   const { constants } = useConstants();
+
+  const ownedSkinIds = React.useMemo(
+    () => ownedSkins?.split(',').filter((id) => id) ?? [],
+    [ownedSkins]
+  );
+
+  const getClassName = React.useCallback(
+    (classTypeId: number) =>
+      constants?.classes?.[String(classTypeId) as ClassID]?.name || 'Unknown',
+    [constants?.classes]
+  );
+
+  const groupedSkins = React.useMemo(
+    () =>
+      ownedSkinIds.reduce(
+        (acc, skinId) => {
+          const skinData = constants?.skins?.[Number(skinId)];
+          if (skinData) {
+            const className = getClassName(skinData.classType);
+            if (!acc[className]) {
+              acc[className] = [];
+            }
+            acc[className].push(skinId);
+          }
+          return acc;
+        },
+        {} as Record<string, string[]>
+      ),
+    [ownedSkinIds, constants?.skins, getClassName]
+  );
 
   const characterInfo: CharacterInfo[] = Object.values(ClassID)
     .filter((id) => !isNaN(Number(id)))
@@ -204,6 +250,7 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
           : 0;
 
       return {
+        classId,
         name: constants?.classes?.[classId]?.name ?? 'Unknown',
         highestAliveFame,
         // parse hexcode (objectType) to number
@@ -226,6 +273,7 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
 
   // Each row is a class; columns are the metrics
   const tableData: CharacterInfoTableBaseRow[] = characterInfo.map((info) => ({
+    classId: info.classId,
     name: info.name,
     highestAliveFame: info.highestAliveFame,
     totalAliveFame: info.totalAliveFame,
@@ -236,7 +284,8 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
     topCharacterFame: info.topCharacterFame ?? 0,
     avgMaxedStats: info.avgMaxedStats ?? 0,
     highestDeadFame: info.highestDeadFame,
-    characters: info.amount
+    characters: info.amount,
+    skinsCount: groupedSkins[info.name]?.length ?? 0
   }));
 
   const totalAllAliveFame = characterInfo.reduce((acc, i) => acc + (i.totalAliveFame || 0), 0);
@@ -275,6 +324,29 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
     );
   };
 
+  const skinsCountBody = (row: CharacterInfoTableRow) => {
+    const count = row.skinsCount;
+    if (count <= 0) return 0;
+
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedClassFilter(row.name);
+          setShowOwnedSkinsDialog(true);
+        }}
+        style={{
+          all: 'unset',
+          cursor: 'pointer',
+          color: 'var(--primary-color)'
+        }}
+        aria-label={`Open owned skins for ${row.name}`}
+      >
+        {count}
+      </button>
+    );
+  };
+
   const columns: CharacterInfoColumnConfig[] = [
     {
       field: 'name',
@@ -297,16 +369,50 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
     { field: 'averageFame', header: 'Avg Fame per Character', align: 'right', sortable: true },
     { field: 'averageWithoutTop', header: 'Avg without Top', align: 'right', sortable: true },
     { field: 'highestDeadFame', header: 'Highest Dead Fame', align: 'right', sortable: true },
-    { field: 'characters', header: 'Characters', align: 'right', sortable: true }
+    { field: 'characters', header: 'Characters', align: 'right', sortable: true },
+    {
+      field: 'skinsCount',
+      header: 'Skins Count',
+      align: 'right',
+      sortable: true,
+      body: skinsCountBody
+    }
   ];
 
   const footerValue = (
     field: CharacterInfoColumnConfig['field'],
     label: string,
     summaryRow: CharacterInfoSummaryRow
-  ) => {
+  ): React.ReactNode => {
     if (field === 'name') return label;
     if (label === 'Totals' && (field === 'topFamePct' || field === 'avgMaxedStats')) return '-';
+
+    if (label === 'Totals' && field === 'skinsCount') {
+      const totalSkins = summaryRow.skinsCount;
+
+      if (totalSkins <= 0) {
+        return 0;
+      }
+
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedClassFilter(undefined);
+            setShowOwnedSkinsDialog(true);
+          }}
+          style={{
+            all: 'unset',
+            cursor: 'pointer',
+            color: 'var(--primary-color)'
+          }}
+          aria-label="Open all owned skins"
+        >
+          {totalSkins}
+        </button>
+      );
+    }
+
     return summaryRow[field];
   };
 
@@ -334,30 +440,42 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
   );
 
   const table = (
-    <DataTable
-      value={tableDataWithPct}
-      stripedRows
-      showGridlines
-      size="small"
-      className="mt-2"
-      sortMode="single"
-      sortField="name"
-      sortOrder={1}
-      footerColumnGroup={footerColumnGroup}
-    >
-      {columns.map((column) => (
-        <Column
-          key={column.field}
-          field={column.field}
-          header={column.header}
-          align={column.align}
-          sortable={column.sortable}
-          frozen={column.frozen}
-          style={column.style}
-          body={column.body}
-        />
-      ))}
-    </DataTable>
+    <>
+      <DataTable
+        value={tableDataWithPct}
+        stripedRows
+        showGridlines
+        size="small"
+        className="mt-2"
+        sortMode="single"
+        sortField="name"
+        sortOrder={1}
+        footerColumnGroup={footerColumnGroup}
+      >
+        {columns.map((column) => (
+          <Column
+            key={column.field}
+            field={column.field}
+            header={column.header}
+            align={column.align}
+            sortable={column.sortable}
+            frozen={column.frozen}
+            style={column.style}
+            body={column.body}
+          />
+        ))}
+      </DataTable>
+
+      <OwnedSkinsDialog
+        visible={showOwnedSkinsDialog}
+        onHide={() => {
+          setShowOwnedSkinsDialog(false);
+          setSelectedClassFilter(undefined);
+        }}
+        ownedSkinIds={ownedSkinIds}
+        classFilter={selectedClassFilter}
+      />
+    </>
   );
 
   if (!useAccordionMenu) {

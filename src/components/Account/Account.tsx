@@ -162,6 +162,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
                 characters={data.charList}
                 classStats={data?.account?.classStats}
                 exalts={data?.exalts}
+                ownedSkins={data?.account?.ownedSkins}
               />
             </div>
           )}

@@ -25,11 +25,20 @@ interface CharacterProps {
   classStats: ClassStat[] | undefined;
   characters: CharUIModel[];
   exalts: ExaltUIModel[] | null;
+  ownedSkins?: string;
 }
 
-const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, classStats }) => {
+const Characters: React.FC<CharacterProps> = ({
+  accountId,
+  characters,
+  exalts,
+  classStats,
+  ownedSkins
+}) => {
   const dispatch = useAppDispatch();
-  const useAccordionMenu = useAppSelector((state) => state.settings.displaySettings.useAccordionMenu);
+  const useAccordionMenu = useAppSelector(
+    (state) => state.settings.displaySettings.useAccordionMenu
+  );
 
   const selectedClasses = useAppSelector((state) => getSelectedClassesByAccount(state, accountId));
   const characterFilter = useAppSelector((state) => getCharacterFilterByAccount(state, accountId));
@@ -92,6 +101,7 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
             characters={characters}
             classStats={classStats}
             useAccordionMenu={useAccordionMenu}
+            ownedSkins={ownedSkins}
           />
         )}
       </div>

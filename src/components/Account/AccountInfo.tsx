@@ -6,14 +6,12 @@ import { useAppSelector } from '@hooks/redux';
 import { getGuildRank } from '@realm/renders/guild';
 import { QueueStatus } from '@store/slices/QueueSlice';
 import { selectExperimentalSettings, selectShowAccountName } from '@store/slices/SettingsSlice';
-import { useConstants } from '@providers/ConstantsProvider';
-import { portrait } from '@utils/portrait';
 import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tooltip } from 'primereact/tooltip';
 import React, { useState } from 'react';
 import styles from './AccountInfo.module.scss';
+import OwnedSkinsDialog from './OwnedSkinsDialog';
 
 interface AccountInfoProps {
   account: AccountModel;
@@ -46,7 +44,6 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   const [showSkinsModal, setShowSkinsModal] = useState(false);
   const showAccountName = useAppSelector(selectShowAccountName);
   const experimentalSettings = useAppSelector(selectExperimentalSettings);
-  const { constants } = useConstants();
 
   const formatDate = (date: string) => {
     return new Intl.DateTimeFormat(navigator.language, {
@@ -64,30 +61,8 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   const usedVaultSlots = accountData?.vault?.filter((item) => item !== -1).length ?? 0;
 
   const ownedSkinIds = accountData?.ownedSkins?.split(',').filter((id) => id) ?? [];
-  const getSkinName = (skinId: string) => {
-    return constants?.skins?.[Number(skinId)]?.name || `Unknown Skin (${skinId})`;
-  };
 
-  const getClassName = (classTypeId: number) => {
-    return (constants?.classes as any)?.[classTypeId]?.name || `Unknown Class (${classTypeId})`;
-  };
-
-  const groupedSkins = ownedSkinIds.reduce(
-    (acc, skinId) => {
-      const skinData = constants?.skins?.[Number(skinId)];
-      if (skinData) {
-        const classType = skinData.classType;
-        if (!acc[classType]) {
-          acc[classType] = [];
-        }
-        acc[classType].push(skinId);
-      }
-      return acc;
-    },
-    {} as Record<number, string[]>
-  );
-
-  const info: { name: string; value: string | number | undefined }[] = [
+  const info: { name: string; value: string | number | undefined; onClick?: () => void }[] = [
     { name: 'Account Fame', value: accountData?.fame },
     { name: 'Account Gold', value: accountData?.credits },
     { name: 'Characters', value: `${characterAmount}/${characterMaxAmount}` },
@@ -101,7 +76,11 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
     ...(accountData?.guildRank
       ? [{ name: 'Guild Rank', value: getGuildRank(accountData.guildRank) }]
       : []),
-    { name: 'Total Skins Unlocked', value: accountData?.ownedSkins?.split(',')?.length ?? 0 },
+    {
+      name: 'Total Skins Unlocked',
+      value: ownedSkinIds.length,
+      onClick: () => setShowSkinsModal(true)
+    },
     { name: 'Total Alive Fame', value: accountData?.totalAliveFame },
     { name: 'All Time Account Fame', value: accountData?.totalFame }
   ];
@@ -157,82 +136,39 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
 
       {showAccountInfo && (
         <div className={styles.statsContainer}>
-          {info.map((item, index) => (
-            <div
-              key={index}
-              className={styles.statItem}
-              onClick={() => item.name === 'Total Skins Unlocked' && setShowSkinsModal(true)}
-              style={item.name === 'Total Skins Unlocked' ? { cursor: 'pointer' } : undefined}
-            >
-              <span className={styles.statName}>{item.name}</span>
-              <span className={styles.statValue}>{item.value}</span>
-            </div>
-          ))}
+          {info.map((item, index) => {
+            const isInteractive = item.onClick !== undefined;
+
+            if (isInteractive) {
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  className={`${styles.statItem} ${styles.statButton}`}
+                  onClick={item.onClick}
+                  aria-label={`Open ${item.name}`}
+                >
+                  <span className={styles.statName}>{item.name}</span>
+                  <span className={styles.statValue}>{item.value}</span>
+                </button>
+              );
+            }
+
+            return (
+              <div key={index} className={styles.statItem}>
+                <span className={styles.statName}>{item.name}</span>
+                <span className={styles.statValue}>{item.value}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      <Dialog
-        header={`Total Skins Unlocked (${ownedSkinIds.length})`}
+      <OwnedSkinsDialog
         visible={showSkinsModal}
         onHide={() => setShowSkinsModal(false)}
-        style={{ width: '50vw' }}
-        breakpoints={{ '960px': '90vw', '641px': '95vw' }}
-        dismissableMask
-        closeOnEscape
-        modal
-      >
-        <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-          {ownedSkinIds.length === 0 ? (
-            <p>No skins owned</p>
-          ) : (
-            <div>
-              {Object.entries(groupedSkins)
-                .sort(([classTypeA], [classTypeB]) => Number(classTypeA) - Number(classTypeB))
-                .map(([classType, skinIds]) => (
-                  <div key={classType} style={{ marginBottom: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem', color: 'var(--primary-color)' }}>
-                      {getClassName(Number(classType))} ({skinIds.length})
-                    </h3>
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))',
-                        gap: '1rem'
-                      }}
-                    >
-                      {skinIds.map((skinId) => {
-                        const skinName = getSkinName(skinId);
-                        const spriteDataUrl = portrait(Number(skinId), Number(skinId), -1, -1);
-                        const tooltipId = `skin-tooltip-${skinId}`;
-
-                        return (
-                          <div key={skinId} style={{ textAlign: 'center' }}>
-                            <img
-                              id={tooltipId}
-                              src={spriteDataUrl}
-                              alt={skinName}
-                              style={{
-                                width: '64px',
-                                height: '64px',
-                                imageRendering: 'pixelated',
-                                cursor: 'pointer'
-                              }}
-                            />
-                            <Tooltip
-                              target={`#${tooltipId}`}
-                              content={skinName}
-                              position="bottom"
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      </Dialog>
+        ownedSkinIds={ownedSkinIds}
+      />
     </div>
   );
 };
