@@ -29,6 +29,7 @@ interface CharacterProps {
 
 const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, classStats }) => {
   const dispatch = useAppDispatch();
+  const useAccordionMenu = useAppSelector((state) => state.settings.displaySettings.useAccordionMenu);
 
   const selectedClasses = useAppSelector((state) => getSelectedClassesByAccount(state, accountId));
   const characterFilter = useAppSelector((state) => getCharacterFilterByAccount(state, accountId));
@@ -86,7 +87,12 @@ const Characters: React.FC<CharacterProps> = ({ accountId, characters, exalts, c
     <>
       <div>
         {classStats && (
-          <CharactersInfo accountId={accountId} characters={characters} classStats={classStats} />
+          <CharactersInfo
+            accountId={accountId}
+            characters={characters}
+            classStats={classStats}
+            useAccordionMenu={useAccordionMenu}
+          />
         )}
       </div>
       <div className="flex align-items-center gap-2 mt-3 mb-3">
