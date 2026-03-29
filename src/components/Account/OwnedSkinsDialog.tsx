@@ -1,6 +1,6 @@
 import { useConstants } from '@providers/ConstantsProvider';
 import { ClassID } from '@realm/renders/classes';
-import { portrait } from '@utils/portrait';
+import { isPortraitReady, portrait } from '@utils/portrait';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Skeleton } from 'primereact/skeleton';
@@ -22,8 +22,27 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
 }) => {
   const { constants } = useConstants();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [portraitReady, setPortraitReady] = React.useState(isPortraitReady());
   const deferredSearchQuery = React.useDeferredValue(searchQuery);
   const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
+
+  React.useEffect(() => {
+    if (portraitReady || !visible || ownedSkinIds.length === 0) return;
+
+    const interval = window.setInterval(() => {
+      if (isPortraitReady()) {
+        setPortraitReady(true);
+      }
+    }, 200);
+
+    return () => window.clearInterval(interval);
+  }, [portraitReady, visible, ownedSkinIds.length]);
+
+  React.useEffect(() => {
+    if (!portraitReady && isPortraitReady()) {
+      setPortraitReady(true);
+    }
+  }, [portraitReady, visible]);
 
   const getSkinName = React.useCallback(
     (skinId: string) => constants?.skins?.[Number(skinId)]?.name || `Unknown Skin (${skinId})`,
@@ -77,6 +96,8 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
   }, [baseEntries, getSkinName]);
 
   const spriteById = React.useMemo(() => {
+    if (!portraitReady) return {} as Record<string, string>;
+
     const result: Record<string, string> = {};
 
     baseEntries.forEach(([, skinIds]) => {
@@ -86,15 +107,15 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
     });
 
     return result;
-  }, [baseEntries]);
+  }, [baseEntries, portraitReady]);
 
   const entries = React.useMemo(() => {
     return baseEntries
       .map(([className, skinIds]) => {
         const filteredSkinIds = normalizedQuery
           ? skinIds.filter((skinId) =>
-              (skinNameById[skinId] || '').toLowerCase().includes(normalizedQuery)
-            )
+            (skinNameById[skinId] || '').toLowerCase().includes(normalizedQuery)
+          )
           : skinIds;
 
         return [className, filteredSkinIds] as const;

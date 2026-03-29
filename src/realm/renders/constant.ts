@@ -19,3 +19,10 @@ export interface Constants {
   pets: PetMap;
   petSkins: PetSkinMap;
 }
+
+export interface Sheets {
+  textiles: Record<string, any>;
+  skinsheets: Record<string, any>;
+  petSkinsheets: Record<string, any>;
+  renders: string;
+}

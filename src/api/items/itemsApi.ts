@@ -1,4 +1,4 @@
-import { Constants } from '@/realm/renders/constant';
+import { Constants, Sheets } from '@/realm/renders/constant';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 // Define the base URL and default to the development server url
@@ -10,8 +10,11 @@ export const itemsApi = createApi({
   endpoints: (builder) => ({
     fetchConstants: builder.query<Constants, void>({
       query: () => '/constants.json'
+    }),
+    fetchSheets: builder.query<Sheets, void>({
+      query: () => '/sheets.json'
     })
   })
 });
 
-export const { useFetchConstantsQuery } = itemsApi;
+export const { useFetchConstantsQuery, useFetchSheetsQuery } = itemsApi;

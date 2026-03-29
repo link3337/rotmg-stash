@@ -6,6 +6,7 @@ The following assets are hosted and cached to ensure a seamless user experience 
 
 - **`renders.png`**: The main sprite sheet containing all regular item images.
 - **`constants.json`**: JSON data of constants (including items, classes, etc.).
+- **`sheets.json`**: JSON data of sheets (playerskins, petskins, etc.).
 
 ## Service Worker Responsibilities
 

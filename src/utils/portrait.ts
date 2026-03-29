@@ -249,14 +249,18 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
   st.width = 34;
   st.height = 34;
   const ctx = st.getContext('2d');
+  if (!ctx) return '';
   ctx?.save();
   ctx?.clearRect(0, 0, st.width, st.height);
   ctx?.translate(1, 1);
 
   const i = skinData.index;
   const sheetName = skinData.sheet;
-  const spr = (sprites as any)[sheetName][i];
-  const mask = (sprites as any)[sheetName + 'Mask'][i];
+  const sheetSprites = (sprites as any)[sheetName];
+  const spr = sheetSprites?.[i];
+  if (!spr) return '';
+  const maskSprites = (sprites as any)[sheetName + 'Mask'];
+  const mask = maskSprites?.[i];
 
   for (let xi = 0; xi < size; xi++) {
     const x = xi * ratio;
@@ -277,7 +281,7 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
         ctx?.fillRect(x, y, w, h);
       }
 
-      if (p_comp(mask, xi, yi, 3) > 1) {
+      if (mask && p_comp(mask, xi, yi, 3) > 1) {
         const red = p_comp(mask, xi, yi, 0);
         const green = p_comp(mask, xi, yi, 1);
         if (red > green && fs1 !== 'transparent') {
@@ -327,8 +331,12 @@ function initPortrait(
     });
 }
 
+function isPortraitReady(): boolean {
+  return ready;
+}
+
 // Initialize with defaults on module load to preserve backward compatibility
 initPortrait(undefined, defaultSkinsheets, defaultTextiles);
 
 // Export portrait function and initialization helper
-export { initPortrait, portrait };
+export { initPortrait, isPortraitReady, portrait };
