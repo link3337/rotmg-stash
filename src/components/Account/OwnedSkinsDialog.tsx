@@ -1,6 +1,6 @@
 import { useConstants } from '@providers/ConstantsProvider';
 import { ClassID } from '@realm/renders/classes';
-import { portrait } from '@utils/portrait';
+import { isPortraitReady, portrait, waitForPortraitReady } from '@utils/portrait';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Skeleton } from 'primereact/skeleton';
@@ -22,8 +22,24 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
 }) => {
   const { constants } = useConstants();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [portraitReady, setPortraitReady] = React.useState(isPortraitReady());
   const deferredSearchQuery = React.useDeferredValue(searchQuery);
   const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
+
+  React.useEffect(() => {
+    if (portraitReady || !visible || ownedSkinIds.length === 0) return;
+
+    let cancelled = false;
+    waitForPortraitReady().then(() => {
+      if (!cancelled) {
+        setPortraitReady(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [portraitReady, visible, ownedSkinIds.length]);
 
   const getSkinName = React.useCallback(
     (skinId: string) => constants?.skins?.[Number(skinId)]?.name || `Unknown Skin (${skinId})`,
@@ -77,6 +93,8 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
   }, [baseEntries, getSkinName]);
 
   const spriteById = React.useMemo(() => {
+    if (!portraitReady) return {} as Record<string, string>;
+
     const result: Record<string, string> = {};
 
     baseEntries.forEach(([, skinIds]) => {
@@ -86,7 +104,7 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
     });
 
     return result;
-  }, [baseEntries]);
+  }, [baseEntries, portraitReady]);
 
   const entries = React.useMemo(() => {
     return baseEntries

@@ -2,14 +2,14 @@ import React from 'react';
 import styles from './Footer.module.scss';
 
 const icons = [
-  { href: 'https://vitejs.dev', iconClass: styles.vite, src: '/vite.svg', alt: 'Vite logo' },
-  { href: 'https://tauri.app', iconClass: styles.tauri, src: '/tauri.svg', alt: 'Tauri logo' },
-  { href: 'https://reactjs.org', iconClass: styles.react, src: '/react.svg', alt: 'React logo' },
-  { href: 'https://redux.js.org', iconClass: styles.redux, src: '/redux.svg', alt: 'Redux logo' },
+  { href: 'https://vitejs.dev', iconClass: styles.vite, src: 'vite.svg', alt: 'Vite logo' },
+  { href: 'https://tauri.app', iconClass: styles.tauri, src: 'tauri.svg', alt: 'Tauri logo' },
+  { href: 'https://reactjs.org', iconClass: styles.react, src: 'react.svg', alt: 'React logo' },
+  { href: 'https://redux.js.org', iconClass: styles.redux, src: 'redux.svg', alt: 'Redux logo' },
   {
     href: 'https://primereact.org',
     iconClass: styles.prime,
-    src: '/primereact.svg',
+    src: 'primereact.svg',
     alt: 'PrimeReact logo'
   }
 ];
@@ -34,7 +34,7 @@ const Footer: React.FC = () => {
           {icons.map((icon, index) => (
             <a key={index} href={icon.href} target="_blank" rel="noopener noreferrer">
               <img
-                src={icon.src}
+                src={`/icons/${icon.src}`}
                 className={`${styles.footerIcon} ${icon.iconClass}`}
                 alt={icon.alt}
               />

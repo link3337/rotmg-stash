@@ -1,13 +1,14 @@
-import { Constants } from '@/realm/renders/constant';
+import { Constants, Sheets } from '@/realm/renders/constant';
 import { RealmItemMap } from '@/realm/renders/item';
-import { skinsheets, textiles } from '@/realm/renders/sheets';
 import { initPortrait } from '@/utils/portrait';
-import { useFetchConstantsQuery } from '@api/items/itemsApi';
+import { useFetchConstantsQuery, useFetchSheetsQuery } from '@api/items/itemsApi';
+import { useAppSelector } from '@hooks/redux';
 import { info } from '@tauri-apps/plugin-log';
 import React, { createContext, useContext, useEffect } from 'react';
 
 interface ConstantsContext {
   constants?: Constants | null;
+  sheets?: Sheets | null;
   items: RealmItemMap;
   skinsheets: Record<string, string>;
   textiles: Record<string, string>;
@@ -18,32 +19,47 @@ interface ConstantsContext {
 const ConstantsContext = createContext<ConstantsContext | undefined>(undefined);
 
 export const ConstantsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const useLocalAssets = useAppSelector((state) => state.settings.displaySettings.useLocalAssets);
+
+  const {
+    data: sheetsData,
+    isLoading: isLoadingSheets,
+    error: errorSheets
+  } = useFetchSheetsQuery(useLocalAssets);
+
   const {
     data: constants,
     isLoading: isLoadingConstants,
     error: errorConstants
-  } = useFetchConstantsQuery();
+  } = useFetchConstantsQuery(useLocalAssets);
+
+  const sheets = sheetsData ?? null;
+  const skinsheets = sheets?.skinsheets ?? {};
+  const textiles = sheets?.textiles ?? {};
 
   const items: RealmItemMap = (constants && constants.items) || {};
-  const isLoading = isLoadingConstants;
-  const error = errorConstants || null;
+  const isLoading = isLoadingConstants || isLoadingSheets;
+  const error = errorConstants || errorSheets || null;
 
   useEffect(() => {
-    if (constants) {
-      try {
-        info('Initializing portrait with fetched constants');
-        initPortrait(constants, skinsheets, textiles);
-      } catch (e) {
-        // fail silently; portrait can still use defaults
-        console.warn('Failed to initialize portrait with constants', e);
-      }
+    if (!constants || !skinsheets || !textiles) {
+      return;
     }
-  }, [constants]);
+
+    try {
+      info('Initializing portrait with fetched constants and sheets');
+      initPortrait(constants, skinsheets, textiles);
+    } catch (e) {
+      // fail silently; portrait can still use defaults
+      console.warn('Failed to initialize portrait with constants', e);
+    }
+  }, [constants, skinsheets, textiles]);
 
   return (
     <ConstantsContext.Provider
       value={{
         constants,
+        sheets,
         items,
         skinsheets,
         textiles,

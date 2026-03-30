@@ -17,6 +17,7 @@ export interface DisplaySettingsModel {
   showExalts: boolean;
   showCharacters: boolean;
   useAccordionMenu: boolean;
+  useLocalAssets: boolean;
   showVault: boolean;
   showGiftChest: boolean;
   showSeasonalSpoils: boolean;

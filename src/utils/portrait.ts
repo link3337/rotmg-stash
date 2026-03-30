@@ -1,10 +1,6 @@
 import { Constants } from '@/realm/renders/constant';
 import { Skin, SkinMap } from '@/realm/renders/skin';
 import { Texture, TextureMap } from '@/realm/renders/texture';
-import {
-  skinsheets as defaultSkinsheets,
-  textiles as defaultTextiles
-} from '@realm/renders/sheets';
 
 // single component
 function p_comp(s: any, x: any, y: any, i: any) {
@@ -30,8 +26,8 @@ const sprites = {};
 
 let skins: SkinMap = {};
 let textures: TextureMap = {};
-let skinsheets: Record<string, string> = defaultSkinsheets;
-let textiles: Record<string, string> = defaultTextiles;
+let skinsheets: Record<string, string> = {};
+let textiles: Record<string, string> = {};
 
 // Function to extract sprites
 function extract_sprites(img: any, sx: any, sy?: any) {
@@ -72,7 +68,7 @@ function extract_skins(img: any, size: any) {
   ctx.drawImage(img, 0, 0);
   let i = 0;
   const r = [];
-  for (let y = 0; y < c.height; y += size * 3, i++) {
+  for (let y = 0; y < c.height; y += size, i++) {
     r[i] = ctx.getImageData(0, y, size, size);
   }
   return r;
@@ -249,14 +245,18 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
   st.width = 34;
   st.height = 34;
   const ctx = st.getContext('2d');
+  if (!ctx) return '';
   ctx?.save();
   ctx?.clearRect(0, 0, st.width, st.height);
   ctx?.translate(1, 1);
 
   const i = skinData.index;
   const sheetName = skinData.sheet;
-  const spr = (sprites as any)[sheetName][i];
-  const mask = (sprites as any)[sheetName + 'Mask'][i];
+  const sheetSprites = (sprites as any)[sheetName];
+  const spr = sheetSprites?.[i];
+  if (!spr) return '';
+  const maskSprites = (sprites as any)[sheetName + 'Mask'];
+  const mask = maskSprites?.[i];
 
   for (let xi = 0; xi < size; xi++) {
     const x = xi * ratio;
@@ -277,7 +277,7 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
         ctx?.fillRect(x, y, w, h);
       }
 
-      if (p_comp(mask, xi, yi, 3) > 1) {
+      if (mask && p_comp(mask, xi, yi, 3) > 1) {
         const red = p_comp(mask, xi, yi, 0);
         const green = p_comp(mask, xi, yi, 1);
         if (red > green && fs1 !== 'transparent') {
@@ -304,7 +304,19 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
 /**
  * Initialize portrait module with runtime constants and sheets.
  * If not called, the module will use the default embedded sheets/textiles.
+ *
+ * This module exposes a single `portraitReadyPromise` that resolves once all
+ * skin sheets and textiles are successfully loaded. If loading fails, the
+ * promise remains pending and callers will show loading state indefinitely
+ * (failures are logged to the console). Calling `initPortrait` multiple times
+ * is safe — the Promise resolves once; subsequent `resolvePortraitReady()`
+ * calls on an already-resolved Promise are no-ops.
  */
+let resolvePortraitReady: () => void = () => {};
+const portraitReadyPromise: Promise<void> = new Promise<void>((resolve) => {
+  resolvePortraitReady = resolve;
+});
+
 function initPortrait(
   constants?: Constants,
   skinsheetsArg?: Record<string, string>,
@@ -321,14 +333,25 @@ function initPortrait(
   preload
     .then(() => {
       ready = true;
+      resolvePortraitReady();
     })
     .catch((error) => {
       console.error('Failed to load sheets:', error);
     });
 }
 
-// Initialize with defaults on module load to preserve backward compatibility
-initPortrait(undefined, defaultSkinsheets, defaultTextiles);
+function isPortraitReady(): boolean {
+  return ready;
+}
+
+/**
+ * Returns a Promise that resolves once the portrait module has finished
+ * loading all skin sheets and textiles (i.e., when `ready` becomes true).
+ * Callers can subscribe once instead of polling `isPortraitReady()`.
+ */
+function waitForPortraitReady(): Promise<void> {
+  return portraitReadyPromise;
+}
 
 // Export portrait function and initialization helper
-export { initPortrait, portrait };
+export { initPortrait, isPortraitReady, portrait, waitForPortraitReady };

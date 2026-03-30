@@ -7,6 +7,7 @@ import {
   defaultTotalSettings
 } from '@/cache/migration/default-settings';
 import { migrateSettings } from '@/cache/migration/settings-migration';
+import { LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
 import { saveSettingsToLocalStorage } from '@cache/localstorage-service';
 import {
   DisplaySettingsModel,
@@ -166,6 +167,11 @@ export const selectShowAccountName = (state: RootState) =>
 
 export const selectDisplayIgnInQueue = (state: RootState) =>
   settingsSelector(state).displaySettings.showIngameNameInQueue;
+
+export const selectAssetsBaseUrl = (state: RootState) =>
+  settingsSelector(state).displaySettings.useLocalAssets
+    ? LOCAL_ASSETS_BASE_URL
+    : REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL;
 
 // hook
 export function useSettings(): SettingsState {
