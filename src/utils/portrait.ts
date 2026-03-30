@@ -1,10 +1,6 @@
 import { Constants } from '@/realm/renders/constant';
 import { Skin, SkinMap } from '@/realm/renders/skin';
 import { Texture, TextureMap } from '@/realm/renders/texture';
-import {
-  skinsheets as defaultSkinsheets,
-  textiles as defaultTextiles
-} from '@realm/renders/sheets';
 
 // single component
 function p_comp(s: any, x: any, y: any, i: any) {
@@ -30,8 +26,8 @@ const sprites = {};
 
 let skins: SkinMap = {};
 let textures: TextureMap = {};
-let skinsheets: Record<string, string> = defaultSkinsheets;
-let textiles: Record<string, string> = defaultTextiles;
+let skinsheets: Record<string, string> = {};
+let textiles: Record<string, string> = {};
 
 // Function to extract sprites
 function extract_sprites(img: any, sx: any, sy?: any) {
@@ -334,9 +330,6 @@ function initPortrait(
 function isPortraitReady(): boolean {
   return ready;
 }
-
-// Initialize with defaults on module load to preserve backward compatibility
-initPortrait(undefined, defaultSkinsheets, defaultTextiles);
 
 // Export portrait function and initialization helper
 export { initPortrait, isPortraitReady, portrait };

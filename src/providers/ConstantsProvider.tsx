@@ -1,9 +1,5 @@
 import { Constants, Sheets } from '@/realm/renders/constant';
 import { RealmItemMap } from '@/realm/renders/item';
-import {
-  skinsheets as defaultSkinsheets,
-  textiles as defaultTextiles
-} from '@/realm/renders/sheets';
 import { initPortrait } from '@/utils/portrait';
 import { useFetchConstantsQuery, useFetchSheetsQuery } from '@api/items/itemsApi';
 import { info } from '@tauri-apps/plugin-log';
@@ -35,8 +31,8 @@ export const ConstantsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   } = useFetchConstantsQuery();
 
   const sheets = sheetsData ?? null;
-  const skinsheets = sheets?.skinsheets ?? defaultSkinsheets;
-  const textiles = sheets?.textiles ?? defaultTextiles;
+  const skinsheets = sheets?.skinsheets ?? {};
+  const textiles = sheets?.textiles ?? {};
 
   const items: RealmItemMap = (constants && constants.items) || {};
   const isLoading = isLoadingConstants || isLoadingSheets;
