@@ -1,6 +1,6 @@
 import { LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
 import { Constants, Sheets } from '@/realm/renders/constant';
-import type { RootState } from '@/store';
+import type { FetchBaseQueryError, FetchBaseQueryMeta, QueryReturnValue } from '@reduxjs/toolkit/query';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const remoteBaseQuery = fetchBaseQuery({ baseUrl: REMOTE_ASSETS_BASE_URL });
@@ -8,19 +8,20 @@ const localBaseQuery = fetchBaseQuery({ baseUrl: LOCAL_ASSETS_BASE_URL });
 
 const queryWithFallback =
   <T>(url: string) =>
-  async (_arg: boolean | void, api: any, extraOptions: any) => {
+  async (
+    useLocalAssets: boolean | void,
+    api: any,
+    extraOptions: any
+  ): Promise<QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>> => {
     const request = {
       url,
       cache: 'no-cache' as RequestCache
     };
 
-    const useLocalAssets =
-      (api.getState() as RootState)?.settings?.displaySettings?.useLocalAssets ?? false;
-
     if (useLocalAssets) {
       const localResult = await localBaseQuery(request, api, extraOptions);
       if (!localResult.error) {
-        return localResult as { data: T };
+        return localResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
       }
 
       console.warn('[itemsApi] Local asset request failed, falling back to remote assets', {
@@ -30,12 +31,13 @@ const queryWithFallback =
         error: localResult.error
       });
 
-      return (await remoteBaseQuery(request, api, extraOptions)) as { data: T };
+      const remoteResult = await remoteBaseQuery(request, api, extraOptions);
+      return remoteResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
     }
 
     const remoteResult = await remoteBaseQuery(request, api, extraOptions);
     if (!remoteResult.error) {
-      return remoteResult as { data: T };
+      return remoteResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
     }
 
     console.warn('[itemsApi] Remote asset request failed, falling back to local assets', {
@@ -45,7 +47,8 @@ const queryWithFallback =
       error: remoteResult.error
     });
 
-    return (await localBaseQuery(request, api, extraOptions)) as { data: T };
+    const localResult = await localBaseQuery(request, api, extraOptions);
+    return localResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
   };
 
 export const itemsApi = createApi({
