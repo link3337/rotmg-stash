@@ -1,6 +1,6 @@
 import { useConstants } from '@providers/ConstantsProvider';
 import { ClassID } from '@realm/renders/classes';
-import { isPortraitReady, portrait } from '@utils/portrait';
+import { isPortraitReady, portrait, waitForPortraitReady } from '@utils/portrait';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Skeleton } from 'primereact/skeleton';
@@ -29,20 +29,17 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
   React.useEffect(() => {
     if (portraitReady || !visible || ownedSkinIds.length === 0) return;
 
-    const interval = window.setInterval(() => {
-      if (isPortraitReady()) {
+    let cancelled = false;
+    waitForPortraitReady().then(() => {
+      if (!cancelled) {
         setPortraitReady(true);
       }
-    }, 200);
+    });
 
-    return () => window.clearInterval(interval);
+    return () => {
+      cancelled = true;
+    };
   }, [portraitReady, visible, ownedSkinIds.length]);
-
-  React.useEffect(() => {
-    if (!portraitReady && isPortraitReady()) {
-      setPortraitReady(true);
-    }
-  }, [portraitReady, visible]);
 
   const getSkinName = React.useCallback(
     (skinId: string) => constants?.skins?.[Number(skinId)]?.name || `Unknown Skin (${skinId})`,

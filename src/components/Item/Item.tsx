@@ -1,7 +1,8 @@
-import { EMPTY_SLOT_ITEM_ID, LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
+import { EMPTY_SLOT_ITEM_ID } from '@/constants';
 import { useConstants } from '@/providers/ConstantsProvider';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
+import { selectAssetsBaseUrl } from '@store/slices/SettingsSlice';
 import { debug, info } from '@tauri-apps/plugin-log';
 import { FC, useRef, useState } from 'react';
 import styles from './Item.module.scss';
@@ -36,13 +37,15 @@ const Item: FC<ItemProps> = ({
   amount,
   enchantmentSlots = 0,
   enchantmentIds = [],
-  assetsBaseUrl = REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL
+  assetsBaseUrl: assetsBaseUrlOverride
 }) => {
   const dispatch = useAppDispatch();
   const activeFilters = useAppSelector(selectSelectedItems);
   const showItemTooltips = useAppSelector(
     (state) => state.settings.displaySettings.showItemTooltips
   );
+  const derivedAssetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
+  const assetsBaseUrl = assetsBaseUrlOverride ?? derivedAssetsBaseUrl;
 
   const { items } = useConstants();
 
