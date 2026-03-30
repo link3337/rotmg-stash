@@ -68,7 +68,7 @@ function extract_skins(img: any, size: any) {
   ctx.drawImage(img, 0, 0);
   let i = 0;
   const r = [];
-  for (let y = 0; y < c.height; y += size * 3, i++) {
+  for (let y = 0; y < c.height; y += size, i++) {
     r[i] = ctx.getImageData(0, y, size, size);
   }
   return r;
@@ -333,3 +333,4 @@ function isPortraitReady(): boolean {
 
 // Export portrait function and initialization helper
 export { initPortrait, isPortraitReady, portrait };
+
