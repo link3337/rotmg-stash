@@ -1,6 +1,4 @@
 import { ItemUIModel } from '@api/models/char-ui-model';
-import { useAppSelector } from '@hooks/redux';
-import { selectAssetsBaseUrl } from '@store/slices/SettingsSlice';
 import { Paginator } from 'primereact/paginator';
 import { useEffect, useState } from 'react';
 import Item from './Item';
@@ -22,7 +20,6 @@ export const ItemList: React.FC<ItemListProps> = ({
   onPageChange
 }) => {
   const [startIndex, setStartIndex] = useState(0);
-  const assetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
 
   // Update 'startIndex' when currentPage changes externally
   useEffect(() => {
@@ -46,12 +43,7 @@ export const ItemList: React.FC<ItemListProps> = ({
     <div className="flex flex-column gap-2">
       <div className={styles.items}>
         {displayedItems.map((item, index) => (
-          <Item
-            key={`${item.itemId}-${index}`}
-            itemId={item.itemId}
-            amount={item.amount}
-            assetsBaseUrl={assetsBaseUrl}
-          />
+          <Item key={`${item.itemId}-${index}`} itemId={item.itemId} amount={item.amount} />
         ))}
       </div>
       {paginated && items.length > itemsPerPage && (

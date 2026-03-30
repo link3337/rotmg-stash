@@ -29,23 +29,15 @@ interface ItemProps {
   amount?: number;
   enchantmentSlots?: number;
   enchantmentIds?: number[];
-  assetsBaseUrl?: string;
 }
 
-const Item: FC<ItemProps> = ({
-  itemId,
-  amount,
-  enchantmentSlots = 0,
-  enchantmentIds = [],
-  assetsBaseUrl: assetsBaseUrlOverride
-}) => {
+const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantmentIds = [] }) => {
   const dispatch = useAppDispatch();
   const activeFilters = useAppSelector(selectSelectedItems);
+  const assetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
   const showItemTooltips = useAppSelector(
     (state) => state.settings.displaySettings.showItemTooltips
   );
-  const derivedAssetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
-  const assetsBaseUrl = assetsBaseUrlOverride ?? derivedAssetsBaseUrl;
 
   const { items } = useConstants();
 
