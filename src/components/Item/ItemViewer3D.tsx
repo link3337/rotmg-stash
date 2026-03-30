@@ -8,6 +8,7 @@ interface ItemViewer3DProps {
     spriteY: number;
     assetsBaseUrl: string;
     isShiny?: boolean;
+    slotCount?: number;
     width?: number | string;
     height?: number | string;
 }
@@ -15,6 +16,35 @@ interface ItemViewer3DProps {
 const ITEM_TILE_SIZE = 40;
 const ITEM_MODEL_SIZE = 0.74;
 const ITEM_MODEL_DEPTH = 0.0001;
+
+const SLOT_BACKGROUND_BY_COUNT: Record<number, string> = {
+    0: 'radial-gradient(circle at 30% 20%, rgba(80, 120, 180, 0.2), rgba(10, 14, 22, 0.95) 65%)',
+    1: 'radial-gradient(circle at 24% 14%, hsl(100, 91%, 36%) 0%, hsl(100, 42%, 38%) 58%, hsl(0, 0%, 36%) 100%)',
+    2: 'radial-gradient(circle at 24% 14%, hsl(215, 50%, 50%) 0%, hsl(215, 44%, 38%) 58%, hsl(0, 0%, 36%) 100%)',
+    3: 'radial-gradient(circle at 24% 14%, hsl(280, 50%, 50%) 0%, hsl(280, 42%, 38%) 58%, hsl(0, 0%, 36%) 100%)',
+    4: 'radial-gradient(circle at 24% 14%, hsl(61, 81%, 61%) 0%, hsl(35, 62%, 40%) 58%, hsl(0, 0%, 36%) 100%)'
+};
+
+const createStarShape = (outerRadius: number, innerRadius: number, points = 5): THREE.Shape => {
+    const shape = new THREE.Shape();
+    const step = Math.PI / points;
+
+    for (let i = 0; i < points * 2; i += 1) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = i * step - Math.PI / 2;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+
+        if (i === 0) {
+            shape.moveTo(x, y);
+        } else {
+            shape.lineTo(x, y);
+        }
+    }
+
+    shape.closePath();
+    return shape;
+};
 
 const createItemRegionTexture = (
     source: THREE.Texture,
@@ -43,6 +73,7 @@ const ItemVoxel: React.FC<{ texture: THREE.Texture; isShiny: boolean }> = ({ tex
     const groupRef = useRef<THREE.Group>(null);
     const frontMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
     const backMaterialRef = useRef<THREE.MeshStandardMaterial | null>(null);
+    const rainbowFrameToggleRef = useRef(false);
 
     useFrame((_state, delta) => {
         if (!groupRef.current) {
@@ -67,6 +98,18 @@ const ItemVoxel: React.FC<{ texture: THREE.Texture; isShiny: boolean }> = ({ tex
             if (backMaterialRef.current) {
                 backMaterialRef.current.emissiveIntensity = Math.max(0.2, pulse * 0.82);
             }
+
+            // Update emissive rainbow colors on every other frame.
+            rainbowFrameToggleRef.current = !rainbowFrameToggleRef.current;
+            if (rainbowFrameToggleRef.current) {
+                const hue = (t * 0.35) % 1;
+                if (frontMaterialRef.current) {
+                    frontMaterialRef.current.emissive.setHSL(hue, 0.95, 0.62);
+                }
+                if (backMaterialRef.current) {
+                    backMaterialRef.current.emissive.setHSL((hue + 0.5) % 1, 0.9, 0.58);
+                }
+            }
         }
     });
 
@@ -77,8 +120,8 @@ const ItemVoxel: React.FC<{ texture: THREE.Texture; isShiny: boolean }> = ({ tex
             alphaTest: 0.08,
             roughness: isShiny ? 0.2 : 0.48,
             metalness: isShiny ? 0.22 : 0.08,
-            emissive: isShiny ? new THREE.Color('#7ec8ff') : new THREE.Color('#000000'),
-            emissiveIntensity: isShiny ? 0.85 : 0
+            emissive: isShiny ? new THREE.Color('#ffd04d') : new THREE.Color('#000000'),
+            emissiveIntensity: isShiny ? 0.85 : 0,
         });
     }, [isShiny, texture]);
 
@@ -101,7 +144,7 @@ const ItemVoxel: React.FC<{ texture: THREE.Texture; isShiny: boolean }> = ({ tex
             roughness: isShiny ? 0.35 : 0.7,
             metalness: isShiny ? 0.45 : 0.1,
             emissive: isShiny ? new THREE.Color('#2f3f75') : new THREE.Color('#000000'),
-            emissiveIntensity: isShiny ? 0.4 : 0
+            emissiveIntensity: isShiny ? 0.4 : 0,
         });
     }, [isShiny]);
 
@@ -138,8 +181,8 @@ const ItemVoxel: React.FC<{ texture: THREE.Texture; isShiny: boolean }> = ({ tex
             </mesh>
 
             <mesh position={[0, -0.74, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-                <circleGeometry args={[0.42, 48]} />
-                <meshBasicMaterial color="#000" transparent opacity={0.18} />
+                <circleGeometry args={[0.3, 48]} />
+                <meshBasicMaterial color="#000" transparent opacity={0.1} />
             </mesh>
         </group>
     );
@@ -184,59 +227,49 @@ const ShinyLightRig: React.FC = () => {
 };
 
 const ShinyAura: React.FC = () => {
-    const ringARef = useRef<THREE.Mesh>(null);
-    const ringBRef = useRef<THREE.Mesh>(null);
     const starRef = useRef<THREE.Mesh>(null);
-    const ringAMatRef = useRef<THREE.MeshBasicMaterial>(null);
-    const ringBMatRef = useRef<THREE.MeshBasicMaterial>(null);
     const starMatRef = useRef<THREE.MeshBasicMaterial>(null);
+
+    const starGeometry = useMemo(() => {
+        const outer = createStarShape(0.72, 0.28, 5);
+        const inner = createStarShape(0.56, 0.22, 5);
+        const hole = new THREE.Path(inner.getPoints().slice().reverse());
+        outer.holes.push(hole);
+        return new THREE.ShapeGeometry(outer);
+    }, []);
+
+    useEffect(() => {
+        return () => {
+            starGeometry.dispose();
+        };
+    }, [starGeometry]);
 
     useFrame((_state, delta) => {
         const t = performance.now() / 1000;
 
-        if (ringARef.current) {
-            ringARef.current.rotation.z += delta * 1.9;
-            const s = 1 + Math.sin(t * 6.8) * 0.11;
-            ringARef.current.scale.set(s, s, 1);
-        }
-
-        if (ringBRef.current) {
-            ringBRef.current.rotation.z -= delta * 1.45;
-            const s = 1 + Math.sin(t * 5.4 + 1.9) * 0.1;
-            ringBRef.current.scale.set(s, s, 1);
-        }
-
         if (starRef.current) {
-            starRef.current.rotation.z += delta * 2.6;
+            starRef.current.rotation.z += delta * 2.2;
+            const s = 1 + Math.sin(t * 7.2) * 0.12;
+            starRef.current.scale.set(s, s, 1);
         }
 
-        if (ringAMatRef.current) {
-            ringAMatRef.current.opacity = 0.46 + Math.sin(t * 8.8) * 0.2;
-            ringAMatRef.current.color.setHSL((t * 0.22) % 1, 0.95, 0.66);
-        }
-        if (ringBMatRef.current) {
-            ringBMatRef.current.opacity = 0.38 + Math.sin(t * 9.4 + 1.4) * 0.2;
-            ringBMatRef.current.color.setHSL((t * 0.22 + 0.45) % 1, 0.9, 0.62);
-        }
         if (starMatRef.current) {
-            starMatRef.current.opacity = 0.33 + Math.sin(t * 11.5 + 2.1) * 0.25;
-            starMatRef.current.color.setHSL((t * 0.22 + 0.2) % 1, 0.98, 0.72);
+            starMatRef.current.opacity = 0.45 + Math.sin(t * 9.2) * 0.2;
+            starMatRef.current.color.setHSL((t * 0.2 + 0.2) % 1, 0.95, 0.7);
         }
     });
 
     return (
         <group position={[0, 0.03, 0]}>
-            <mesh ref={ringARef} rotation={[Math.PI / 2, 0, 0]}>
-                <torusGeometry args={[0.72, 0.032, 18, 96]} />
-                <meshBasicMaterial ref={ringAMatRef} color="#7fe3ff" transparent opacity={0.5} blending={THREE.AdditiveBlending} />
-            </mesh>
-            <mesh ref={ringBRef} rotation={[Math.PI / 2, 0, Math.PI / 4]}>
-                <torusGeometry args={[0.95, 0.024, 18, 96]} />
-                <meshBasicMaterial ref={ringBMatRef} color="#9f8dff" transparent opacity={0.42} blending={THREE.AdditiveBlending} />
-            </mesh>
-            <mesh ref={starRef}>
-                <ringGeometry args={[0.84, 0.97, 4]} />
-                <meshBasicMaterial ref={starMatRef} color="#ffffff" transparent opacity={0.4} blending={THREE.AdditiveBlending} side={THREE.DoubleSide} />
+            <mesh ref={starRef} geometry={starGeometry}>
+                <meshBasicMaterial
+                    ref={starMatRef}
+                    color="#ffffff"
+                    transparent
+                    opacity={0.45}
+                    blending={THREE.AdditiveBlending}
+                    side={THREE.DoubleSide}
+                />
             </mesh>
         </group>
     );
@@ -247,6 +280,7 @@ const ItemViewer3D: React.FC<ItemViewer3DProps> = ({
     spriteY,
     assetsBaseUrl,
     isShiny = false,
+    slotCount = 0,
     width = '100%',
     height = 320,
 }) => {
@@ -254,6 +288,8 @@ const ItemViewer3D: React.FC<ItemViewer3DProps> = ({
     const [hasLoadError, setHasLoadError] = useState(false);
     const resolvedWidth = typeof width === 'number' ? `${width}px` : width;
     const resolvedHeight = typeof height === 'number' ? `${height}px` : height;
+    const clampedSlotCount = Math.min(Math.max(slotCount, 0), 4);
+    const slotBackground = SLOT_BACKGROUND_BY_COUNT[clampedSlotCount] ?? SLOT_BACKGROUND_BY_COUNT[0];
 
     useEffect(() => {
         let disposed = false;
@@ -343,7 +379,7 @@ const ItemViewer3D: React.FC<ItemViewer3DProps> = ({
                 background:
                     isShiny
                         ? 'radial-gradient(circle at 24% 12%, rgba(246, 253, 255, 0.7), rgba(130, 94, 255, 0.6) 38%, rgba(35, 30, 85, 0.95) 62%, rgba(10, 14, 22, 0.98) 85%)'
-                        : 'radial-gradient(circle at 30% 20%, rgba(80, 120, 180, 0.2), rgba(10, 14, 22, 0.95) 65%)'
+                        : slotBackground
             }}
         >
             <Canvas

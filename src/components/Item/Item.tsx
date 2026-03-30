@@ -161,11 +161,14 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
         <Dialog
           header={`${itemInfo.name} (#${itemId}) - 3D Viewer`}
           visible={show3DViewer}
+          resizable
+          maximizable
           closeOnEscape
           dismissableMask
           onHide={() => setShow3DViewer(false)}
           onShow={() => setViewerKey((prev) => prev + 1)}
-          style={{ width: 'min(92vw, 420px)' }}
+          style={{ width: 'min(96vw, 760px)' }}
+          breakpoints={{ '1200px': '82vw', '960px': '92vw' }}
           contentStyle={{ padding: 0, overflow: 'hidden' }}
         >
           <div style={{ width: '100%' }}>
@@ -175,8 +178,9 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
               spriteY={item.y}
               assetsBaseUrl={assetsBaseUrl}
               isShiny={isShiny}
+              slotCount={slotCount}
               width="100%"
-              height={320}
+              height="62vh"
             />
           </div>
         </Dialog>
