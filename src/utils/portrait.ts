@@ -333,4 +333,3 @@ function isPortraitReady(): boolean {
 
 // Export portrait function and initialization helper
 export { initPortrait, isPortraitReady, portrait };
-

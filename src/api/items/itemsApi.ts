@@ -9,10 +9,16 @@ export const itemsApi = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: ASSETS_BASE_URL }),
   endpoints: (builder) => ({
     fetchConstants: builder.query<Constants, void>({
-      query: () => '/constants.json'
+      query: () => ({
+        url: '/constants.json',
+        cache: 'no-cache'
+      })
     }),
     fetchSheets: builder.query<Sheets, void>({
-      query: () => '/sheets.json'
+      query: () => ({
+        url: '/sheets.json',
+        cache: 'no-cache'
+      })
     })
   })
 });

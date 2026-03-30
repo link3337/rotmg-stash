@@ -114,8 +114,8 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
       .map(([className, skinIds]) => {
         const filteredSkinIds = normalizedQuery
           ? skinIds.filter((skinId) =>
-            (skinNameById[skinId] || '').toLowerCase().includes(normalizedQuery)
-          )
+              (skinNameById[skinId] || '').toLowerCase().includes(normalizedQuery)
+            )
           : skinIds;
 
         return [className, filteredSkinIds] as const;
