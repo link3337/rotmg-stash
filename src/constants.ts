@@ -1,4 +1,5 @@
-export const REMOTE_ASSETS_BASE_URL = import.meta.env.ROTMG_STASH_ASSETS_URL || 'https://rotmgstash.pages.dev';
+export const REMOTE_ASSETS_BASE_URL =
+  import.meta.env.ROTMG_STASH_ASSETS_URL || 'https://rotmgstash.pages.dev';
 export const LOCAL_ASSETS_BASE_URL = '/rotmg-assets';
 
 export const localStorageAccountsKey = 'accounts';

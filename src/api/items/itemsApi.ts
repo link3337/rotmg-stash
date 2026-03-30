@@ -1,6 +1,10 @@
 import { LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
 import { Constants, Sheets } from '@/realm/renders/constant';
-import type { FetchBaseQueryError, FetchBaseQueryMeta, QueryReturnValue } from '@reduxjs/toolkit/query';
+import type {
+  FetchBaseQueryError,
+  FetchBaseQueryMeta,
+  QueryReturnValue
+} from '@reduxjs/toolkit/query';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const remoteBaseQuery = fetchBaseQuery({ baseUrl: REMOTE_ASSETS_BASE_URL });

@@ -1,5 +1,3 @@
-import { useAppSelector } from '@hooks/redux';
-import { selectAssetsBaseUrl } from '@store/slices/SettingsSlice';
 import React from 'react';
 import Item from '../Item/Item';
 import { CharacterItemEntry } from './Character';
@@ -13,8 +11,6 @@ interface EquipmentProps {
 }
 
 const Equipment: React.FC<EquipmentProps> = ({ equipment, inventory, backpack, quickslots }) => {
-  const assetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
-
   return (
     <>
       <div className={styles.equipmentContainer}>
@@ -25,7 +21,6 @@ const Equipment: React.FC<EquipmentProps> = ({ equipment, inventory, backpack, q
               itemId={item.itemId}
               enchantmentSlots={item.enchantmentSlots}
               enchantmentIds={item.enchantmentIds}
-              assetsBaseUrl={assetsBaseUrl}
             />
           ))}
           {inventory.map((item, i) => (
@@ -34,7 +29,6 @@ const Equipment: React.FC<EquipmentProps> = ({ equipment, inventory, backpack, q
               itemId={item.itemId}
               enchantmentSlots={item.enchantmentSlots}
               enchantmentIds={item.enchantmentIds}
-              assetsBaseUrl={assetsBaseUrl}
             />
           ))}
           {backpack.map((item, i) => (
@@ -43,7 +37,6 @@ const Equipment: React.FC<EquipmentProps> = ({ equipment, inventory, backpack, q
               itemId={item.itemId}
               enchantmentSlots={item.enchantmentSlots}
               enchantmentIds={item.enchantmentIds}
-              assetsBaseUrl={assetsBaseUrl}
             />
           ))}
           {quickslots.map((item, i) => (
@@ -53,7 +46,6 @@ const Equipment: React.FC<EquipmentProps> = ({ equipment, inventory, backpack, q
               amount={item.amount}
               enchantmentSlots={item.enchantmentSlots}
               enchantmentIds={item.enchantmentIds}
-              assetsBaseUrl={assetsBaseUrl}
             />
           ))}
         </div>

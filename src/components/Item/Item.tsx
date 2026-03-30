@@ -1,7 +1,8 @@
-import { EMPTY_SLOT_ITEM_ID, LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
+import { EMPTY_SLOT_ITEM_ID } from '@/constants';
 import { useConstants } from '@/providers/ConstantsProvider';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
+import { selectAssetsBaseUrl } from '@store/slices/SettingsSlice';
 import { debug, info } from '@tauri-apps/plugin-log';
 import { FC, useRef, useState } from 'react';
 import styles from './Item.module.scss';
@@ -28,18 +29,12 @@ interface ItemProps {
   amount?: number;
   enchantmentSlots?: number;
   enchantmentIds?: number[];
-  assetsBaseUrl?: string;
 }
 
-const Item: FC<ItemProps> = ({
-  itemId,
-  amount,
-  enchantmentSlots = 0,
-  enchantmentIds = [],
-  assetsBaseUrl = REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL
-}) => {
+const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantmentIds = [] }) => {
   const dispatch = useAppDispatch();
   const activeFilters = useAppSelector(selectSelectedItems);
+  const selectedAssetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
   const showItemTooltips = useAppSelector(
     (state) => state.settings.displaySettings.showItemTooltips
   );
@@ -106,6 +101,7 @@ const Item: FC<ItemProps> = ({
   const slotCount = Math.min(Math.max(enchantmentSlots, 0), 4);
   const rarityImage = RARITY_IMAGE_BY_SLOTS[slotCount];
   const rarityClass = RARITY_CLASS_BY_SLOTS[slotCount] ?? '';
+  const resolvedAssetsBaseUrl = selectedAssetsBaseUrl;
 
   return (
     <div style={{ position: 'relative', height: '43px', display: 'inline-block' }}>
@@ -124,7 +120,7 @@ const Item: FC<ItemProps> = ({
           className={styles.itemSprite}
           style={{
             backgroundPosition,
-            backgroundImage: `url('${assetsBaseUrl}/renders.png')`
+            backgroundImage: `url('${resolvedAssetsBaseUrl}/renders.png')`
           }}
         >
           <div className={styles.nonSelectable}>{amount && amount > 0 ? amount : ''}</div>
