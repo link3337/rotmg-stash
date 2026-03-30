@@ -1,7 +1,6 @@
-import { CursedSettingsModel, DisplaySettingsModel, SortFields } from '@cache/settings-model';
+import { DisplaySettingsModel, SortFields } from '@cache/settings-model';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import {
-  toggleCursedSetting,
   togglePagination,
   toggleSetting,
   toggleSortDirection,
@@ -16,17 +15,12 @@ import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
+import CursedSettings from './Cursed/CursedSettings';
 import ExperimentalSettings from './Experimental/ExperimentalSettings';
 
 export interface DisplayOption {
   label: string;
   key: keyof DisplaySettingsModel;
-  tooltip?: string;
-}
-
-export interface CursedOption {
-  label: string;
-  key: keyof CursedSettingsModel;
   tooltip?: string;
 }
 
@@ -114,10 +108,6 @@ const Settings: React.FC = () => {
     { label: 'Compact Vaults', key: 'compactVaults' }
   ];
 
-  const cursedOptions: CursedOption[] = [
-    { label: 'Enable 3D Character Viewer', key: 'enable3DCharacterViewer' }
-  ];
-
   return (
     <Card>
       <div className="grid">
@@ -149,28 +139,7 @@ const Settings: React.FC = () => {
               ))}
             </div>
 
-            <div className="mt-3">
-              <h4>💀 Cursed Settings</h4>
-              <div className="p-3 border-2 border-yellow-500 border-round">
-                <small className="text-yellow-500 block mb-3">
-                  Warning: These features are cursed and may not work as expected.
-                </small>
-                <div className="flex flex-column gap-2">
-                  {cursedOptions.map((option) => (
-                    <div key={option.key} className="flex align-items-center">
-                      <Checkbox
-                        inputId={option.key}
-                        checked={settings.cursedSettings[option.key]}
-                        onChange={() => dispatch(toggleCursedSetting(option.key))}
-                      />
-                      <label htmlFor={option.key} className="ml-2">
-                        {option.label}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <CursedSettings cursedSettings={settings.cursedSettings} />
           </div>
         </div>
 
