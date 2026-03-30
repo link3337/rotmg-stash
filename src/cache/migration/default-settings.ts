@@ -18,6 +18,7 @@ export const defaultDisplaySettings: DisplaySettingsModel = {
   showExalts: true,
   showCharacters: true,
   useAccordionMenu: false,
+  useLocalAssets: false,
   showVault: true,
   showGiftChest: true,
   showSeasonalSpoils: true,

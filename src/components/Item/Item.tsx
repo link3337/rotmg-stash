@@ -1,4 +1,4 @@
-import { ASSETS_RENDER_URL, EMPTY_SLOT_ITEM_ID } from '@/constants';
+import { EMPTY_SLOT_ITEM_ID, LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
 import { useConstants } from '@/providers/ConstantsProvider';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
@@ -10,10 +10,10 @@ import UnknownItem from './UnknownItem';
 
 // static lookup tables hoisted to module scope to avoid recreating on every render
 const RARITY_IMAGE_BY_SLOTS: Record<number, string> = {
-  1: '/Uncommon.png',
-  2: '/Rare.png',
-  3: '/Legendary.png',
-  4: '/Divine.png'
+  1: '/enchantments/Uncommon.png',
+  2: '/enchantments/Rare.png',
+  3: '/enchantments/Legendary.png',
+  4: '/enchantments/Divine.png'
 };
 
 const RARITY_CLASS_BY_SLOTS: Record<number, string> = {
@@ -28,9 +28,16 @@ interface ItemProps {
   amount?: number;
   enchantmentSlots?: number;
   enchantmentIds?: number[];
+  assetsBaseUrl?: string;
 }
 
-const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantmentIds = [] }) => {
+const Item: FC<ItemProps> = ({
+  itemId,
+  amount,
+  enchantmentSlots = 0,
+  enchantmentIds = [],
+  assetsBaseUrl = REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL
+}) => {
   const dispatch = useAppDispatch();
   const activeFilters = useAppSelector(selectSelectedItems);
   const showItemTooltips = useAppSelector(
@@ -117,7 +124,7 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
           className={styles.itemSprite}
           style={{
             backgroundPosition,
-            backgroundImage: `url('${ASSETS_RENDER_URL}')`
+            backgroundImage: `url('${assetsBaseUrl}/renders.png')`
           }}
         >
           <div className={styles.nonSelectable}>{amount && amount > 0 ? amount : ''}</div>

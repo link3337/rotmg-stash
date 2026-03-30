@@ -11,7 +11,12 @@ const Libraries: React.FC = () => {
           <div key={lib.name} className="col-2">
             <div className="flex align-items-center gap-2">
               {lib.icon && (
-                <img src={`/${lib.icon}.svg`} alt={`${lib.name} logo`} width={24} height={24} />
+                <img
+                  src={`/icons/${lib.icon}.svg`}
+                  alt={`${lib.name} logo`}
+                  width={24}
+                  height={24}
+                />
               )}
               <div>
                 <div className="font-bold">{lib.name}</div>

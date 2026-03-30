@@ -2,6 +2,7 @@ import { Constants, Sheets } from '@/realm/renders/constant';
 import { RealmItemMap } from '@/realm/renders/item';
 import { initPortrait } from '@/utils/portrait';
 import { useFetchConstantsQuery, useFetchSheetsQuery } from '@api/items/itemsApi';
+import { useAppSelector } from '@hooks/redux';
 import { info } from '@tauri-apps/plugin-log';
 import React, { createContext, useContext, useEffect } from 'react';
 
@@ -18,17 +19,19 @@ interface ConstantsContext {
 const ConstantsContext = createContext<ConstantsContext | undefined>(undefined);
 
 export const ConstantsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const useLocalAssets = useAppSelector((state) => state.settings.displaySettings.useLocalAssets);
+
   const {
     data: sheetsData,
     isLoading: isLoadingSheets,
     error: errorSheets
-  } = useFetchSheetsQuery();
+  } = useFetchSheetsQuery(useLocalAssets);
 
   const {
     data: constants,
     isLoading: isLoadingConstants,
     error: errorConstants
-  } = useFetchConstantsQuery();
+  } = useFetchConstantsQuery(useLocalAssets);
 
   const sheets = sheetsData ?? null;
   const skinsheets = sheets?.skinsheets ?? {};

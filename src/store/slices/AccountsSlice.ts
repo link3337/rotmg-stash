@@ -136,7 +136,10 @@ export const refreshAccount = createAsyncThunk<
       const backendResponse = await getAccountData(account.email, account.password);
       const result = processBackendResponse(backendResponse, dispatch);
 
-      const constantsResult = itemsApi.endpoints.fetchConstants.select()(getState() as any);
+      const useLocalAssets = (getState() as RootState).settings.displaySettings.useLocalAssets;
+      const constantsResult = itemsApi.endpoints.fetchConstants.select(useLocalAssets)(
+        getState() as any
+      );
       const runtimeConstants = constantsResult?.data ?? undefined;
 
       const updatedAccounts = accounts.map((acc: AccountModel) =>

@@ -11,17 +11,6 @@ import { ConstantsProvider } from './providers/ConstantsProvider.tsx';
 console.log(`Mode: ${import.meta.env.MODE}`);
 console.log(`ASSETS URL From env: ${import.meta.env.ROTMG_STASH_ASSETS_URL}`);
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker
-    .register('/service-worker.js')
-    .then((registration) => {
-      console.log('Service Worker registered with scope:', registration.scope);
-    })
-    .catch((error) => {
-      console.error('Service Worker registration failed:', error);
-    });
-}
-
 const root = createRoot(document.getElementById('root')!);
 
 root.render(
