@@ -1,5 +1,6 @@
 import { SettingsState } from '@/store/slices/SettingsSlice';
 import {
+  defaultCursedSettings,
   defaultDisplaySettings,
   defaultExperimentalSettings,
   defaultQueueFetchIntervalSetting,
@@ -19,6 +20,10 @@ export const migrateSettings = (settings: Partial<SettingsState>): SettingsState
     displaySettings: {
       ...defaultDisplaySettings,
       ...settings.displaySettings
+    },
+    cursedSettings: {
+      ...defaultCursedSettings,
+      ...settings.cursedSettings
     },
     experimental: {
       ...defaultExperimentalSettings,

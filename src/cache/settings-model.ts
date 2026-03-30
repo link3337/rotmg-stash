@@ -3,6 +3,7 @@ import { SortDirection } from '@/utils/sorting';
 export interface SettingsModel {
   itemSort: SortCriteria;
   displaySettings: DisplaySettingsModel;
+  cursedSettings: CursedSettingsModel;
   experimental: ExperimentalSettingsModel;
   totalSettings: TotalSettingsModel;
   theme: Theme;
@@ -29,6 +30,10 @@ export interface DisplaySettingsModel {
   showIngameNameInQueue: boolean;
   showLastLaunched: boolean;
   compactVaults: boolean;
+}
+
+export interface CursedSettingsModel {
+  enable3DCharacterViewer: boolean;
 }
 
 export interface TotalSettingsModel {
