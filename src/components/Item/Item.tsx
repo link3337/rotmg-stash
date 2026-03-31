@@ -93,13 +93,13 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
   }
 
   const handleClick = () => {
-    if (itemId === 0) return;
+    if (itemId === EMPTY_SLOT_ITEM_ID) return;
     info(`Toggling filter for item ${itemId} (${itemInfo.name})`);
     dispatch(toggleFilter(itemId));
   };
 
   const handleContextMenu: React.MouseEventHandler<HTMLDivElement> = (event) => {
-    if (!show3DViewerEnabled || itemId === 0) {
+    if (!show3DViewerEnabled || itemId === EMPTY_SLOT_ITEM_ID) {
       return;
     }
 
