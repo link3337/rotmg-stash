@@ -77,9 +77,9 @@ const Characters: React.FC<CharacterProps> = ({
       selectedItems.length === 0
         ? true
         : selectedItems.some(
-          (item) =>
-            char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
-        );
+            (item) =>
+              char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
+          );
 
     return seasonalFilter && classFilter && itemFilter;
   });

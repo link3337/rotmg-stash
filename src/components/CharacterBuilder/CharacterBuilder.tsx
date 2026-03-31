@@ -15,6 +15,7 @@ import {
   DEFAULT_CLASS_SLOT_CONFIG
 } from './config/slot-config';
 import ReelSpinnerSlot from './ReelSpinnerSlot';
+import ResultPopupDialog, { SpinResultEntry } from './ResultPopupDialog.tsx';
 import SkinSpinnerSlot from './SkinSpinnerSlot';
 
 const REEL_ITEM_STEP = 44;
@@ -209,6 +210,10 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
     armor: [],
     ring: []
   });
+  const [resultPopupVisible, setResultPopupVisible] = useState(false);
+  const [resultPopupEntries, setResultPopupEntries] = useState<SpinResultEntry[]>([]);
+
+  const lastResultSignatureRef = useRef('');
 
   const sourceItemPools = useMemo(() => {
     const pools: Record<ItemSourceFilter, number[]> = {
@@ -449,7 +454,67 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
     setSkinRevealTick(0);
     setSkinPreviewExpanded(false);
     setExcludedSkinIds([]);
+    setResultPopupVisible(false);
+    setResultPopupEntries([]);
+    lastResultSignatureRef.current = '';
   }, []);
+
+  useEffect(() => {
+    const allSlotsStopped = BUILD_SLOTS.every((slot) => !slotSpinning[slot]);
+    const allSlotsHaveResult = BUILD_SLOTS.every((slot) => slotItems[slot] > 0);
+
+    if (!allSlotsStopped || !allSlotsHaveResult || skinSpinning || skinItem <= 0) return;
+
+    const signature = [
+      skinItem,
+      slotItems.weapon,
+      slotItems.ability,
+      slotItems.armor,
+      slotItems.ring
+    ].join(':');
+
+    if (signature === lastResultSignatureRef.current) return;
+
+    lastResultSignatureRef.current = signature;
+    setResultPopupEntries([
+      {
+        key: 'weapon',
+        label: 'Weapon',
+        itemId: slotItems.weapon,
+        name: items?.[slotItems.weapon]?.name ?? `Item #${slotItems.weapon}`,
+        kind: 'item'
+      },
+      {
+        key: 'ability',
+        label: 'Ability',
+        itemId: slotItems.ability,
+        name: items?.[slotItems.ability]?.name ?? `Item #${slotItems.ability}`,
+        kind: 'item'
+      },
+      {
+        key: 'armor',
+        label: 'Armor',
+        itemId: slotItems.armor,
+        name: items?.[slotItems.armor]?.name ?? `Item #${slotItems.armor}`,
+        kind: 'item'
+      },
+      {
+        key: 'ring',
+        label: 'Ring',
+        itemId: slotItems.ring,
+        name: items?.[slotItems.ring]?.name ?? `Item #${slotItems.ring}`,
+        kind: 'item'
+      },
+      {
+        key: 'skin',
+        label: 'Skin',
+        itemId: skinItem,
+        name: constants?.skins?.[skinItem]?.name ?? `Skin #${skinItem}`,
+        kind: 'skin'
+      }
+    ]);
+    setResultPopupVisible(true);
+  }, [constants?.skins, items, skinItem, skinSpinning, slotItems, slotSpinning]);
 
   useEffect(() => {
     return () => clearAllTimers();
@@ -605,6 +670,14 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
 
   return (
     <div className={styles.builderCard}>
+      <ResultPopupDialog
+        visible={resultPopupVisible}
+        onHide={() => setResultPopupVisible(false)}
+        entries={resultPopupEntries}
+        items={items}
+        assetsBaseUrl={assetsBaseUrl}
+      />
+
       <div className={styles.header}>
         <div className={styles.headerActions}>
           <div className={styles.classControlGroup}>

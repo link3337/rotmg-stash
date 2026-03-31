@@ -29,6 +29,80 @@
   margin-left: auto;
 }
 
+.resultPopupList {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.resultPopupRow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  gap: 0.3rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  padding: 0.4rem 0.35rem;
+  background: color-mix(in srgb, var(--surface-card) 92%, var(--surface-ground) 8%);
+}
+
+.resultPopupLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  text-align: center;
+}
+
+.resultPopupValue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.resultPopupIcon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border: 1px solid color-mix(in srgb, var(--surface-border) 80%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface-ground) 82%, var(--surface-card) 18%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.resultPopupIcon .reelSprite,
+.resultSkinImage {
+  width: 40px;
+  height: 40px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.resultSkinImage {
+  display: block;
+  object-fit: contain;
+}
+
+.resultPopupName {
+  width: 100%;
+  min-width: 0;
+  font-size: 0.72rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .classControlGroup {
   display: inline-flex;
   align-items: stretch;
