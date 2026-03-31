@@ -92,7 +92,7 @@ export const CLASS_SLOT_CONFIG: Record<string, Partial<ClassSlotConfig>> = {
     ring: [9]
   },
   Ninja: {
-    weapon: [2],
+    weapon: [24],
     ability: [25],
     armor: [6],
     ring: [9]
