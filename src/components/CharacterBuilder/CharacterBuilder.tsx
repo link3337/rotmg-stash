@@ -193,6 +193,13 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     ring: false
   });
 
+  const [slotExcludedItems, setSlotExcludedItems] = React.useState<SlotArrayMap>({
+    weapon: [],
+    ability: [],
+    armor: [],
+    ring: []
+  });
+
   const sourceItemPools = React.useMemo(() => {
     const pools: Record<ItemSourceFilter, number[]> = {
       vault: [...(account.vault || [])],
@@ -230,7 +237,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     return Array.from(new Set(selectedIds));
   }, [sourceFilters, sourceItemPools]);
 
-  const categorized = React.useMemo(() => {
+  const categorizedAll = React.useMemo(() => {
     if (!selectedClass) {
       return {
         weapon: [],
@@ -264,20 +271,27 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       if (abilitySlotTypes.has(slotType)) categorySets.ability.add(itemId);
     });
 
-    const ensurePool = (slot: BuildSlot): number[] => {
-      const primary = Array.from(categorySets[slot]);
-      if (primary.length) return primary;
+    return {
+      weapon: Array.from(categorySets.weapon),
+      ability: Array.from(categorySets.ability),
+      armor: Array.from(categorySets.armor),
+      ring: Array.from(categorySets.ring)
+    };
+  }, [filteredAccountItemIds, items, selectedClass]);
 
-      return [];
+  const categorized = React.useMemo(() => {
+    const filterExcluded = (slot: BuildSlot): number[] => {
+      const excluded = new Set(slotExcludedItems[slot]);
+      return categorizedAll[slot].filter((itemId) => !excluded.has(itemId));
     };
 
     return {
-      weapon: ensurePool('weapon'),
-      ability: ensurePool('ability'),
-      armor: ensurePool('armor'),
-      ring: ensurePool('ring')
+      weapon: filterExcluded('weapon'),
+      ability: filterExcluded('ability'),
+      armor: filterExcluded('armor'),
+      ring: filterExcluded('ring')
     };
-  }, [filteredAccountItemIds, items, selectedClass]);
+  }, [categorizedAll, slotExcludedItems]);
 
   const clearAllTimers = React.useCallback(() => {
     spinStopTimersRef.current.forEach((id) => window.clearTimeout(id));
@@ -370,10 +384,10 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
   const spinAll = React.useCallback(() => {
     if (!selectedClass) return;
 
-    BUILD_SLOTS.forEach((slot, idx) => {
-      spinSlot(slot, idx * reel_config.slotStaggerDuration);
+    BUILD_SLOTS.forEach((slot) => {
+      spinSlot(slot);
     });
-  }, [reel_config.slotStaggerDuration, selectedClass, spinSlot]);
+  }, [selectedClass, spinSlot]);
 
   const randomizeClass = React.useCallback(() => {
     const nextClass = randomFrom(classPool);
@@ -403,6 +417,22 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
   const toggleSlotPreview = React.useCallback((slot: BuildSlot) => {
     setSlotPreviewExpanded((prev) => ({ ...prev, [slot]: !prev[slot] }));
   }, []);
+
+  const toggleSlotItemExclusion = React.useCallback((slot: BuildSlot, itemId: number) => {
+    setSlotExcludedItems((prev) => {
+      const current = prev[slot];
+      const exists = current.includes(itemId);
+      return {
+        ...prev,
+        [slot]: exists ? current.filter((id) => id !== itemId) : [...current, itemId]
+      };
+    });
+  }, []);
+
+  const hasAnyRollableItems = React.useMemo(
+    () => BUILD_SLOTS.some((slot) => categorized[slot].length > 0),
+    [categorized]
+  );
 
   if (!allAccountItemIds.length) {
     return null;
@@ -458,7 +488,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             onClick={spinAll}
             disabled={
               !selectedClass ||
-              !filteredAccountItemIds.length ||
+              !hasAnyRollableItems ||
               Object.values(slotSpinning).some(Boolean)
             }
           />
@@ -468,11 +498,13 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       <div className={styles.reels}>
         {BUILD_SLOTS.map((slot) => {
           const slotPool = categorized[slot];
+          const previewPool = categorizedAll[slot];
           return (
             <ReelSpinnerSlot
               key={slot}
               slot={slot}
               slotPool={slotPool}
+              previewPool={previewPool}
               selectedClass={selectedClass}
               selectedItemId={slotItems[slot]}
               strip={slotStrips[slot]}
@@ -485,6 +517,8 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
               onTogglePreview={() => toggleSlotPreview(slot)}
               isPreviewExpanded={slotPreviewExpanded[slot]}
               previewItemsLimit={PREVIEW_ITEMS_LIMIT}
+              excludedItemIds={slotExcludedItems[slot]}
+              onToggleItemExcluded={(itemId) => toggleSlotItemExclusion(slot, itemId)}
               items={items}
               assetsBaseUrl={assetsBaseUrl}
               easingClass={reel_config.easingClass}

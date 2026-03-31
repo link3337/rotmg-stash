@@ -12,6 +12,7 @@ interface ReelRenderableItem {
 interface ReelSpinnerSlotProps {
     slot: BuildSlot;
     slotPool: number[];
+    previewPool: number[];
     selectedClass: string;
     selectedItemId: number;
     strip: number[];
@@ -24,6 +25,8 @@ interface ReelSpinnerSlotProps {
     onTogglePreview: () => void;
     isPreviewExpanded: boolean;
     previewItemsLimit: number;
+    excludedItemIds: number[];
+    onToggleItemExcluded: (itemId: number) => void;
     items: RealmItemMap;
     assetsBaseUrl: string;
     easingClass: string;
@@ -60,6 +63,7 @@ const ReelItemSprite = React.memo(
 const ReelSpinnerSlot: React.FC<ReelSpinnerSlotProps> = ({
     slot,
     slotPool,
+    previewPool,
     selectedClass,
     selectedItemId,
     strip,
@@ -72,15 +76,20 @@ const ReelSpinnerSlot: React.FC<ReelSpinnerSlotProps> = ({
     onTogglePreview,
     isPreviewExpanded,
     previewItemsLimit,
+    excludedItemIds,
+    onToggleItemExcluded,
     items,
     assetsBaseUrl,
     easingClass
 }) => {
     const slotHasItems = slotPool.length > 0;
+    const hasPreviewItems = previewPool.length > 0;
     const itemName =
         selectedItemId > 0 ? (items?.[selectedItemId]?.name ?? `Item #${selectedItemId}`) : '';
-    const previewVisibleItemIds = isPreviewExpanded ? slotPool : slotPool.slice(0, previewItemsLimit);
-    const previewHiddenCount = Math.max(0, slotPool.length - previewItemsLimit);
+    const previewVisibleItemIds = isPreviewExpanded
+        ? previewPool
+        : previewPool.slice(0, previewItemsLimit);
+    const previewHiddenCount = Math.max(0, previewPool.length - previewItemsLimit);
     const displayName = isRolling
         ? ''
         : slotHasItems
@@ -135,21 +144,23 @@ const ReelSpinnerSlot: React.FC<ReelSpinnerSlotProps> = ({
             </div>
 
             <div className={styles.slotPreview}>
-                <div className={styles.previewLabel}>Rollable items ({slotPool.length})</div>
-                {slotHasItems ? (
+                <div className={styles.previewLabel}>Rollable items ({previewPool.length})</div>
+                {hasPreviewItems ? (
                     <div className={styles.previewSprites}>
                         {previewVisibleItemIds.map((previewItemId) => (
-                            <div
+                            <button
+                                type="button"
                                 key={`${slot}-${previewItemId}`}
-                                className={styles.previewSpriteCell}
-                                title={items?.[previewItemId]?.name ?? `Item #${previewItemId}`}
+                                className={`${styles.previewSpriteCell} ${excludedItemIds.includes(previewItemId) ? styles.previewSpriteExcluded : ''}`}
+                                onClick={() => onToggleItemExcluded(previewItemId)}
+                                title={`${items?.[previewItemId]?.name ?? `Item #${previewItemId}`} (${excludedItemIds.includes(previewItemId) ? 'excluded' : 'included'})`}
                             >
                                 <ReelItemSprite
                                     itemId={previewItemId}
                                     item={items?.[previewItemId]}
                                     assetsBaseUrl={assetsBaseUrl}
                                 />
-                            </div>
+                            </button>
                         ))}
                         {!isPreviewExpanded && previewHiddenCount > 0 ? (
                             <button
@@ -161,7 +172,7 @@ const ReelSpinnerSlot: React.FC<ReelSpinnerSlotProps> = ({
                                 +{previewHiddenCount}
                             </button>
                         ) : null}
-                        {isPreviewExpanded && slotPool.length > previewItemsLimit ? (
+                        {isPreviewExpanded && previewPool.length > previewItemsLimit ? (
                             <button
                                 type="button"
                                 className={styles.previewLessButton}

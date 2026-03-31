@@ -300,6 +300,17 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: 0;
+}
+
+.previewSpriteCell {
+  cursor: pointer;
+}
+
+.previewSpriteExcluded {
+  opacity: 0.38;
+  filter: grayscale(1);
+  border-style: dashed;
 }
 
 .previewSpriteCell .reelSpriteFrame {
