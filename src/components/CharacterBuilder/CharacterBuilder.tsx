@@ -15,6 +15,7 @@ import {
   DEFAULT_CLASS_SLOT_CONFIG
 } from './config/slot-config';
 import ReelSpinnerSlot from './ReelSpinnerSlot';
+import SkinSpinnerSlot from './SkinSpinnerSlot';
 
 const REEL_ITEM_STEP = 44;
 const CENTER_SLOT_INDEX = 2;
@@ -125,7 +126,7 @@ const getClassSlotConfig = (className: string): ClassSlotConfig => {
 };
 
 const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters }) => {
-  const { items } = useConstants();
+  const { items, constants } = useConstants();
   const assetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
 
   const spinStopTimersRef = React.useRef<number[]>([]);
@@ -193,6 +194,15 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     ring: false
   });
 
+  const [skinItem, setSkinItem] = React.useState(-1);
+  const [skinStrip, setSkinStrip] = React.useState<number[]>([]);
+  const [skinOffset, setSkinOffset] = React.useState(0);
+  const [skinDuration, setSkinDuration] = React.useState(0);
+  const [skinSpinning, setSkinSpinning] = React.useState(false);
+  const [skinRevealTick, setSkinRevealTick] = React.useState(0);
+  const [skinPreviewExpanded, setSkinPreviewExpanded] = React.useState(false);
+  const [excludedSkinIds, setExcludedSkinIds] = React.useState<number[]>([]);
+
   const [slotExcludedItems, setSlotExcludedItems] = React.useState<SlotArrayMap>({
     weapon: [],
     ability: [],
@@ -231,6 +241,40 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     const allSourceIds = Object.values(sourceItemPools).flat();
     return Array.from(new Set(allSourceIds));
   }, [sourceItemPools]);
+
+  const ownedSkinIds = React.useMemo(() => {
+    const ids = (account.ownedSkins || '')
+      .split(',')
+      .map((value) => Number(value.trim()))
+      .filter((id) => id > 0 && Boolean(constants?.skins?.[id]));
+    return Array.from(new Set(ids));
+  }, [account.ownedSkins, constants?.skins]);
+
+  const classFilteredSkinIds = React.useMemo(() => {
+    if (!selectedClass) {
+      return ownedSkinIds;
+    }
+
+    const classTypeIds = Object.entries(constants?.classes ?? {})
+      .filter(([, classData]) => classData?.name === selectedClass)
+      .map(([classId]) => Number(classId));
+
+    if (!classTypeIds.length) {
+      return [];
+    }
+
+    const classTypeSet = new Set(classTypeIds);
+    return ownedSkinIds.filter((skinId) => {
+      const skinClassType = constants?.skins?.[skinId]?.classType;
+      return typeof skinClassType === 'number' && classTypeSet.has(skinClassType);
+    });
+  }, [constants?.classes, constants?.skins, ownedSkinIds, selectedClass]);
+
+  const rollableSkinIds = React.useMemo(() => {
+    if (!excludedSkinIds.length) return classFilteredSkinIds;
+    const excluded = new Set(excludedSkinIds);
+    return classFilteredSkinIds.filter((skinId) => !excluded.has(skinId));
+  }, [classFilteredSkinIds, excludedSkinIds]);
 
   const filteredAccountItemIds = React.useMemo(() => {
     const selectedIds = sourceFilters.flatMap((source) => sourceItemPools[source] ?? []);
@@ -341,6 +385,14 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       armor: false,
       ring: false
     });
+    setSkinItem(-1);
+    setSkinStrip([]);
+    setSkinOffset(0);
+    setSkinDuration(0);
+    setSkinSpinning(false);
+    setSkinRevealTick(0);
+    setSkinPreviewExpanded(false);
+    setExcludedSkinIds([]);
   }, []);
 
   React.useEffect(() => {
@@ -381,13 +433,47 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     [categorized, reel_config.baseSpinDuration, reel_config.stripLength, slotSpinning]
   );
 
+  const spinSkin = React.useCallback(
+    (extraDuration = 0) => {
+      if (!rollableSkinIds.length || skinSpinning) return;
+
+      const finalSkin = randomFrom(rollableSkinIds) ?? -1;
+      const strip = buildStrip(rollableSkinIds, finalSkin, reel_config.stripLength);
+      const targetIndex = getReelTargetIndex(strip.length);
+      const finalOffset = -((targetIndex - CENTER_SLOT_INDEX) * REEL_ITEM_STEP);
+      const duration = reel_config.baseSpinDuration + extraDuration;
+
+      setSkinSpinning(true);
+      setSkinDuration(0);
+      setSkinOffset(0);
+      setSkinStrip(strip);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setSkinDuration(duration);
+          setSkinOffset(finalOffset);
+        });
+      });
+
+      const stopTimer = window.setTimeout(() => {
+        setSkinItem(finalSkin);
+        setSkinSpinning(false);
+        setSkinRevealTick((prev) => prev + 1);
+      }, duration + 50);
+
+      spinStopTimersRef.current.push(stopTimer);
+    },
+    [rollableSkinIds, reel_config.baseSpinDuration, reel_config.stripLength, skinSpinning]
+  );
+
   const spinAll = React.useCallback(() => {
     if (!selectedClass) return;
 
     BUILD_SLOTS.forEach((slot) => {
       spinSlot(slot);
     });
-  }, [selectedClass, spinSlot]);
+    spinSkin();
+  }, [selectedClass, spinSkin, spinSlot]);
 
   const randomizeClass = React.useCallback(() => {
     const nextClass = randomFrom(classPool);
@@ -429,12 +515,17 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     });
   }, []);
 
-  const hasAnyRollableItems = React.useMemo(
-    () => BUILD_SLOTS.some((slot) => categorized[slot].length > 0),
-    [categorized]
-  );
+  const toggleSkinExclusion = React.useCallback((skinId: number) => {
+    setExcludedSkinIds((prev) =>
+      prev.includes(skinId) ? prev.filter((id) => id !== skinId) : [...prev, skinId]
+    );
+  }, []);
 
-  if (!allAccountItemIds.length) {
+  const hasAnyRollableItems = React.useMemo(() => {
+    return BUILD_SLOTS.some((slot) => categorized[slot].length > 0) || rollableSkinIds.length > 0;
+  }, [categorized, rollableSkinIds.length]);
+
+  if (!allAccountItemIds.length && !ownedSkinIds.length) {
     return null;
   }
 
@@ -457,7 +548,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
               }}
               placeholder="Select class"
               showClear
-              disabled={Object.values(slotSpinning).some(Boolean)}
+              disabled={Object.values(slotSpinning).some(Boolean) || skinSpinning}
             />
             <Button
               className={styles.classRandomizeButton}
@@ -465,7 +556,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
               severity="secondary"
               outlined
               onClick={randomizeClass}
-              disabled={!classPool.length || Object.values(slotSpinning).some(Boolean)}
+              disabled={!classPool.length || Object.values(slotSpinning).some(Boolean) || skinSpinning}
             />
           </div>
           <div className={styles.sourceFilterGroup}>
@@ -475,7 +566,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
                   inputId={`builder-source-${option.value}`}
                   checked={sourceFilters.includes(option.value)}
                   onChange={(event) => toggleSourceFilter(option.value, Boolean(event.checked))}
-                  disabled={Object.values(slotSpinning).some(Boolean)}
+                  disabled={Object.values(slotSpinning).some(Boolean) || skinSpinning}
                 />
                 <label htmlFor={`builder-source-${option.value}`}>{option.label}</label>
               </div>
@@ -489,7 +580,8 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             disabled={
               !selectedClass ||
               !hasAnyRollableItems ||
-              Object.values(slotSpinning).some(Boolean)
+              Object.values(slotSpinning).some(Boolean) ||
+              skinSpinning
             }
           />
         </div>
@@ -525,6 +617,25 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             />
           );
         })}
+
+        <SkinSpinnerSlot
+          skinPool={rollableSkinIds}
+          previewPool={classFilteredSkinIds}
+          selectedSkinId={skinItem}
+          strip={skinStrip}
+          isRolling={skinSpinning}
+          slotOffset={skinOffset}
+          slotDuration={skinDuration}
+          slotRevealTick={skinRevealTick}
+          onReroll={() => spinSkin()}
+          rerollDisabled={!rollableSkinIds.length || skinSpinning}
+          onTogglePreview={() => setSkinPreviewExpanded((prev) => !prev)}
+          isPreviewExpanded={skinPreviewExpanded}
+          previewItemsLimit={PREVIEW_ITEMS_LIMIT}
+          excludedSkinIds={excludedSkinIds}
+          onToggleSkinExcluded={toggleSkinExclusion}
+          constants={constants}
+        />
       </div>
     </div>
   );

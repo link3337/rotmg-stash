@@ -250,6 +250,17 @@
   image-rendering: pixelated;
 }
 
+.skinPreviewImage {
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+}
+
+.previewSpriteCell .skinPreviewImage {
+  width: 22px;
+  height: 22px;
+}
+
 .itemName {
   text-align: center;
   font-size: 0.74rem;
