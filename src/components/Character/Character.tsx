@@ -1,7 +1,10 @@
 import { CharUIModel, MappedCharacterStats } from '@api/models/char-ui-model';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
 import LootBoostIcon from '@components/Icons/LootBoostIcon';
+import { useAppSelector } from '@hooks/redux';
+import { selectEnable3DViewer } from '@store/slices/SettingsSlice';
 import React from 'react';
+import Character3DViewerDialog from './Character3DViewerDialog';
 import CharacterPortrait from './CharacterPortrait';
 import styles from './Characters.module.scss';
 import Equipment from './Equipment';
@@ -26,6 +29,9 @@ const getMaxedStatsCount = (stats: MappedCharacterStats[]): string => {
 };
 
 export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId }) => {
+  const [show3DViewer, setShow3DViewer] = React.useState(false);
+  const show3DCharacterViewer = useAppSelector(selectEnable3DViewer);
+
   const items = char?.equipment ?? [];
 
   const slotsByItemId = (char?.unique_item_info ?? []).reduce<Map<number, number[]>>(
@@ -124,13 +130,25 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId })
   return (
     <div id={`${accountId}-character-${char?.id}`} className={styles.character}>
       <div className={styles.header}>
-        <CharacterPortrait
-          type={char?.classId!}
-          skin={char?.texture!}
-          tex1={char?.tex1!}
-          tex2={char?.tex2!}
-          adjust={false}
-        />
+        <button
+          type="button"
+          onClick={() => show3DCharacterViewer && setShow3DViewer(true)}
+          title={show3DCharacterViewer ? 'Open 3D Viewer' : '3D Viewer is disabled in settings'}
+          style={{
+            all: 'unset',
+            cursor: show3DCharacterViewer ? 'pointer' : 'default',
+            display: 'inline-flex'
+          }}
+          aria-label="Open 3D viewer"
+        >
+          <CharacterPortrait
+            type={char?.classId!}
+            skin={char?.texture!}
+            tex1={char?.tex1!}
+            tex2={char?.tex2!}
+            adjust={false}
+          />
+        </button>
         <div className={styles.info}>
           {boostDisplay()}
           <div className={`${styles.details} ${char?.seasonal ? styles.seasonal : ''}`}>
@@ -157,6 +175,19 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId })
         backpack={backpack}
         quickslots={quickslots}
       />
+
+      {show3DCharacterViewer && (
+        <Character3DViewerDialog
+          visible={show3DViewer}
+          onHide={() => setShow3DViewer(false)}
+          characterClassName={char?.className}
+          characterId={char?.id}
+          type={char?.objectType ?? char?.classId}
+          skin={char?.texture ?? char?.objectType ?? char?.classId}
+          tex1={char?.tex1}
+          tex2={char?.tex2}
+        />
+      )}
     </div>
   );
 };

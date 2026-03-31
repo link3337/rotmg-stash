@@ -10,6 +10,7 @@ import { Button } from 'primereact/button';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { Tooltip } from 'primereact/tooltip';
 import React, { useState } from 'react';
+import CharacterBuilderDialog from '../CharacterBuilder/CharacterBuilderDialog';
 import styles from './AccountInfo.module.scss';
 import OwnedSkinsDialog from './OwnedSkinsDialog';
 
@@ -31,6 +32,7 @@ interface AccountInfoProps {
 const AccountInfo: React.FC<AccountInfoProps> = ({
   account,
   accountData,
+  characters,
   loading,
   characterAmount,
   seasonalCharacterAmount,
@@ -42,6 +44,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   isRateLimited
 }) => {
   const [showSkinsModal, setShowSkinsModal] = useState(false);
+  const [showCharacterBuilder, setShowCharacterBuilder] = useState(false);
   const showAccountName = useAppSelector(selectShowAccountName);
   const experimentalSettings = useAppSelector(selectExperimentalSettings);
 
@@ -131,6 +134,15 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
             onClick={refreshButtonClicked}
             icon="pi pi-refresh"
           />
+          {accountData && characters.length > 0 && (
+            <Button
+              label="Character Builder Roulette"
+              icon="pi pi-compass"
+              severity="warning"
+              outlined
+              onClick={() => setShowCharacterBuilder(true)}
+            />
+          )}
         </div>
       </div>
 
@@ -169,6 +181,15 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
         onHide={() => setShowSkinsModal(false)}
         ownedSkinIds={ownedSkinIds}
       />
+
+      {accountData && characters.length > 0 && (
+        <CharacterBuilderDialog
+          account={accountData}
+          characters={characters}
+          visible={showCharacterBuilder}
+          onHide={() => setShowCharacterBuilder(false)}
+        />
+      )}
     </div>
   );
 };

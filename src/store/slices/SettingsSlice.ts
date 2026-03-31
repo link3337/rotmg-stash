@@ -1,4 +1,5 @@
 import {
+  defaultCursedSettings,
   defaultDisplaySettings,
   defaultExperimentalSettings,
   defaultQueueFetchIntervalSetting,
@@ -10,6 +11,7 @@ import { migrateSettings } from '@/cache/migration/settings-migration';
 import { LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
 import { saveSettingsToLocalStorage } from '@cache/localstorage-service';
 import {
+  CursedSettingsModel,
   DisplaySettingsModel,
   ExperimentalSettingsModel,
   SettingsModel,
@@ -25,6 +27,7 @@ export interface SettingsState extends SettingsModel {}
 
 const initialState: SettingsState = {
   displaySettings: defaultDisplaySettings,
+  cursedSettings: defaultCursedSettings,
   totalSettings: defaultTotalSettings,
   experimental: defaultExperimentalSettings,
   itemSort: defaultSortSettings,
@@ -50,6 +53,9 @@ const settingsSlice = createSlice({
   reducers: {
     toggleSetting: (state, action: PayloadAction<keyof DisplaySettingsModel>) => {
       state.displaySettings[action.payload] = !state.displaySettings[action.payload];
+    },
+    toggleCursedSetting: (state, action: PayloadAction<keyof CursedSettingsModel>) => {
+      state.cursedSettings[action.payload] = !state.cursedSettings[action.payload];
     },
     updateItemSort: (
       state,
@@ -105,6 +111,7 @@ const settingsSlice = createSlice({
 
 export const {
   toggleSetting,
+  toggleCursedSetting,
   updateItemSort,
   toggleSortDirection,
   updateTheme,
@@ -124,6 +131,7 @@ settingsStateListener.startListening({
   matcher: isAnyOf(
     // all actions that modify settings state
     toggleSetting,
+    toggleCursedSetting,
     updateItemSort,
     toggleSortDirection,
     updateTheme,
@@ -167,6 +175,11 @@ export const selectShowAccountName = (state: RootState) =>
 
 export const selectDisplayIgnInQueue = (state: RootState) =>
   settingsSelector(state).displaySettings.showIngameNameInQueue;
+
+export const selectCursedSettings = (state: RootState) => settingsSelector(state).cursedSettings;
+
+export const selectEnable3DViewer = (state: RootState) =>
+  settingsSelector(state).cursedSettings.enable3DViewer;
 
 export const selectAssetsBaseUrl = (state: RootState) =>
   settingsSelector(state).displaySettings.useLocalAssets

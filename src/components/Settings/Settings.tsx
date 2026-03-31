@@ -15,6 +15,7 @@ import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
+import CursedSettings from './Cursed/CursedSettings';
 import ExperimentalSettings from './Experimental/ExperimentalSettings';
 
 export interface DisplayOption {
@@ -92,7 +93,7 @@ const Settings: React.FC = () => {
     { label: 'Show Account Info', key: 'showAccountInfo' },
     { label: 'Show Exalts', key: 'showExalts' },
     { label: 'Show Characters', key: 'showCharacters' },
-    { label: 'Use Accordion Menu for Character Info and Exalts', key: 'useAccordionMenu' },
+    { label: 'Make Character Info and Exalts collapsible', key: 'useAccordionMenu' },
     { label: 'Use Local Assets', key: 'useLocalAssets' },
     { label: 'Show Vault', key: 'showVault' },
     { label: 'Show Gift Chest', key: 'showGiftChest' },
@@ -137,6 +138,8 @@ const Settings: React.FC = () => {
                 </div>
               ))}
             </div>
+
+            <CursedSettings cursedSettings={settings.cursedSettings} />
           </div>
         </div>
 

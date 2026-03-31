@@ -1,5 +1,6 @@
 import { Theme } from '@tauri-apps/api/window';
 import {
+  CursedSettingsModel,
   DisplaySettingsModel,
   ExperimentalSettingsModel,
   SortCriteria,
@@ -41,6 +42,10 @@ export const defaultExperimentalSettings: ExperimentalSettingsModel = {
   isDebugMode: false,
   deviceToken: '',
   exaltPath: ''
+};
+
+export const defaultCursedSettings: CursedSettingsModel = {
+  enable3DViewer: false
 };
 
 export const defaultSortSettings: SortCriteria = {
