@@ -406,9 +406,7 @@ const ItemViewer3D: React.FC<ItemViewer3DProps> = ({
         boxShadow: isShiny
           ? '0 0 0 1px rgba(189, 245, 255, 0.75), 0 0 26px rgba(112, 172, 255, 0.9), inset 0 0 24px rgba(205, 242, 255, 0.22)'
           : undefined,
-        background: isShiny
-          ? 'radial-gradient(circle at 24% 12%, rgba(246, 253, 255, 0.7), rgba(130, 94, 255, 0.6) 38%, rgba(35, 30, 85, 0.95) 62%, rgba(10, 14, 22, 0.98) 85%)'
-          : slotBackground
+        background: slotBackground
       }}
     >
       <Canvas
