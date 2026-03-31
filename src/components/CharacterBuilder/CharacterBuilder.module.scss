@@ -2,11 +2,9 @@
   border: 1px solid var(--surface-border);
   border-radius: 10px;
   padding: 0.9rem;
-  background: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%),
-    color-mix(in srgb, var(--surface-card) 97%, var(--text-color) 3%)
-  );
+  background: linear-gradient(140deg,
+      color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%),
+      color-mix(in srgb, var(--surface-card) 97%, var(--text-color) 3%));
 }
 
 .header {
@@ -29,6 +27,11 @@
   margin-left: auto;
 }
 
+.classControlGroup {
+  display: inline-flex;
+  align-items: stretch;
+}
+
 .classSelect {
   min-width: 170px;
   max-width: 220px;
@@ -37,6 +40,18 @@
   border: 1px solid var(--surface-border);
   background: var(--surface-card);
   color: var(--text-color);
+}
+
+.classControlGroup .classSelect {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.classRandomizeButton {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+  min-width: 2.25rem;
 }
 
 .classSelect :global(.p-dropdown-label) {

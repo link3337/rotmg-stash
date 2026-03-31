@@ -14,6 +14,7 @@ import {
   ClassSlotConfig,
   DEFAULT_CLASS_SLOT_CONFIG
 } from './config/slot-config';
+import ReelSpinnerSlot from './ReelSpinnerSlot';
 
 const REEL_ITEM_STEP = 44;
 const CENTER_SLOT_INDEX = 2;
@@ -41,45 +42,12 @@ interface CharacterBuilderProps {
   characters: CharUIModel[];
 }
 
-interface ReelRenderableItem {
-  x: number;
-  y: number;
-}
-
 const ITEM_SOURCE_OPTIONS: Array<{ label: string; value: ItemSourceFilter }> = [
   { label: 'Vault', value: 'vault' },
   { label: 'Gift Chest', value: 'gifts' },
   { label: 'Seasonal Spoils', value: 'seasonalSpoils' },
   { label: 'Characters', value: 'equipped' }
 ];
-
-const ReelItemSprite = React.memo(
-  ({
-    itemId,
-    item,
-    assetsBaseUrl
-  }: {
-    itemId: number;
-    item?: ReelRenderableItem;
-    assetsBaseUrl: string;
-  }) => {
-    if (!item || itemId <= 0) {
-      return <span className={styles.emptyLabel}>-</span>;
-    }
-
-    return (
-      <div className={styles.reelSpriteFrame}>
-        <div
-          className={styles.reelSprite}
-          style={{
-            backgroundPosition: `-${item.x}px -${item.y}px`,
-            backgroundImage: `url('${assetsBaseUrl}/renders.png')`
-          }}
-        />
-      </div>
-    );
-  }
-);
 
 const randomFrom = <T,>(values: T[]): T | null => {
   if (!values.length) return null;
@@ -448,22 +416,32 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     <div className={styles.builderCard}>
       <div className={styles.header}>
         <div className={styles.headerActions}>
-          <Dropdown
-            className={styles.classSelect}
-            value={selectedClass}
-            options={classPool}
-            onChange={(event) => {
-              const nextClass = event.value ?? '';
-              if (nextClass !== selectedClass) {
-                clearAllTimers();
-                resetRollState();
-                setSelectedClass(nextClass);
-              }
-            }}
-            placeholder="Select class"
-            showClear
-            disabled={Object.values(slotSpinning).some(Boolean)}
-          />
+          <div className={styles.classControlGroup}>
+            <Dropdown
+              className={styles.classSelect}
+              value={selectedClass}
+              options={classPool}
+              onChange={(event) => {
+                const nextClass = event.value ?? '';
+                if (nextClass !== selectedClass) {
+                  clearAllTimers();
+                  resetRollState();
+                  setSelectedClass(nextClass);
+                }
+              }}
+              placeholder="Select class"
+              showClear
+              disabled={Object.values(slotSpinning).some(Boolean)}
+            />
+            <Button
+              className={styles.classRandomizeButton}
+              icon="pi pi-sync"
+              severity="secondary"
+              outlined
+              onClick={randomizeClass}
+              disabled={!classPool.length || Object.values(slotSpinning).some(Boolean)}
+            />
+          </div>
           <div className={styles.sourceFilterGroup}>
             {ITEM_SOURCE_OPTIONS.map((option) => (
               <div key={option.value} className={styles.sourceFilterOption}>
@@ -478,17 +456,9 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             ))}
           </div>
           <Button
-            label="Randomize Class"
-            icon="pi pi-shuffle"
-            severity="secondary"
-            outlined
-            onClick={randomizeClass}
-            disabled={!classPool.length || Object.values(slotSpinning).some(Boolean)}
-          />
-          <Button
             className={styles.spinAllButton}
             label="Spin All"
-            icon="pi pi-sync"
+            icon="pi pi-refresh"
             onClick={spinAll}
             disabled={
               !selectedClass ||
@@ -502,119 +472,27 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       <div className={styles.reels}>
         {BUILD_SLOTS.map((slot) => {
           const slotPool = categorized[slot];
-          const slotHasItems = slotPool.length > 0;
-          const isPreviewExpanded = slotPreviewExpanded[slot];
-          const selectedItemId = slotItems[slot];
-          const itemName =
-            selectedItemId > 0 ? (items?.[selectedItemId]?.name ?? `Item #${selectedItemId}`) : '';
-          const strip = slotStrips[slot];
-          const isRolling = slotSpinning[slot];
-          const previewVisibleItemIds = isPreviewExpanded
-            ? slotPool
-            : slotPool.slice(0, PREVIEW_ITEMS_LIMIT);
-          const previewHiddenCount = Math.max(0, slotPool.length - PREVIEW_ITEMS_LIMIT);
-          const displayName = isRolling
-            ? ''
-            : slotHasItems
-              ? itemName
-              : selectedClass
-                ? 'No available items'
-                : '';
-          const hasDecidedItem = !isRolling && selectedItemId > 0;
-          const shouldAnimateReveal = !isRolling && Boolean(itemName) && slotRevealTick[slot] > 0;
-
           return (
-            <div key={slot} className={styles.slotCard}>
-              <div className={styles.slotHeader}>
-                <Button
-                  size="small"
-                  text
-                  icon="pi pi-refresh"
-                  label={isRolling ? 'Spinning...' : 'Reroll'}
-                  disabled={!selectedClass || !slotHasItems || isRolling}
-                  onClick={() => spinSlot(slot)}
-                />
-              </div>
-
-              <div
-                className={`${styles.itemViewport} ${shouldAnimateReveal ? styles.reelStopped : ''}`}
-              >
-                <div className={styles.centerMarker} />
-                <div
-                  className={`${styles.centerOutline} ${hasDecidedItem ? styles.centerOutlineVisible : ''} ${shouldAnimateReveal ? styles.centerOutlineFlash : ''}`}
-                />
-                <div
-                  className={`${styles.reelTrack} ${styles[reel_config.easingClass]}`}
-                  style={{
-                    transform: `translateX(${slotOffsets[slot]}px)`,
-                    transitionDuration: `${slotDurations[slot]}ms`
-                  }}
-                >
-                  {strip.map((itemId, idx) => (
-                    <div key={`${slot}-${idx}-${itemId}`} className={styles.reelCell}>
-                      <div className={styles.itemWrap}>
-                        <ReelItemSprite
-                          itemId={itemId}
-                          item={items?.[itemId]}
-                          assetsBaseUrl={assetsBaseUrl}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div
-                key={`${slot}-name-${slotRevealTick[slot]}`}
-                className={`${styles.itemName} ${!slotHasItems && selectedClass ? styles.itemNameEmpty : ''} ${shouldAnimateReveal ? styles.itemNameReveal : ''}`}
-                title={displayName}
-              >
-                {displayName}
-              </div>
-
-              <div className={styles.slotPreview}>
-                <div className={styles.previewLabel}>Rollable items ({slotPool.length})</div>
-                {slotHasItems ? (
-                  <div className={styles.previewSprites}>
-                    {previewVisibleItemIds.map((previewItemId) => (
-                      <div
-                        key={`${slot}-${previewItemId}`}
-                        className={styles.previewSpriteCell}
-                        title={items?.[previewItemId]?.name ?? `Item #${previewItemId}`}
-                      >
-                        <ReelItemSprite
-                          itemId={previewItemId}
-                          item={items?.[previewItemId]}
-                          assetsBaseUrl={assetsBaseUrl}
-                        />
-                      </div>
-                    ))}
-                    {!isPreviewExpanded && previewHiddenCount > 0 ? (
-                      <button
-                        type="button"
-                        className={styles.previewMoreBadge}
-                        onClick={() => toggleSlotPreview(slot)}
-                        title="Show all rollable items"
-                      >
-                        +{previewHiddenCount}
-                      </button>
-                    ) : null}
-                    {isPreviewExpanded && slotPool.length > PREVIEW_ITEMS_LIMIT ? (
-                      <button
-                        type="button"
-                        className={styles.previewLessButton}
-                        onClick={() => toggleSlotPreview(slot)}
-                        title="Show fewer items"
-                      >
-                        Show less
-                      </button>
-                    ) : null}
-                  </div>
-                ) : (
-                  <div className={styles.previewEmpty}>No rollable items for current filters</div>
-                )}
-              </div>
-            </div>
+            <ReelSpinnerSlot
+              key={slot}
+              slot={slot}
+              slotPool={slotPool}
+              selectedClass={selectedClass}
+              selectedItemId={slotItems[slot]}
+              strip={slotStrips[slot]}
+              isRolling={slotSpinning[slot]}
+              slotOffset={slotOffsets[slot]}
+              slotDuration={slotDurations[slot]}
+              slotRevealTick={slotRevealTick[slot]}
+              onReroll={() => spinSlot(slot)}
+              rerollDisabled={!selectedClass || !slotPool.length || slotSpinning[slot]}
+              onTogglePreview={() => toggleSlotPreview(slot)}
+              isPreviewExpanded={slotPreviewExpanded[slot]}
+              previewItemsLimit={PREVIEW_ITEMS_LIMIT}
+              items={items}
+              assetsBaseUrl={assetsBaseUrl}
+              easingClass={reel_config.easingClass}
+            />
           );
         })}
       </div>
