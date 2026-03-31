@@ -26,7 +26,7 @@ const CursedSettings: React.FC<CursedSettingsProps> = ({ cursedSettings }) => {
             onChange={() => dispatch(toggleCursedSetting('enable3DCharacterViewer'))}
           />
           <label htmlFor="enable3DCharacterViewer" className="ml-2">
-            Enable 3D Character and Item Viewer
+            Enable 3D Character Viewer
           </label>
         </div>
       </div>
