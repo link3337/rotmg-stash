@@ -6,7 +6,7 @@ import { selectAssetsBaseUrl } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown } from 'primereact/dropdown';
-import React from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './CharacterBuilder.module.scss';
 import {
   BuildSlot,
@@ -125,18 +125,18 @@ const getClassSlotConfig = (className: string): ClassSlotConfig => {
   };
 };
 
-const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters }) => {
+const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) => {
   const { items, constants } = useConstants();
   const assetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
 
-  const spinStopTimersRef = React.useRef<number[]>([]);
+  const spinStopTimersRef = useRef<number[]>([]);
 
-  const [selectedClass, setSelectedClass] = React.useState('');
-  const [sourceFilters, setSourceFilters] = React.useState<ItemSourceFilter[]>(
+  const [selectedClass, setSelectedClass] = useState('');
+  const [sourceFilters, setSourceFilters] = useState<ItemSourceFilter[]>(
     ITEM_SOURCE_OPTIONS.map((option) => option.value)
   );
 
-  const classPool = React.useMemo(() => {
+  const classPool = useMemo(() => {
     const fromCharacters = (characters || [])
       .map((char) => char.className)
       .filter((name): name is string => Boolean(name));
@@ -145,72 +145,72 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     return Array.from(merged).sort((a, b) => a.localeCompare(b));
   }, [characters]);
 
-  const [slotItems, setSlotItems] = React.useState<SlotNumberMap>({
+  const [slotItems, setSlotItems] = useState<SlotNumberMap>({
     weapon: -1,
     ability: -1,
     armor: -1,
     ring: -1
   });
 
-  const [slotStrips, setSlotStrips] = React.useState<SlotArrayMap>({
+  const [slotStrips, setSlotStrips] = useState<SlotArrayMap>({
     weapon: [],
     ability: [],
     armor: [],
     ring: []
   });
 
-  const [slotOffsets, setSlotOffsets] = React.useState<SlotNumberMap>({
+  const [slotOffsets, setSlotOffsets] = useState<SlotNumberMap>({
     weapon: 0,
     ability: 0,
     armor: 0,
     ring: 0
   });
 
-  const [slotDurations, setSlotDurations] = React.useState<SlotNumberMap>({
+  const [slotDurations, setSlotDurations] = useState<SlotNumberMap>({
     weapon: 0,
     ability: 0,
     armor: 0,
     ring: 0
   });
 
-  const [slotSpinning, setSlotSpinning] = React.useState<SlotBooleanMap>({
+  const [slotSpinning, setSlotSpinning] = useState<SlotBooleanMap>({
     weapon: false,
     ability: false,
     armor: false,
     ring: false
   });
 
-  const [slotRevealTick, setSlotRevealTick] = React.useState<SlotNumberMap>({
+  const [slotRevealTick, setSlotRevealTick] = useState<SlotNumberMap>({
     weapon: 0,
     ability: 0,
     armor: 0,
     ring: 0
   });
 
-  const [slotPreviewExpanded, setSlotPreviewExpanded] = React.useState<SlotBooleanMap>({
+  const [slotPreviewExpanded, setSlotPreviewExpanded] = useState<SlotBooleanMap>({
     weapon: false,
     ability: false,
     armor: false,
     ring: false
   });
 
-  const [skinItem, setSkinItem] = React.useState(-1);
-  const [skinStrip, setSkinStrip] = React.useState<number[]>([]);
-  const [skinOffset, setSkinOffset] = React.useState(0);
-  const [skinDuration, setSkinDuration] = React.useState(0);
-  const [skinSpinning, setSkinSpinning] = React.useState(false);
-  const [skinRevealTick, setSkinRevealTick] = React.useState(0);
-  const [skinPreviewExpanded, setSkinPreviewExpanded] = React.useState(false);
-  const [excludedSkinIds, setExcludedSkinIds] = React.useState<number[]>([]);
+  const [skinItem, setSkinItem] = useState(-1);
+  const [skinStrip, setSkinStrip] = useState<number[]>([]);
+  const [skinOffset, setSkinOffset] = useState(0);
+  const [skinDuration, setSkinDuration] = useState(0);
+  const [skinSpinning, setSkinSpinning] = useState(false);
+  const [skinRevealTick, setSkinRevealTick] = useState(0);
+  const [skinPreviewExpanded, setSkinPreviewExpanded] = useState(false);
+  const [excludedSkinIds, setExcludedSkinIds] = useState<number[]>([]);
 
-  const [slotExcludedItems, setSlotExcludedItems] = React.useState<SlotArrayMap>({
+  const [slotExcludedItems, setSlotExcludedItems] = useState<SlotArrayMap>({
     weapon: [],
     ability: [],
     armor: [],
     ring: []
   });
 
-  const sourceItemPools = React.useMemo(() => {
+  const sourceItemPools = useMemo(() => {
     const pools: Record<ItemSourceFilter, number[]> = {
       vault: [...(account.vault || [])],
       gifts: [...(account.gifts || [])],
@@ -237,12 +237,12 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     };
   }, [account.gifts, account.seasonalSpoils, account.vault, characters, items]);
 
-  const allAccountItemIds = React.useMemo(() => {
+  const allAccountItemIds = useMemo(() => {
     const allSourceIds = Object.values(sourceItemPools).flat();
     return Array.from(new Set(allSourceIds));
   }, [sourceItemPools]);
 
-  const ownedSkinIds = React.useMemo(() => {
+  const ownedSkinIds = useMemo(() => {
     const ids = (account.ownedSkins || '')
       .split(',')
       .map((value) => Number(value.trim()))
@@ -250,13 +250,44 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     return Array.from(new Set(ids));
   }, [account.ownedSkins, constants?.skins]);
 
-  const classFilteredSkinIds = React.useMemo(() => {
-    if (!selectedClass) {
-      return ownedSkinIds;
+  const filteredAccountItemIds = useMemo(() => {
+    const selectedIds = sourceFilters.flatMap((source) => sourceItemPools[source] ?? []);
+    return Array.from(new Set(selectedIds));
+  }, [sourceFilters, sourceItemPools]);
+
+  const candidateClasses = useMemo(() => {
+    if (selectedClass) {
+      return [selectedClass];
     }
 
+    const allClasses = Object.keys(CLASS_SLOT_CONFIG);
+    const decidedSlots = BUILD_SLOTS.filter((slot) => slotItems[slot] > 0);
+
+    if (!decidedSlots.length) {
+      return allClasses;
+    }
+
+    return allClasses.filter((className) => {
+      const config = getClassSlotConfig(className);
+
+      return decidedSlots.every((slot) => {
+        const itemId = slotItems[slot];
+        const item = items?.[itemId];
+        if (!item) return false;
+        const slotType = Number(item.slotType);
+        return config[slot].includes(slotType);
+      });
+    });
+  }, [items, selectedClass, slotItems]);
+
+  const classFilteredSkinIds = useMemo(() => {
+    if (!candidateClasses.length) {
+      return [];
+    }
+
+    const eligibleClassNames = new Set(candidateClasses);
     const classTypeIds = Object.entries(constants?.classes ?? {})
-      .filter(([, classData]) => classData?.name === selectedClass)
+      .filter(([, classData]) => classData?.name && eligibleClassNames.has(classData.name))
       .map(([classId]) => Number(classId));
 
     if (!classTypeIds.length) {
@@ -268,21 +299,16 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       const skinClassType = constants?.skins?.[skinId]?.classType;
       return typeof skinClassType === 'number' && classTypeSet.has(skinClassType);
     });
-  }, [constants?.classes, constants?.skins, ownedSkinIds, selectedClass]);
+  }, [candidateClasses, constants?.classes, constants?.skins, ownedSkinIds]);
 
-  const rollableSkinIds = React.useMemo(() => {
+  const rollableSkinIds = useMemo(() => {
     if (!excludedSkinIds.length) return classFilteredSkinIds;
     const excluded = new Set(excludedSkinIds);
     return classFilteredSkinIds.filter((skinId) => !excluded.has(skinId));
   }, [classFilteredSkinIds, excludedSkinIds]);
 
-  const filteredAccountItemIds = React.useMemo(() => {
-    const selectedIds = sourceFilters.flatMap((source) => sourceItemPools[source] ?? []);
-    return Array.from(new Set(selectedIds));
-  }, [sourceFilters, sourceItemPools]);
-
-  const categorizedAll = React.useMemo(() => {
-    if (!selectedClass) {
+  const categorizedAll = useMemo(() => {
+    if (!candidateClasses.length) {
       return {
         weapon: [],
         ability: [],
@@ -291,11 +317,18 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       };
     }
 
-    const classConfig = getClassSlotConfig(selectedClass);
-    const weaponSlotTypes = new Set(classConfig.weapon);
-    const abilitySlotTypes = new Set(classConfig.ability);
-    const armorSlotTypes = new Set(classConfig.armor);
-    const ringSlotTypes = new Set(classConfig.ring);
+    const weaponSlotTypes = new Set<number>();
+    const abilitySlotTypes = new Set<number>();
+    const armorSlotTypes = new Set<number>();
+    const ringSlotTypes = new Set<number>();
+
+    candidateClasses.forEach((className) => {
+      const classConfig = getClassSlotConfig(className);
+      classConfig.weapon.forEach((slotType) => weaponSlotTypes.add(slotType));
+      classConfig.ability.forEach((slotType) => abilitySlotTypes.add(slotType));
+      classConfig.armor.forEach((slotType) => armorSlotTypes.add(slotType));
+      classConfig.ring.forEach((slotType) => ringSlotTypes.add(slotType));
+    });
 
     const categorySets: Record<BuildSlot, Set<number>> = {
       weapon: new Set<number>(),
@@ -321,9 +354,9 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       armor: Array.from(categorySets.armor),
       ring: Array.from(categorySets.ring)
     };
-  }, [filteredAccountItemIds, items, selectedClass]);
+  }, [candidateClasses, filteredAccountItemIds, items]);
 
-  const categorized = React.useMemo(() => {
+  const categorized = useMemo(() => {
     const filterExcluded = (slot: BuildSlot): number[] => {
       const excluded = new Set(slotExcludedItems[slot]);
       return categorizedAll[slot].filter((itemId) => !excluded.has(itemId));
@@ -337,12 +370,35 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     };
   }, [categorizedAll, slotExcludedItems]);
 
-  const clearAllTimers = React.useCallback(() => {
+  useEffect(() => {
+    if (selectedClass) return;
+
+    if (!candidateClasses.length) return;
+
+    const allSlotsFinished = BUILD_SLOTS.every((slot) => !slotSpinning[slot]);
+    const allSlotsHaveResult = BUILD_SLOTS.every((slot) => slotItems[slot] > 0);
+    const allSlotsResolved = allSlotsFinished && allSlotsHaveResult;
+
+    const abilityResolved = slotItems.ability > 0 && !slotSpinning.ability;
+
+    const pendingSlots = BUILD_SLOTS.filter((slot) => slotSpinning[slot] || slotItems[slot] <= 0);
+    const onlyRingPending =
+      pendingSlots.length > 0 && pendingSlots.every((slot) => slot === 'ring');
+
+    if (!allSlotsResolved && !abilityResolved && !onlyRingPending) return;
+
+    const resolvedClass = [...candidateClasses].sort((a, b) => a.localeCompare(b))[0];
+    if (resolvedClass) {
+      setSelectedClass(resolvedClass);
+    }
+  }, [candidateClasses, selectedClass, slotItems, slotSpinning]);
+
+  const clearAllTimers = useCallback(() => {
     spinStopTimersRef.current.forEach((id) => window.clearTimeout(id));
     spinStopTimersRef.current = [];
   }, []);
 
-  const resetRollState = React.useCallback(() => {
+  const resetRollState = useCallback(() => {
     setSlotItems({
       weapon: -1,
       ability: -1,
@@ -395,13 +451,18 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     setExcludedSkinIds([]);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => clearAllTimers();
   }, [clearAllTimers]);
 
-  const spinSlot = React.useCallback(
+  const spinSlot = useCallback(
     (slot: BuildSlot, extraDuration = 0) => {
       const pool = categorized[slot];
+      const anyNonRingSlotSpinning = BUILD_SLOTS.some(
+        (buildSlot) => buildSlot !== 'ring' && slotSpinning[buildSlot]
+      );
+      if (!selectedClass && slot !== 'ring' && anyNonRingSlotSpinning && !slotSpinning[slot])
+        return;
       if (!pool.length || slotSpinning[slot]) return;
 
       const finalItem = randomFrom(pool) ?? -1;
@@ -430,10 +491,16 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
 
       spinStopTimersRef.current.push(stopTimer);
     },
-    [categorized, reel_config.baseSpinDuration, reel_config.stripLength, slotSpinning]
+    [
+      categorized,
+      reel_config.baseSpinDuration,
+      reel_config.stripLength,
+      selectedClass,
+      slotSpinning
+    ]
   );
 
-  const spinSkin = React.useCallback(
+  const spinSkin = useCallback(
     (extraDuration = 0) => {
       if (!rollableSkinIds.length || skinSpinning) return;
 
@@ -466,7 +533,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     [rollableSkinIds, reel_config.baseSpinDuration, reel_config.stripLength, skinSpinning]
   );
 
-  const spinAll = React.useCallback(() => {
+  const spinAll = useCallback(() => {
     if (!selectedClass) return;
 
     BUILD_SLOTS.forEach((slot) => {
@@ -475,7 +542,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     spinSkin();
   }, [selectedClass, spinSkin, spinSlot]);
 
-  const randomizeClass = React.useCallback(() => {
+  const randomizeClass = useCallback(() => {
     const nextClass = randomFrom(classPool);
     if (nextClass && nextClass !== selectedClass) {
       clearAllTimers();
@@ -484,7 +551,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     }
   }, [classPool, clearAllTimers, resetRollState, selectedClass]);
 
-  const toggleSourceFilter = React.useCallback(
+  const toggleSourceFilter = useCallback(
     (source: ItemSourceFilter, checked: boolean) => {
       const hasSource = sourceFilters.includes(source);
       if ((checked && hasSource) || (!checked && !hasSource)) return;
@@ -500,11 +567,11 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     [clearAllTimers, resetRollState, sourceFilters]
   );
 
-  const toggleSlotPreview = React.useCallback((slot: BuildSlot) => {
+  const toggleSlotPreview = useCallback((slot: BuildSlot) => {
     setSlotPreviewExpanded((prev) => ({ ...prev, [slot]: !prev[slot] }));
   }, []);
 
-  const toggleSlotItemExclusion = React.useCallback((slot: BuildSlot, itemId: number) => {
+  const toggleSlotItemExclusion = useCallback((slot: BuildSlot, itemId: number) => {
     setSlotExcludedItems((prev) => {
       const current = prev[slot];
       const exists = current.includes(itemId);
@@ -515,15 +582,22 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     });
   }, []);
 
-  const toggleSkinExclusion = React.useCallback((skinId: number) => {
+  const toggleSkinExclusion = useCallback((skinId: number) => {
     setExcludedSkinIds((prev) =>
       prev.includes(skinId) ? prev.filter((id) => id !== skinId) : [...prev, skinId]
     );
   }, []);
 
-  const hasAnyRollableItems = React.useMemo(() => {
+  const hasAnyRollableItems = useMemo(() => {
     return BUILD_SLOTS.some((slot) => categorized[slot].length > 0) || rollableSkinIds.length > 0;
   }, [categorized, rollableSkinIds.length]);
+
+  const anyNonRingSlotSpinning = useMemo(
+    () => BUILD_SLOTS.some((slot) => slot !== 'ring' && slotSpinning[slot]),
+    [slotSpinning]
+  );
+
+  const lockOtherSlotsDuringInferenceSpin = !selectedClass && anyNonRingSlotSpinning;
 
   if (!allAccountItemIds.length && !ownedSkinIds.length) {
     return null;
@@ -556,7 +630,9 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
               severity="secondary"
               outlined
               onClick={randomizeClass}
-              disabled={!classPool.length || Object.values(slotSpinning).some(Boolean) || skinSpinning}
+              disabled={
+                !classPool.length || Object.values(slotSpinning).some(Boolean) || skinSpinning
+              }
             />
           </div>
           <div className={styles.sourceFilterGroup}>
@@ -605,7 +681,11 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
               slotDuration={slotDurations[slot]}
               slotRevealTick={slotRevealTick[slot]}
               onReroll={() => spinSlot(slot)}
-              rerollDisabled={!selectedClass || !slotPool.length || slotSpinning[slot]}
+              rerollDisabled={
+                !slotPool.length ||
+                slotSpinning[slot] ||
+                (slot !== 'ring' && lockOtherSlotsDuringInferenceSpin && !slotSpinning[slot])
+              }
               onTogglePreview={() => toggleSlotPreview(slot)}
               isPreviewExpanded={slotPreviewExpanded[slot]}
               previewItemsLimit={PREVIEW_ITEMS_LIMIT}

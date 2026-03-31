@@ -5,7 +5,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Skeleton } from 'primereact/skeleton';
 import { Tooltip } from 'primereact/tooltip';
-import React from 'react';
+import { FC, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
 interface OwnedSkinsDialogProps {
   visible: boolean;
@@ -14,19 +14,19 @@ interface OwnedSkinsDialogProps {
   classFilter?: string;
 }
 
-const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
+const OwnedSkinsDialog: FC<OwnedSkinsDialogProps> = ({
   visible,
   onHide,
   ownedSkinIds,
   classFilter
 }) => {
   const { constants } = useConstants();
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [portraitReady, setPortraitReady] = React.useState(isPortraitReady());
-  const deferredSearchQuery = React.useDeferredValue(searchQuery);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [portraitReady, setPortraitReady] = useState(isPortraitReady());
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (portraitReady || !visible || ownedSkinIds.length === 0) return;
 
     let cancelled = false;
@@ -41,19 +41,19 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
     };
   }, [portraitReady, visible, ownedSkinIds.length]);
 
-  const getSkinName = React.useCallback(
+  const getSkinName = useCallback(
     (skinId: string) => constants?.skins?.[Number(skinId)]?.name || `Unknown Skin (${skinId})`,
     [constants?.skins]
   );
 
-  const getClassName = React.useCallback(
+  const getClassName = useCallback(
     (classTypeId: number) =>
       constants?.classes?.[String(classTypeId) as ClassID]?.name ||
       `Unknown Class (${classTypeId})`,
     [constants?.classes]
   );
 
-  const groupedSkins = React.useMemo(
+  const groupedSkins = useMemo(
     () =>
       ownedSkinIds.reduce(
         (acc, skinId) => {
@@ -72,7 +72,7 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
     [ownedSkinIds, constants?.skins, getClassName]
   );
 
-  const baseEntries = React.useMemo(
+  const baseEntries = useMemo(
     () =>
       Object.entries(groupedSkins)
         .filter(([className]) => (classFilter ? className === classFilter : true))
@@ -80,7 +80,7 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
     [groupedSkins, classFilter]
   );
 
-  const skinNameById = React.useMemo(() => {
+  const skinNameById = useMemo(() => {
     const result: Record<string, string> = {};
 
     baseEntries.forEach(([, skinIds]) => {
@@ -92,7 +92,7 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
     return result;
   }, [baseEntries, getSkinName]);
 
-  const spriteById = React.useMemo(() => {
+  const spriteById = useMemo(() => {
     if (!portraitReady) return {} as Record<string, string>;
 
     const result: Record<string, string> = {};
@@ -106,7 +106,7 @@ const OwnedSkinsDialog: React.FC<OwnedSkinsDialogProps> = ({
     return result;
   }, [baseEntries, portraitReady]);
 
-  const entries = React.useMemo(() => {
+  const entries = useMemo(() => {
     return baseEntries
       .map(([className, skinIds]) => {
         const filteredSkinIds = normalizedQuery
