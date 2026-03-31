@@ -178,8 +178,8 @@ export const selectDisplayIgnInQueue = (state: RootState) =>
 
 export const selectCursedSettings = (state: RootState) => settingsSelector(state).cursedSettings;
 
-export const selectEnable3DCharacterViewer = (state: RootState) =>
-  settingsSelector(state).cursedSettings.enable3DCharacterViewer;
+export const selectEnable3DViewer = (state: RootState) =>
+  settingsSelector(state).cursedSettings.enable3DViewer;
 
 export const selectAssetsBaseUrl = (state: RootState) =>
   settingsSelector(state).displaySettings.useLocalAssets

@@ -5,7 +5,7 @@ import SkinViewer3D from './SkinViewer3D';
 interface Character3DViewerDialogProps {
   visible: boolean;
   onHide: () => void;
-  className?: string;
+  characterClassName?: string;
   characterId?: number;
   type?: number | string | null;
   skin?: number | string | null;
@@ -18,7 +18,7 @@ interface Character3DViewerDialogProps {
 const Character3DViewerDialog: React.FC<Character3DViewerDialogProps> = ({
   visible,
   onHide,
-  className,
+  characterClassName,
   characterId,
   type,
   skin,
@@ -33,7 +33,7 @@ const Character3DViewerDialog: React.FC<Character3DViewerDialogProps> = ({
 
   return (
     <Dialog
-      header={`${className ?? 'Character'} #${characterId ?? ''} - 3D Viewer`}
+      header={`${characterClassName ?? 'Character'} #${characterId ?? ''} - 3D Viewer`}
       visible={visible}
       closeOnEscape
       onHide={onHide}

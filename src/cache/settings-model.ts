@@ -33,7 +33,7 @@ export interface DisplaySettingsModel {
 }
 
 export interface CursedSettingsModel {
-  enable3DCharacterViewer: boolean;
+  enable3DViewer: boolean;
 }
 
 export interface TotalSettingsModel {

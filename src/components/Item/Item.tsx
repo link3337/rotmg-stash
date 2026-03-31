@@ -2,7 +2,7 @@ import { EMPTY_SLOT_ITEM_ID } from '@/constants';
 import { useConstants } from '@/providers/ConstantsProvider';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
-import { selectAssetsBaseUrl, selectEnable3DCharacterViewer } from '@store/slices/SettingsSlice';
+import { selectAssetsBaseUrl, selectEnable3DViewer } from '@store/slices/SettingsSlice';
 import { debug, info } from '@tauri-apps/plugin-log';
 import { Dialog } from 'primereact/dialog';
 import { FC, useRef, useState } from 'react';
@@ -40,7 +40,7 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
   const showItemTooltips = useAppSelector(
     (state) => state.settings.displaySettings.showItemTooltips
   );
-  const show3DViewerEnabled = useAppSelector(selectEnable3DCharacterViewer);
+  const show3DViewerEnabled = useAppSelector(selectEnable3DViewer);
 
   const { items } = useConstants();
 

@@ -45,7 +45,7 @@ export const defaultExperimentalSettings: ExperimentalSettingsModel = {
 };
 
 export const defaultCursedSettings: CursedSettingsModel = {
-  enable3DCharacterViewer: false
+  enable3DViewer: false
 };
 
 export const defaultSortSettings: SortCriteria = {

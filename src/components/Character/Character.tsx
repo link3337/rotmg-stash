@@ -2,7 +2,7 @@ import { CharUIModel, MappedCharacterStats } from '@api/models/char-ui-model';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
 import LootBoostIcon from '@components/Icons/LootBoostIcon';
 import { useAppSelector } from '@hooks/redux';
-import { selectEnable3DCharacterViewer } from '@store/slices/SettingsSlice';
+import { selectEnable3DViewer } from '@store/slices/SettingsSlice';
 import React from 'react';
 import Character3DViewerDialog from './Character3DViewerDialog';
 import CharacterPortrait from './CharacterPortrait';
@@ -30,7 +30,7 @@ const getMaxedStatsCount = (stats: MappedCharacterStats[]): string => {
 
 export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId }) => {
   const [show3DViewer, setShow3DViewer] = React.useState(false);
-  const show3DCharacterViewer = useAppSelector(selectEnable3DCharacterViewer);
+  const show3DCharacterViewer = useAppSelector(selectEnable3DViewer);
 
   const items = char?.equipment ?? [];
 
@@ -180,7 +180,7 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId })
         <Character3DViewerDialog
           visible={show3DViewer}
           onHide={() => setShow3DViewer(false)}
-          className={char?.className}
+          characterClassName={char?.className}
           characterId={char?.id}
           type={char?.objectType ?? char?.classId}
           skin={char?.texture ?? char?.objectType ?? char?.classId}

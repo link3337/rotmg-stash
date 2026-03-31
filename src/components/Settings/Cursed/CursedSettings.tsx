@@ -21,11 +21,11 @@ const CursedSettings: React.FC<CursedSettingsProps> = ({ cursedSettings }) => {
 
         <div className="flex align-items-center">
           <Checkbox
-            inputId="enable3DCharacterViewer"
-            checked={cursedSettings.enable3DCharacterViewer}
-            onChange={() => dispatch(toggleCursedSetting('enable3DCharacterViewer'))}
+            inputId="enable3DViewer"
+            checked={cursedSettings.enable3DViewer}
+            onChange={() => dispatch(toggleCursedSetting('enable3DViewer'))}
           />
-          <label htmlFor="enable3DCharacterViewer" className="ml-2">
+          <label htmlFor="enable3DViewer" className="ml-2">
             Enable 3D Character Viewer
           </label>
         </div>

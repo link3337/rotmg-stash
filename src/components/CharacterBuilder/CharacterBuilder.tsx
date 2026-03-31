@@ -24,7 +24,7 @@ const MIN_ITEMS_AFTER_SELECTED = 4;
 const PREVIEW_ITEMS_LIMIT = 16;
 const BUILD_SLOTS: BuildSlot[] = ['weapon', 'ability', 'armor', 'ring'];
 
-const reel_config = {
+const REEL_CONFIG = {
   classSpinDuration: 9000,
   baseSpinDuration: 9200,
   slotStaggerDuration: 700,
@@ -466,10 +466,10 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
       if (!pool.length || slotSpinning[slot]) return;
 
       const finalItem = randomFrom(pool) ?? -1;
-      const strip = buildStrip(pool, finalItem, reel_config.stripLength);
+      const strip = buildStrip(pool, finalItem, REEL_CONFIG.stripLength);
       const targetIndex = getReelTargetIndex(strip.length);
       const finalOffset = -((targetIndex - CENTER_SLOT_INDEX) * REEL_ITEM_STEP);
-      const duration = reel_config.baseSpinDuration + extraDuration;
+      const duration = REEL_CONFIG.baseSpinDuration + extraDuration;
 
       setSlotSpinning((prev) => ({ ...prev, [slot]: true }));
       setSlotDurations((prev) => ({ ...prev, [slot]: 0 }));
@@ -493,8 +493,8 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
     },
     [
       categorized,
-      reel_config.baseSpinDuration,
-      reel_config.stripLength,
+      REEL_CONFIG.baseSpinDuration,
+      REEL_CONFIG.stripLength,
       selectedClass,
       slotSpinning
     ]
@@ -505,10 +505,10 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
       if (!rollableSkinIds.length || skinSpinning) return;
 
       const finalSkin = randomFrom(rollableSkinIds) ?? -1;
-      const strip = buildStrip(rollableSkinIds, finalSkin, reel_config.stripLength);
+      const strip = buildStrip(rollableSkinIds, finalSkin, REEL_CONFIG.stripLength);
       const targetIndex = getReelTargetIndex(strip.length);
       const finalOffset = -((targetIndex - CENTER_SLOT_INDEX) * REEL_ITEM_STEP);
-      const duration = reel_config.baseSpinDuration + extraDuration;
+      const duration = REEL_CONFIG.baseSpinDuration + extraDuration;
 
       setSkinSpinning(true);
       setSkinDuration(0);
@@ -530,7 +530,7 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
 
       spinStopTimersRef.current.push(stopTimer);
     },
-    [rollableSkinIds, reel_config.baseSpinDuration, reel_config.stripLength, skinSpinning]
+    [rollableSkinIds, REEL_CONFIG.baseSpinDuration, REEL_CONFIG.stripLength, skinSpinning]
   );
 
   const spinAll = useCallback(() => {
@@ -693,7 +693,7 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
               onToggleItemExcluded={(itemId) => toggleSlotItemExclusion(slot, itemId)}
               items={items}
               assetsBaseUrl={assetsBaseUrl}
-              easingClass={reel_config.easingClass}
+              easingClass={REEL_CONFIG.easingClass}
             />
           );
         })}
