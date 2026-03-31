@@ -19,6 +19,7 @@ const REEL_ITEM_STEP = 44;
 const CENTER_SLOT_INDEX = 2;
 const STRIP_LENGTH = 30;
 const MIN_ITEMS_AFTER_SELECTED = 4;
+const PREVIEW_ITEMS_LIMIT = 16;
 const BUILD_SLOTS: BuildSlot[] = ['weapon', 'ability', 'armor', 'ring'];
 
 const reel_config = {
@@ -216,6 +217,13 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     ring: 0
   });
 
+  const [slotPreviewExpanded, setSlotPreviewExpanded] = React.useState<SlotBooleanMap>({
+    weapon: false,
+    ability: false,
+    armor: false,
+    ring: false
+  });
+
   const sourceItemPools = React.useMemo(() => {
     const pools: Record<ItemSourceFilter, number[]> = {
       vault: [...(account.vault || [])],
@@ -350,6 +358,12 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       armor: 0,
       ring: 0
     });
+    setSlotPreviewExpanded({
+      weapon: false,
+      ability: false,
+      armor: false,
+      ring: false
+    });
   }, []);
 
   React.useEffect(() => {
@@ -428,6 +442,10 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     [clearAllTimers, resetRollState, sourceFilters]
   );
 
+  const toggleSlotPreview = React.useCallback((slot: BuildSlot) => {
+    setSlotPreviewExpanded((prev) => ({ ...prev, [slot]: !prev[slot] }));
+  }, []);
+
   if (!allAccountItemIds.length) {
     return null;
   }
@@ -489,12 +507,18 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
 
       <div className={styles.reels}>
         {BUILD_SLOTS.map((slot) => {
-          const slotHasItems = categorized[slot].length > 0;
+          const slotPool = categorized[slot];
+          const slotHasItems = slotPool.length > 0;
+          const isPreviewExpanded = slotPreviewExpanded[slot];
           const selectedItemId = slotItems[slot];
           const itemName =
             selectedItemId > 0 ? (items?.[selectedItemId]?.name ?? `Item #${selectedItemId}`) : '';
           const strip = slotStrips[slot];
           const isRolling = slotSpinning[slot];
+          const previewVisibleItemIds = isPreviewExpanded
+            ? slotPool
+            : slotPool.slice(0, PREVIEW_ITEMS_LIMIT);
+          const previewHiddenCount = Math.max(0, slotPool.length - PREVIEW_ITEMS_LIMIT);
           const displayName =
             isRolling ? '' : slotHasItems ? itemName : selectedClass ? 'No available items' : '';
           const hasDecidedItem = !isRolling && selectedItemId > 0;
@@ -547,6 +571,49 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
                 title={displayName}
               >
                 {displayName}
+              </div>
+
+              <div className={styles.slotPreview}>
+                <div className={styles.previewLabel}>Rollable items ({slotPool.length})</div>
+                {slotHasItems ? (
+                  <div className={styles.previewSprites}>
+                    {previewVisibleItemIds.map((previewItemId) => (
+                      <div
+                        key={`${slot}-${previewItemId}`}
+                        className={styles.previewSpriteCell}
+                        title={items?.[previewItemId]?.name ?? `Item #${previewItemId}`}
+                      >
+                        <ReelItemSprite
+                          itemId={previewItemId}
+                          item={items?.[previewItemId]}
+                          assetsBaseUrl={assetsBaseUrl}
+                        />
+                      </div>
+                    ))}
+                    {!isPreviewExpanded && previewHiddenCount > 0 ? (
+                      <button
+                        type="button"
+                        className={styles.previewMoreBadge}
+                        onClick={() => toggleSlotPreview(slot)}
+                        title="Show all rollable items"
+                      >
+                        +{previewHiddenCount}
+                      </button>
+                    ) : null}
+                    {isPreviewExpanded && slotPool.length > PREVIEW_ITEMS_LIMIT ? (
+                      <button
+                        type="button"
+                        className={styles.previewLessButton}
+                        onClick={() => toggleSlotPreview(slot)}
+                        title="Show fewer items"
+                      >
+                        Show less
+                      </button>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div className={styles.previewEmpty}>No rollable items for current filters</div>
+                )}
               </div>
             </div>
           );

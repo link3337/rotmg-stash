@@ -8,12 +8,12 @@ export const DEFAULT_CLASS_SLOT_CONFIG: ClassSlotConfig = {
     24 // katanas / tachis
   ],
   ability: [
-    3, // quivers
     4, // tomes
     5, // shields
     11, // spells
     12, // seals
     13, // cloaks
+    15, // quivers
     16, // helmets
     18, // poisons
     19, // skulls
@@ -39,7 +39,7 @@ export const DEFAULT_CLASS_SLOT_CONFIG: ClassSlotConfig = {
 export const CLASS_SLOT_CONFIG: Record<string, Partial<ClassSlotConfig>> = {
   Archer: {
     weapon: [3],
-    ability: [3],
+    ability: [15],
     armor: [6],
     ring: [9]
   },
