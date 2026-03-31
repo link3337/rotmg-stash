@@ -192,6 +192,13 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     ring: false
   });
 
+  const [slotRevealTick, setSlotRevealTick] = React.useState<SlotNumberMap>({
+    weapon: 0,
+    ability: 0,
+    armor: 0,
+    ring: 0
+  });
+
   const allAccountItemIds = React.useMemo(() => {
     const ids: number[] = [];
     ids.push(...(account.vault || []));
@@ -331,6 +338,12 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       armor: false,
       ring: false
     });
+    setSlotRevealTick({
+      weapon: 0,
+      ability: 0,
+      armor: 0,
+      ring: 0
+    });
   }, []);
 
   React.useEffect(() => {
@@ -364,6 +377,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       const stopTimer = window.setTimeout(() => {
         setSlotItems((prev) => ({ ...prev, [slot]: finalItem }));
         setSlotSpinning((prev) => ({ ...prev, [slot]: false }));
+        setSlotRevealTick((prev) => ({ ...prev, [slot]: prev[slot] + 1 }));
       }, duration + 50);
 
       spinStopTimersRef.current.push(stopTimer);
@@ -441,6 +455,8 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             selectedItemId > 0 ? (items?.[selectedItemId]?.name ?? `Item #${selectedItemId}`) : '';
           const strip = slotStrips[slot];
           const isRolling = slotSpinning[slot];
+          const hasDecidedItem = !isRolling && selectedItemId > 0;
+          const shouldAnimateReveal = !isRolling && Boolean(itemName) && slotRevealTick[slot] > 0;
 
           return (
             <div key={slot} className={styles.slotCard}>
@@ -455,8 +471,13 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
                 />
               </div>
 
-              <div className={styles.itemViewport}>
+              <div
+                className={`${styles.itemViewport} ${shouldAnimateReveal ? styles.reelStopped : ''}`}
+              >
                 <div className={styles.centerMarker} />
+                <div
+                  className={`${styles.centerOutline} ${hasDecidedItem ? styles.centerOutlineVisible : ''} ${shouldAnimateReveal ? styles.centerOutlineFlash : ''}`}
+                />
                 <div
                   className={`${styles.reelTrack} ${styles[reel_config.easingClass]}`}
                   style={{
@@ -478,7 +499,11 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
                 </div>
               </div>
 
-              <div className={styles.itemName} title={itemName}>
+              <div
+                key={`${slot}-name-${slotRevealTick[slot]}`}
+                className={`${styles.itemName} ${shouldAnimateReveal ? styles.itemNameReveal : ''}`}
+                title={itemName}
+              >
                 {isRolling ? '' : itemName}
               </div>
             </div>
