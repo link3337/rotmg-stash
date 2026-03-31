@@ -14,7 +14,6 @@ import {
   useFilter
 } from '@store/slices/FilterSlice';
 import { MultiSelect } from 'primereact/multiselect';
-import { Paginator } from 'primereact/paginator';
 import { SelectButton, SelectButtonChangeEvent } from 'primereact/selectbutton';
 import React from 'react';
 import { Character } from './Character';
@@ -28,8 +27,6 @@ interface CharacterProps {
   exalts: ExaltUIModel[] | null;
   ownedSkins?: string;
 }
-
-const CHARACTERS_PER_PAGE = 20;
 
 const Characters: React.FC<CharacterProps> = ({
   accountId,
@@ -49,7 +46,6 @@ const Characters: React.FC<CharacterProps> = ({
 
   const { selectedItems } = useFilter();
   const { constants } = useConstants();
-  const [startIndex, setStartIndex] = React.useState(0);
 
   const options = [
     { label: 'All', value: 'all' },
@@ -81,21 +77,12 @@ const Characters: React.FC<CharacterProps> = ({
       selectedItems.length === 0
         ? true
         : selectedItems.some(
-            (item) =>
-              char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
-          );
+          (item) =>
+            char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
+        );
 
     return seasonalFilter && classFilter && itemFilter;
   });
-
-  React.useEffect(() => {
-    setStartIndex(0);
-  }, [accountId, characterFilter, selectedClasses, showHighlightedOnly, selectedItems]);
-
-  const displayedCharacters = filteredCharacters.slice(
-    startIndex,
-    startIndex + CHARACTERS_PER_PAGE
-  );
 
   const handleFilterChange = (newFilter: FilterType) => {
     dispatch(setFilter({ accountId, filter: newFilter }));
@@ -103,10 +90,6 @@ const Characters: React.FC<CharacterProps> = ({
 
   const handleSelectedClassesChange = (newSelectedClasses: ClassID[]) => {
     dispatch(setSelectedClasses({ accountId, selectedClasses: newSelectedClasses }));
-  };
-
-  const handlePageChange = (e: { first: number }) => {
-    setStartIndex(e.first);
   };
 
   return (
@@ -144,7 +127,7 @@ const Characters: React.FC<CharacterProps> = ({
       </div>
 
       <div className="flex grid">
-        {displayedCharacters.map((character) => (
+        {filteredCharacters.map((character) => (
           <Character
             key={`${accountId}-${character.id}`}
             accountId={accountId}
@@ -153,16 +136,6 @@ const Characters: React.FC<CharacterProps> = ({
           />
         ))}
       </div>
-      {filteredCharacters.length > CHARACTERS_PER_PAGE && (
-        <div className="flex justify-content-center mt-2">
-          <Paginator
-            first={startIndex}
-            rows={CHARACTERS_PER_PAGE}
-            totalRecords={filteredCharacters.length}
-            onPageChange={handlePageChange}
-          />
-        </div>
-      )}
     </>
   );
 };
