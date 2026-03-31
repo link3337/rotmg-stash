@@ -19,6 +19,7 @@
   display: flex;
   width: 100%;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
@@ -28,6 +29,7 @@
 
 .classSelect {
   min-width: 170px;
+  max-width: 220px;
   min-height: 2.25rem;
   border-radius: 6px;
   border: 1px solid var(--surface-border);
@@ -42,6 +44,32 @@
 
 .classSelect :global(.p-dropdown-trigger) {
   width: 2.25rem;
+}
+
+.sourceFilterGroup {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.55rem;
+  height: 2.25rem;
+  box-sizing: border-box;
+  padding: 0 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  overflow-x: auto;
+}
+
+.sourceFilterOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
+.sourceFilterOption label {
+  cursor: pointer;
 }
 
 .prototypePicker {
@@ -213,6 +241,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.itemNameEmpty {
+  color: color-mix(in srgb, var(--text-color) 72%, var(--surface-border) 28%);
+  font-style: italic;
 }
 
 .itemNameReveal {

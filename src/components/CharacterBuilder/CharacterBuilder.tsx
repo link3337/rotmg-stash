@@ -4,6 +4,7 @@ import { useAppSelector } from '@hooks/redux';
 import { useConstants } from '@providers/ConstantsProvider';
 import { selectAssetsBaseUrl } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
+import { Checkbox } from 'primereact/checkbox';
 import { Dropdown } from 'primereact/dropdown';
 import React from 'react';
 import styles from './CharacterBuilder.module.scss';
@@ -32,6 +33,11 @@ const reel_config = {
 type SlotNumberMap = Record<BuildSlot, number>;
 type SlotBooleanMap = Record<BuildSlot, boolean>;
 type SlotArrayMap = Record<BuildSlot, number[]>;
+type ItemSourceFilter =
+  | 'vault'
+  | 'gifts'
+  | 'seasonalSpoils'
+  | 'equipped';
 
 interface CharacterBuilderProps {
   account: AccountUIModel;
@@ -42,6 +48,13 @@ interface ReelRenderableItem {
   x: number;
   y: number;
 }
+
+const ITEM_SOURCE_OPTIONS: Array<{ label: string; value: ItemSourceFilter }> = [
+  { label: 'Vault', value: 'vault' },
+  { label: 'Gift Chest', value: 'gifts' },
+  { label: 'Seasonal Spoils', value: 'seasonalSpoils' },
+  { label: 'Characters', value: 'equipped' }
+];
 
 const ReelItemSprite = React.memo(
   ({
@@ -132,6 +145,7 @@ const buildStrip = (pool: number[], finalItem: number, length = STRIP_LENGTH): n
 
 const getClassSlotConfig = (className: string): ClassSlotConfig => {
   const override = CLASS_SLOT_CONFIG[className] ?? {};
+
   return {
     weapon: override.weapon ?? DEFAULT_CLASS_SLOT_CONFIG.weapon,
     ability: override.ability ?? DEFAULT_CLASS_SLOT_CONFIG.ability,
@@ -147,6 +161,9 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
   const spinStopTimersRef = React.useRef<number[]>([]);
 
   const [selectedClass, setSelectedClass] = React.useState('');
+  const [sourceFilters, setSourceFilters] = React.useState<ItemSourceFilter[]>(
+    ITEM_SOURCE_OPTIONS.map((option) => option.value)
+  );
 
   const classPool = React.useMemo(() => {
     const fromCharacters = (characters || [])
@@ -199,39 +216,48 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     ring: 0
   });
 
-  const allAccountItemIds = React.useMemo(() => {
-    const ids: number[] = [];
-    ids.push(...(account.vault || []));
-    ids.push(...(account.gifts || []));
-    ids.push(...(account.seasonalSpoils || []));
-    ids.push(...(account.materialStorage || []));
-    ids.push(...(account.potions || []));
-
-    (account.consumables || []).forEach((entry) => {
-      const amount = Math.max(1, entry.amount ?? 1);
-      for (let i = 0; i < amount; i += 1) ids.push(entry.itemId);
-    });
+  const sourceItemPools = React.useMemo(() => {
+    const pools: Record<ItemSourceFilter, number[]> = {
+      vault: [...(account.vault || [])],
+      gifts: [...(account.gifts || [])],
+      seasonalSpoils: [...(account.seasonalSpoils || [])],
+      equipped: []
+    };
 
     (characters || []).forEach((char) => {
-      ids.push(...(char.equipment || []));
+      pools.equipped.push(...(char.equipment || []));
       (char.equip_qs || []).forEach((entry) => {
         const amount = Math.max(1, entry.amount ?? 1);
-        for (let i = 0; i < amount; i += 1) ids.push(entry.itemId);
+        for (let i = 0; i < amount; i += 1) pools.equipped.push(entry.itemId);
       });
     });
 
-    const uniqueIds = Array.from(new Set(ids));
-    return uniqueIds.filter((id) => id > 0 && Boolean(items?.[id]));
+    const normalize = (ids: number[]) =>
+      Array.from(new Set(ids)).filter((id) => id > 0 && Boolean(items?.[id]));
+
+    return {
+      vault: normalize(pools.vault),
+      gifts: normalize(pools.gifts),
+      seasonalSpoils: normalize(pools.seasonalSpoils),
+      equipped: normalize(pools.equipped)
+    };
   }, [
-    account.consumables,
     account.gifts,
-    account.materialStorage,
-    account.potions,
     account.seasonalSpoils,
     account.vault,
     characters,
     items
   ]);
+
+  const allAccountItemIds = React.useMemo(() => {
+    const allSourceIds = Object.values(sourceItemPools).flat();
+    return Array.from(new Set(allSourceIds));
+  }, [sourceItemPools]);
+
+  const filteredAccountItemIds = React.useMemo(() => {
+    const selectedIds = sourceFilters.flatMap((source) => sourceItemPools[source] ?? []);
+    return Array.from(new Set(selectedIds));
+  }, [sourceFilters, sourceItemPools]);
 
   const categorized = React.useMemo(() => {
     if (!selectedClass) {
@@ -249,11 +275,6 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     const armorSlotTypes = new Set(classConfig.armor);
     const ringSlotTypes = new Set(classConfig.ring);
 
-    const defaultWeaponSlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.weapon);
-    const defaultAbilitySlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.ability);
-    const defaultArmorSlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.armor);
-    const defaultRingSlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.ring);
-
     const categorySets: Record<BuildSlot, Set<number>> = {
       weapon: new Set<number>(),
       ability: new Set<number>(),
@@ -261,14 +282,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       ring: new Set<number>()
     };
 
-    const fallbackSets: Record<BuildSlot, Set<number>> = {
-      weapon: new Set<number>(),
-      ability: new Set<number>(),
-      armor: new Set<number>(),
-      ring: new Set<number>()
-    };
-
-    allAccountItemIds.forEach((itemId) => {
+    filteredAccountItemIds.forEach((itemId) => {
       const item = items?.[itemId];
       if (!item) return;
       const slotType = Number(item.slotType);
@@ -277,21 +291,13 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       if (armorSlotTypes.has(slotType)) categorySets.armor.add(itemId);
       if (weaponSlotTypes.has(slotType)) categorySets.weapon.add(itemId);
       if (abilitySlotTypes.has(slotType)) categorySets.ability.add(itemId);
-
-      if (defaultRingSlotTypes.has(slotType)) fallbackSets.ring.add(itemId);
-      if (defaultArmorSlotTypes.has(slotType)) fallbackSets.armor.add(itemId);
-      if (defaultWeaponSlotTypes.has(slotType)) fallbackSets.weapon.add(itemId);
-      if (defaultAbilitySlotTypes.has(slotType)) fallbackSets.ability.add(itemId);
     });
 
     const ensurePool = (slot: BuildSlot): number[] => {
       const primary = Array.from(categorySets[slot]);
       if (primary.length) return primary;
 
-      const fallback = Array.from(fallbackSets[slot]);
-      if (fallback.length) return fallback;
-
-      return allAccountItemIds;
+      return [];
     };
 
     return {
@@ -300,7 +306,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       armor: ensurePool('armor'),
       ring: ensurePool('ring')
     };
-  }, [allAccountItemIds, items, selectedClass]);
+  }, [filteredAccountItemIds, items, selectedClass]);
 
   const clearAllTimers = React.useCallback(() => {
     spinStopTimersRef.current.forEach((id) => window.clearTimeout(id));
@@ -406,6 +412,22 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     }
   }, [classPool, clearAllTimers, resetRollState, selectedClass]);
 
+  const toggleSourceFilter = React.useCallback(
+    (source: ItemSourceFilter, checked: boolean) => {
+      const hasSource = sourceFilters.includes(source);
+      if ((checked && hasSource) || (!checked && !hasSource)) return;
+
+      const nextSources = checked
+        ? [...sourceFilters, source]
+        : sourceFilters.filter((current) => current !== source);
+
+      clearAllTimers();
+      resetRollState();
+      setSourceFilters(nextSources);
+    },
+    [clearAllTimers, resetRollState, sourceFilters]
+  );
+
   if (!allAccountItemIds.length) {
     return null;
   }
@@ -430,6 +452,19 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             showClear
             disabled={Object.values(slotSpinning).some(Boolean)}
           />
+          <div className={styles.sourceFilterGroup}>
+            {ITEM_SOURCE_OPTIONS.map((option) => (
+              <div key={option.value} className={styles.sourceFilterOption}>
+                <Checkbox
+                  inputId={`builder-source-${option.value}`}
+                  checked={sourceFilters.includes(option.value)}
+                  onChange={(event) => toggleSourceFilter(option.value, Boolean(event.checked))}
+                  disabled={Object.values(slotSpinning).some(Boolean)}
+                />
+                <label htmlFor={`builder-source-${option.value}`}>{option.label}</label>
+              </div>
+            ))}
+          </div>
           <Button
             label="Randomize Class"
             icon="pi pi-shuffle"
@@ -443,18 +478,25 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             label="Spin All"
             icon="pi pi-sync"
             onClick={spinAll}
-            disabled={!selectedClass || Object.values(slotSpinning).some(Boolean)}
+            disabled={
+              !selectedClass ||
+              !filteredAccountItemIds.length ||
+              Object.values(slotSpinning).some(Boolean)
+            }
           />
         </div>
       </div>
 
       <div className={styles.reels}>
         {BUILD_SLOTS.map((slot) => {
+          const slotHasItems = categorized[slot].length > 0;
           const selectedItemId = slotItems[slot];
           const itemName =
             selectedItemId > 0 ? (items?.[selectedItemId]?.name ?? `Item #${selectedItemId}`) : '';
           const strip = slotStrips[slot];
           const isRolling = slotSpinning[slot];
+          const displayName =
+            isRolling ? '' : slotHasItems ? itemName : selectedClass ? 'No available items' : '';
           const hasDecidedItem = !isRolling && selectedItemId > 0;
           const shouldAnimateReveal = !isRolling && Boolean(itemName) && slotRevealTick[slot] > 0;
 
@@ -466,7 +508,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
                   text
                   icon="pi pi-refresh"
                   label={isRolling ? 'Spinning...' : 'Reroll'}
-                  disabled={!selectedClass || isRolling}
+                  disabled={!selectedClass || !slotHasItems || isRolling}
                   onClick={() => spinSlot(slot)}
                 />
               </div>
@@ -501,10 +543,10 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
 
               <div
                 key={`${slot}-name-${slotRevealTick[slot]}`}
-                className={`${styles.itemName} ${shouldAnimateReveal ? styles.itemNameReveal : ''}`}
-                title={itemName}
+                className={`${styles.itemName} ${!slotHasItems && selectedClass ? styles.itemNameEmpty : ''} ${shouldAnimateReveal ? styles.itemNameReveal : ''}`}
+                title={displayName}
               >
-                {isRolling ? '' : itemName}
+                {displayName}
               </div>
             </div>
           );
