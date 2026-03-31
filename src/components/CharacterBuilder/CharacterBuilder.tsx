@@ -371,13 +371,9 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
     if (!selectedClass) return;
 
     BUILD_SLOTS.forEach((slot, idx) => {
-      const timer = window.setTimeout(
-        () => spinSlot(slot, idx * reel_config.slotStaggerDuration),
-        idx * reel_config.slotStartDelay
-      );
-      spinStopTimersRef.current.push(timer);
+      spinSlot(slot, idx * reel_config.slotStaggerDuration);
     });
-  }, [reel_config.slotStaggerDuration, reel_config.slotStartDelay, selectedClass, spinSlot]);
+  }, [reel_config.slotStaggerDuration, selectedClass, spinSlot]);
 
   const randomizeClass = React.useCallback(() => {
     const nextClass = randomFrom(classPool);
