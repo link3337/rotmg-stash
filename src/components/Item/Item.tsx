@@ -167,6 +167,7 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
           resizable
           maximizable
           closeOnEscape
+          modal
           dismissableMask
           onHide={() => setShow3DViewer(false)}
           onShow={() => setViewerKey((prev) => prev + 1)}
