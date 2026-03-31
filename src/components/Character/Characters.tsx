@@ -81,9 +81,9 @@ const Characters: React.FC<CharacterProps> = ({
       selectedItems.length === 0
         ? true
         : selectedItems.some(
-          (item) =>
-            char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
-        );
+            (item) =>
+              char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
+          );
 
     return seasonalFilter && classFilter && itemFilter;
   });
@@ -92,7 +92,10 @@ const Characters: React.FC<CharacterProps> = ({
     setStartIndex(0);
   }, [accountId, characterFilter, selectedClasses, showHighlightedOnly, selectedItems]);
 
-  const displayedCharacters = filteredCharacters.slice(startIndex, startIndex + CHARACTERS_PER_PAGE);
+  const displayedCharacters = filteredCharacters.slice(
+    startIndex,
+    startIndex + CHARACTERS_PER_PAGE
+  );
 
   const handleFilterChange = (newFilter: FilterType) => {
     dispatch(setFilter({ accountId, filter: newFilter }));

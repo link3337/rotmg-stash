@@ -34,11 +34,7 @@ const reel_config = {
 type SlotNumberMap = Record<BuildSlot, number>;
 type SlotBooleanMap = Record<BuildSlot, boolean>;
 type SlotArrayMap = Record<BuildSlot, number[]>;
-type ItemSourceFilter =
-  | 'vault'
-  | 'gifts'
-  | 'seasonalSpoils'
-  | 'equipped';
+type ItemSourceFilter = 'vault' | 'gifts' | 'seasonalSpoils' | 'equipped';
 
 interface CharacterBuilderProps {
   account: AccountUIModel;
@@ -130,16 +126,21 @@ const buildSequence = (pool: number[], count: number, excludeItem?: number): num
   return result;
 };
 
+const getReelTargetIndex = (stripLength: number): number => {
+  return Math.max(CENTER_SLOT_INDEX, stripLength - (MIN_ITEMS_AFTER_SELECTED + 1));
+};
+
 const buildStrip = (pool: number[], finalItem: number, length = STRIP_LENGTH): number[] => {
   if (!pool.length) return [finalItem, finalItem, finalItem];
 
   const uniquePool = Array.from(new Set(pool));
   const minLength = CENTER_SLOT_INDEX + MIN_ITEMS_AFTER_SELECTED + 3;
   const safeLength = Math.max(10, length, minLength);
-  const targetIndex = Math.max(CENTER_SLOT_INDEX, safeLength - (MIN_ITEMS_AFTER_SELECTED + 1));
+  const targetIndex = getReelTargetIndex(safeLength);
 
-  const beforeFinal = buildSequence(uniquePool, targetIndex, finalItem);
-  const afterFinal = buildSequence(uniquePool, safeLength - targetIndex - 1, finalItem);
+  // Keep one guaranteed stop position, but let the same item appear elsewhere in the strip.
+  const beforeFinal = buildSequence(uniquePool, targetIndex);
+  const afterFinal = buildSequence(uniquePool, safeLength - targetIndex - 1);
 
   return [...beforeFinal, finalItem, ...afterFinal];
 };
@@ -249,13 +250,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
       seasonalSpoils: normalize(pools.seasonalSpoils),
       equipped: normalize(pools.equipped)
     };
-  }, [
-    account.gifts,
-    account.seasonalSpoils,
-    account.vault,
-    characters,
-    items
-  ]);
+  }, [account.gifts, account.seasonalSpoils, account.vault, characters, items]);
 
   const allAccountItemIds = React.useMemo(() => {
     const allSourceIds = Object.values(sourceItemPools).flat();
@@ -377,8 +372,7 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
 
       const finalItem = randomFrom(pool) ?? -1;
       const strip = buildStrip(pool, finalItem, reel_config.stripLength);
-      const selectedIndex = strip.indexOf(finalItem);
-      const targetIndex = selectedIndex >= 0 ? selectedIndex : Math.max(0, strip.length - 2);
+      const targetIndex = getReelTargetIndex(strip.length);
       const finalOffset = -((targetIndex - CENTER_SLOT_INDEX) * REEL_ITEM_STEP);
       const duration = reel_config.baseSpinDuration + extraDuration;
 
@@ -519,8 +513,13 @@ const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters
             ? slotPool
             : slotPool.slice(0, PREVIEW_ITEMS_LIMIT);
           const previewHiddenCount = Math.max(0, slotPool.length - PREVIEW_ITEMS_LIMIT);
-          const displayName =
-            isRolling ? '' : slotHasItems ? itemName : selectedClass ? 'No available items' : '';
+          const displayName = isRolling
+            ? ''
+            : slotHasItems
+              ? itemName
+              : selectedClass
+                ? 'No available items'
+                : '';
           const hasDecidedItem = !isRolling && selectedItemId > 0;
           const shouldAnimateReveal = !isRolling && Boolean(itemName) && slotRevealTick[slot] > 0;
 
