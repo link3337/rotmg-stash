@@ -1,0 +1,197 @@
+.builderCard {
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  padding: 0.9rem;
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%),
+    color-mix(in srgb, var(--surface-card) 97%, var(--text-color) 3%)
+  );
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.headerActions {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinAllButton {
+  margin-left: auto;
+}
+
+.classSelect {
+  min-width: 170px;
+  min-height: 2.25rem;
+  border-radius: 6px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color);
+}
+
+.classSelect :global(.p-dropdown-label) {
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.classSelect :global(.p-dropdown-trigger) {
+  width: 2.25rem;
+}
+
+.prototypePicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.prototypeButton {
+  font-size: 0.78rem;
+}
+
+.title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.subtitle {
+  opacity: 0.78;
+  font-size: 0.86rem;
+}
+
+.classBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-height: 1.7rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 45%, transparent);
+  background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+}
+
+.reels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+@media (max-width: 980px) {
+  .reels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.slotCard {
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  padding: 0.55rem;
+  background: color-mix(in srgb, var(--surface-ground) 90%, var(--surface-card) 10%);
+}
+
+.slotHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.slotLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 0;
+}
+
+.itemViewport {
+  height: 56px;
+  width: 220px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--surface-border) 78%, transparent);
+  background: color-mix(in srgb, var(--surface-card) 85%, var(--surface-ground) 15%);
+}
+
+.centerMarker {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary-color) 70%, #fff 30%);
+  opacity: 0.9;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.reelTrack {
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  transition-property: transform;
+  will-change: transform;
+}
+
+.easingSpin {
+  transition-timing-function: cubic-bezier(0.22, 0.88, 0.36, 1);
+}
+
+.reelCell {
+  width: 44px;
+  min-width: 44px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.itemWrap {
+  pointer-events: none;
+}
+
+.reelSpriteFrame {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reelSprite {
+  width: 40px;
+  height: 40px;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+.itemName {
+  font-size: 0.74rem;
+  opacity: 0.88;
+  margin-top: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emptyLabel {
+  font-size: 0.78rem;
+  opacity: 0.65;
+}

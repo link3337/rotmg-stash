@@ -123,11 +123,14 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
         onMouseOver={() => showItemTooltips && handleMouseOver()}
         onMouseLeave={() => setShowTooltip(false)}
         onContextMenu={handleContextMenu}
-        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${isShiny ? styles.shiny : ''
-          } ${rarityClass}`}
+        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${
+          isShiny ? styles.shiny : ''
+        } ${rarityClass}`}
         data-rarity-slots={slotCount > 0 ? slotCount : undefined}
         data-itemid={itemId}
-        title={show3DViewerEnabled ? `Right-click to open 3D Viewer for ${itemInfo.name}` : undefined}
+        title={
+          show3DViewerEnabled ? `Right-click to open 3D Viewer for ${itemInfo.name}` : undefined
+        }
         onClick={handleClick}
       >
         <div

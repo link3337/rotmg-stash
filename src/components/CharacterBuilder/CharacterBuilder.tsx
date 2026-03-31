@@ -1,0 +1,492 @@
+import { AccountUIModel } from '@api/models/account-ui-model';
+import { CharUIModel } from '@api/models/char-ui-model';
+import { useAppSelector } from '@hooks/redux';
+import { useConstants } from '@providers/ConstantsProvider';
+import { selectAssetsBaseUrl } from '@store/slices/SettingsSlice';
+import { Button } from 'primereact/button';
+import { Dropdown } from 'primereact/dropdown';
+import React from 'react';
+import styles from './CharacterBuilder.module.scss';
+import {
+  BuildSlot,
+  CLASS_SLOT_CONFIG,
+  ClassSlotConfig,
+  DEFAULT_CLASS_SLOT_CONFIG
+} from './config/slot-config';
+
+const REEL_ITEM_STEP = 44;
+const CENTER_SLOT_INDEX = 2;
+const STRIP_LENGTH = 30;
+const MIN_ITEMS_AFTER_SELECTED = 4;
+const BUILD_SLOTS: BuildSlot[] = ['weapon', 'ability', 'armor', 'ring'];
+
+const reel_config = {
+  classSpinDuration: 9000,
+  baseSpinDuration: 9200,
+  slotStaggerDuration: 700,
+  slotStartDelay: 220,
+  stripLength: 72,
+  easingClass: 'easingSpin'
+};
+
+type SlotNumberMap = Record<BuildSlot, number>;
+type SlotBooleanMap = Record<BuildSlot, boolean>;
+type SlotArrayMap = Record<BuildSlot, number[]>;
+
+interface CharacterBuilderProps {
+  account: AccountUIModel;
+  characters: CharUIModel[];
+}
+
+interface ReelRenderableItem {
+  x: number;
+  y: number;
+}
+
+const ReelItemSprite = React.memo(
+  ({
+    itemId,
+    item,
+    assetsBaseUrl
+  }: {
+    itemId: number;
+    item?: ReelRenderableItem;
+    assetsBaseUrl: string;
+  }) => {
+    if (!item || itemId <= 0) {
+      return <span className={styles.emptyLabel}>-</span>;
+    }
+
+    return (
+      <div className={styles.reelSpriteFrame}>
+        <div
+          className={styles.reelSprite}
+          style={{
+            backgroundPosition: `-${item.x}px -${item.y}px`,
+            backgroundImage: `url('${assetsBaseUrl}/renders.png')`
+          }}
+        />
+      </div>
+    );
+  }
+);
+
+const randomFrom = <T,>(values: T[]): T | null => {
+  if (!values.length) return null;
+  return values[Math.floor(Math.random() * values.length)];
+};
+
+const shuffleNumbers = (values: number[]): number[] => {
+  const copy = [...values];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
+const buildSequence = (pool: number[], count: number, excludeItem?: number): number[] => {
+  if (count <= 0) return [];
+
+  const source = excludeItem === undefined ? [...pool] : pool.filter((id) => id !== excludeItem);
+  if (!source.length) return Array.from({ length: count }, () => excludeItem ?? -1);
+
+  const result: number[] = [];
+  let last: number | null = null;
+
+  while (result.length < count) {
+    const batch = shuffleNumbers(source);
+    if (last !== null && batch.length > 1 && batch[0] === last) {
+      [batch[0], batch[1]] = [batch[1], batch[0]];
+    }
+
+    for (const itemId of batch) {
+      if (result.length >= count) break;
+      if (last !== null && itemId === last && source.length > 1) continue;
+      result.push(itemId);
+      last = itemId;
+    }
+
+    if (source.length === 1 && result.length < count) {
+      result.push(source[0]);
+      last = source[0];
+    }
+  }
+
+  return result;
+};
+
+const buildStrip = (pool: number[], finalItem: number, length = STRIP_LENGTH): number[] => {
+  if (!pool.length) return [finalItem, finalItem, finalItem];
+
+  const uniquePool = Array.from(new Set(pool));
+  const minLength = CENTER_SLOT_INDEX + MIN_ITEMS_AFTER_SELECTED + 3;
+  const safeLength = Math.max(10, length, minLength);
+  const targetIndex = Math.max(CENTER_SLOT_INDEX, safeLength - (MIN_ITEMS_AFTER_SELECTED + 1));
+
+  const beforeFinal = buildSequence(uniquePool, targetIndex, finalItem);
+  const afterFinal = buildSequence(uniquePool, safeLength - targetIndex - 1, finalItem);
+
+  return [...beforeFinal, finalItem, ...afterFinal];
+};
+
+const getClassSlotConfig = (className: string): ClassSlotConfig => {
+  const override = CLASS_SLOT_CONFIG[className] ?? {};
+  return {
+    weapon: override.weapon ?? DEFAULT_CLASS_SLOT_CONFIG.weapon,
+    ability: override.ability ?? DEFAULT_CLASS_SLOT_CONFIG.ability,
+    armor: override.armor ?? DEFAULT_CLASS_SLOT_CONFIG.armor,
+    ring: override.ring ?? DEFAULT_CLASS_SLOT_CONFIG.ring
+  };
+};
+
+const CharacterBuilder: React.FC<CharacterBuilderProps> = ({ account, characters }) => {
+  const { items } = useConstants();
+  const assetsBaseUrl = useAppSelector(selectAssetsBaseUrl);
+
+  const spinStopTimersRef = React.useRef<number[]>([]);
+
+  const [selectedClass, setSelectedClass] = React.useState('');
+
+  const classPool = React.useMemo(() => {
+    const fromCharacters = (characters || [])
+      .map((char) => char.className)
+      .filter((name): name is string => Boolean(name));
+
+    const merged = new Set<string>([...fromCharacters, ...Object.keys(CLASS_SLOT_CONFIG)]);
+    return Array.from(merged).sort((a, b) => a.localeCompare(b));
+  }, [characters]);
+
+  const [slotItems, setSlotItems] = React.useState<SlotNumberMap>({
+    weapon: -1,
+    ability: -1,
+    armor: -1,
+    ring: -1
+  });
+
+  const [slotStrips, setSlotStrips] = React.useState<SlotArrayMap>({
+    weapon: [],
+    ability: [],
+    armor: [],
+    ring: []
+  });
+
+  const [slotOffsets, setSlotOffsets] = React.useState<SlotNumberMap>({
+    weapon: 0,
+    ability: 0,
+    armor: 0,
+    ring: 0
+  });
+
+  const [slotDurations, setSlotDurations] = React.useState<SlotNumberMap>({
+    weapon: 0,
+    ability: 0,
+    armor: 0,
+    ring: 0
+  });
+
+  const [slotSpinning, setSlotSpinning] = React.useState<SlotBooleanMap>({
+    weapon: false,
+    ability: false,
+    armor: false,
+    ring: false
+  });
+
+  const allAccountItemIds = React.useMemo(() => {
+    const ids: number[] = [];
+    ids.push(...(account.vault || []));
+    ids.push(...(account.gifts || []));
+    ids.push(...(account.seasonalSpoils || []));
+    ids.push(...(account.materialStorage || []));
+    ids.push(...(account.potions || []));
+
+    (account.consumables || []).forEach((entry) => {
+      const amount = Math.max(1, entry.amount ?? 1);
+      for (let i = 0; i < amount; i += 1) ids.push(entry.itemId);
+    });
+
+    (characters || []).forEach((char) => {
+      ids.push(...(char.equipment || []));
+      (char.equip_qs || []).forEach((entry) => {
+        const amount = Math.max(1, entry.amount ?? 1);
+        for (let i = 0; i < amount; i += 1) ids.push(entry.itemId);
+      });
+    });
+
+    const uniqueIds = Array.from(new Set(ids));
+    return uniqueIds.filter((id) => id > 0 && Boolean(items?.[id]));
+  }, [
+    account.consumables,
+    account.gifts,
+    account.materialStorage,
+    account.potions,
+    account.seasonalSpoils,
+    account.vault,
+    characters,
+    items
+  ]);
+
+  const categorized = React.useMemo(() => {
+    if (!selectedClass) {
+      return {
+        weapon: [],
+        ability: [],
+        armor: [],
+        ring: []
+      };
+    }
+
+    const classConfig = getClassSlotConfig(selectedClass);
+    const weaponSlotTypes = new Set(classConfig.weapon);
+    const abilitySlotTypes = new Set(classConfig.ability);
+    const armorSlotTypes = new Set(classConfig.armor);
+    const ringSlotTypes = new Set(classConfig.ring);
+
+    const defaultWeaponSlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.weapon);
+    const defaultAbilitySlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.ability);
+    const defaultArmorSlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.armor);
+    const defaultRingSlotTypes = new Set(DEFAULT_CLASS_SLOT_CONFIG.ring);
+
+    const categorySets: Record<BuildSlot, Set<number>> = {
+      weapon: new Set<number>(),
+      ability: new Set<number>(),
+      armor: new Set<number>(),
+      ring: new Set<number>()
+    };
+
+    const fallbackSets: Record<BuildSlot, Set<number>> = {
+      weapon: new Set<number>(),
+      ability: new Set<number>(),
+      armor: new Set<number>(),
+      ring: new Set<number>()
+    };
+
+    allAccountItemIds.forEach((itemId) => {
+      const item = items?.[itemId];
+      if (!item) return;
+      const slotType = Number(item.slotType);
+
+      if (ringSlotTypes.has(slotType)) categorySets.ring.add(itemId);
+      if (armorSlotTypes.has(slotType)) categorySets.armor.add(itemId);
+      if (weaponSlotTypes.has(slotType)) categorySets.weapon.add(itemId);
+      if (abilitySlotTypes.has(slotType)) categorySets.ability.add(itemId);
+
+      if (defaultRingSlotTypes.has(slotType)) fallbackSets.ring.add(itemId);
+      if (defaultArmorSlotTypes.has(slotType)) fallbackSets.armor.add(itemId);
+      if (defaultWeaponSlotTypes.has(slotType)) fallbackSets.weapon.add(itemId);
+      if (defaultAbilitySlotTypes.has(slotType)) fallbackSets.ability.add(itemId);
+    });
+
+    const ensurePool = (slot: BuildSlot): number[] => {
+      const primary = Array.from(categorySets[slot]);
+      if (primary.length) return primary;
+
+      const fallback = Array.from(fallbackSets[slot]);
+      if (fallback.length) return fallback;
+
+      return allAccountItemIds;
+    };
+
+    return {
+      weapon: ensurePool('weapon'),
+      ability: ensurePool('ability'),
+      armor: ensurePool('armor'),
+      ring: ensurePool('ring')
+    };
+  }, [allAccountItemIds, items, selectedClass]);
+
+  const clearAllTimers = React.useCallback(() => {
+    spinStopTimersRef.current.forEach((id) => window.clearTimeout(id));
+    spinStopTimersRef.current = [];
+  }, []);
+
+  const resetRollState = React.useCallback(() => {
+    setSlotItems({
+      weapon: -1,
+      ability: -1,
+      armor: -1,
+      ring: -1
+    });
+    setSlotStrips({
+      weapon: [],
+      ability: [],
+      armor: [],
+      ring: []
+    });
+    setSlotOffsets({
+      weapon: 0,
+      ability: 0,
+      armor: 0,
+      ring: 0
+    });
+    setSlotDurations({
+      weapon: 0,
+      ability: 0,
+      armor: 0,
+      ring: 0
+    });
+    setSlotSpinning({
+      weapon: false,
+      ability: false,
+      armor: false,
+      ring: false
+    });
+  }, []);
+
+  React.useEffect(() => {
+    return () => clearAllTimers();
+  }, [clearAllTimers]);
+
+  const spinSlot = React.useCallback(
+    (slot: BuildSlot, extraDuration = 0) => {
+      const pool = categorized[slot];
+      if (!pool.length || slotSpinning[slot]) return;
+
+      const finalItem = randomFrom(pool) ?? -1;
+      const strip = buildStrip(pool, finalItem, reel_config.stripLength);
+      const selectedIndex = strip.indexOf(finalItem);
+      const targetIndex = selectedIndex >= 0 ? selectedIndex : Math.max(0, strip.length - 2);
+      const finalOffset = -((targetIndex - CENTER_SLOT_INDEX) * REEL_ITEM_STEP);
+      const duration = reel_config.baseSpinDuration + extraDuration;
+
+      setSlotSpinning((prev) => ({ ...prev, [slot]: true }));
+      setSlotDurations((prev) => ({ ...prev, [slot]: 0 }));
+      setSlotOffsets((prev) => ({ ...prev, [slot]: 0 }));
+      setSlotStrips((prev) => ({ ...prev, [slot]: strip }));
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setSlotDurations((prev) => ({ ...prev, [slot]: duration }));
+          setSlotOffsets((prev) => ({ ...prev, [slot]: finalOffset }));
+        });
+      });
+
+      const stopTimer = window.setTimeout(() => {
+        setSlotItems((prev) => ({ ...prev, [slot]: finalItem }));
+        setSlotSpinning((prev) => ({ ...prev, [slot]: false }));
+      }, duration + 50);
+
+      spinStopTimersRef.current.push(stopTimer);
+    },
+    [categorized, reel_config.baseSpinDuration, reel_config.stripLength, slotSpinning]
+  );
+
+  const spinAll = React.useCallback(() => {
+    if (!selectedClass) return;
+
+    BUILD_SLOTS.forEach((slot, idx) => {
+      const timer = window.setTimeout(
+        () => spinSlot(slot, idx * reel_config.slotStaggerDuration),
+        idx * reel_config.slotStartDelay
+      );
+      spinStopTimersRef.current.push(timer);
+    });
+  }, [reel_config.slotStaggerDuration, reel_config.slotStartDelay, selectedClass, spinSlot]);
+
+  const randomizeClass = React.useCallback(() => {
+    const nextClass = randomFrom(classPool);
+    if (nextClass && nextClass !== selectedClass) {
+      clearAllTimers();
+      resetRollState();
+      setSelectedClass(nextClass);
+    }
+  }, [classPool, clearAllTimers, resetRollState, selectedClass]);
+
+  if (!allAccountItemIds.length) {
+    return null;
+  }
+
+  return (
+    <div className={styles.builderCard}>
+      <div className={styles.header}>
+        <div className={styles.headerActions}>
+          <Dropdown
+            className={styles.classSelect}
+            value={selectedClass}
+            options={classPool}
+            onChange={(event) => {
+              const nextClass = event.value ?? '';
+              if (nextClass !== selectedClass) {
+                clearAllTimers();
+                resetRollState();
+                setSelectedClass(nextClass);
+              }
+            }}
+            placeholder="Select class"
+            showClear
+            disabled={Object.values(slotSpinning).some(Boolean)}
+          />
+          <Button
+            label="Randomize Class"
+            icon="pi pi-shuffle"
+            severity="secondary"
+            outlined
+            onClick={randomizeClass}
+            disabled={!classPool.length || Object.values(slotSpinning).some(Boolean)}
+          />
+          <Button
+            className={styles.spinAllButton}
+            label="Spin All"
+            icon="pi pi-sync"
+            onClick={spinAll}
+            disabled={!selectedClass || Object.values(slotSpinning).some(Boolean)}
+          />
+        </div>
+      </div>
+
+      <div className={styles.reels}>
+        {BUILD_SLOTS.map((slot) => {
+          const selectedItemId = slotItems[slot];
+          const itemName =
+            selectedItemId > 0 ? (items?.[selectedItemId]?.name ?? `Item #${selectedItemId}`) : '';
+          const strip = slotStrips[slot];
+          const isRolling = slotSpinning[slot];
+
+          return (
+            <div key={slot} className={styles.slotCard}>
+              <div className={styles.slotHeader}>
+                <Button
+                  size="small"
+                  text
+                  icon="pi pi-refresh"
+                  label={isRolling ? 'Spinning...' : 'Reroll'}
+                  disabled={!selectedClass || isRolling}
+                  onClick={() => spinSlot(slot)}
+                />
+              </div>
+
+              <div className={styles.itemViewport}>
+                <div className={styles.centerMarker} />
+                <div
+                  className={`${styles.reelTrack} ${styles[reel_config.easingClass]}`}
+                  style={{
+                    transform: `translateX(${slotOffsets[slot]}px)`,
+                    transitionDuration: `${slotDurations[slot]}ms`
+                  }}
+                >
+                  {strip.map((itemId, idx) => (
+                    <div key={`${slot}-${idx}-${itemId}`} className={styles.reelCell}>
+                      <div className={styles.itemWrap}>
+                        <ReelItemSprite
+                          itemId={itemId}
+                          item={items?.[itemId]}
+                          assetsBaseUrl={assetsBaseUrl}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.itemName} title={itemName}>
+                {isRolling ? '' : itemName}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default CharacterBuilder;
