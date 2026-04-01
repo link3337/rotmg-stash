@@ -36,6 +36,8 @@ const Character3DViewerDialog: React.FC<Character3DViewerDialogProps> = ({
       header={`${characterClassName ?? 'Character'} #${characterId ?? ''} - 3D Viewer`}
       visible={visible}
       closeOnEscape
+      dismissableMask
+      modal
       onHide={onHide}
       onShow={() => setViewerKey((prev) => prev + 1)}
       style={{ width: 'min(92vw, 420px)' }}
