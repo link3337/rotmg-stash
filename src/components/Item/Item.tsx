@@ -4,11 +4,10 @@ import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
 import { selectAssetsBaseUrl, selectEnable3DViewer } from '@store/slices/SettingsSlice';
 import { debug, info } from '@tauri-apps/plugin-log';
-import { Dialog } from 'primereact/dialog';
 import { FC, useRef, useState } from 'react';
 import styles from './Item.module.scss';
+import Item3DViewerDialog from './Item3DViewerDialog';
 import ItemTooltip, { ItemInfo } from './ItemTooltip';
-import ItemViewer3D from './ItemViewer3D';
 import UnknownItem from './UnknownItem';
 
 // static lookup tables hoisted to module scope to avoid recreating on every render
@@ -46,7 +45,6 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
 
   const [showTooltip, setShowTooltip] = useState(false);
   const [show3DViewer, setShow3DViewer] = useState(false);
-  const [viewerKey, setViewerKey] = useState(0);
   const itemRef = useRef<HTMLDivElement>(null);
 
   if (!items) {
@@ -123,9 +121,8 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
         onMouseOver={() => showItemTooltips && handleMouseOver()}
         onMouseLeave={() => setShowTooltip(false)}
         onContextMenu={handleContextMenu}
-        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${
-          isShiny ? styles.shiny : ''
-        } ${rarityClass}`}
+        className={`${styles.item} ${isHighlighted ? styles.highlighted : ''} ${isShiny ? styles.shiny : ''
+          } ${rarityClass}`}
         data-rarity-slots={slotCount > 0 ? slotCount : undefined}
         data-itemid={itemId}
         title={
@@ -161,33 +158,17 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
       )}
 
       {show3DViewerEnabled && (
-        <Dialog
-          header={`${itemInfo.name} (#${itemId}) - 3D Viewer`}
+        <Item3DViewerDialog
           visible={show3DViewer}
-          resizable
-          maximizable
-          closeOnEscape
-          modal
-          dismissableMask
           onHide={() => setShow3DViewer(false)}
-          onShow={() => setViewerKey((prev) => prev + 1)}
-          style={{ width: 'min(96vw, 760px)' }}
-          breakpoints={{ '1200px': '82vw', '960px': '92vw' }}
-          contentStyle={{ padding: 0, overflow: 'hidden' }}
-        >
-          <div style={{ width: '100%' }}>
-            <ItemViewer3D
-              key={viewerKey}
-              spriteX={item.x}
-              spriteY={item.y}
-              assetsBaseUrl={assetsBaseUrl}
-              isShiny={isShiny}
-              slotCount={slotCount}
-              width="100%"
-              height="62vh"
-            />
-          </div>
-        </Dialog>
+          itemName={itemInfo.name}
+          itemId={itemId}
+          spriteX={item.x}
+          spriteY={item.y}
+          assetsBaseUrl={assetsBaseUrl}
+          isShiny={isShiny}
+          slotCount={slotCount}
+        />
       )}
     </div>
   );

@@ -185,23 +185,7 @@ const SkinViewer3D: React.FC<SkinViewer3DProps> = ({
     };
   }, [type, skin, tex1, tex2]);
 
-  if (!imageUrl) {
-    return (
-      <div
-        style={{
-          width: resolvedWidth,
-          height: resolvedHeight,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px solid var(--surface-border)',
-          boxSizing: 'border-box'
-        }}
-      >
-        Loading 3D skin...
-      </div>
-    );
-  }
+  if (!imageUrl) return <></>;
 
   return (
     <div
