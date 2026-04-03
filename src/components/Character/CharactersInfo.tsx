@@ -7,7 +7,7 @@ import { Column } from 'primereact/column';
 import { ColumnGroup } from 'primereact/columngroup';
 import { DataTable } from 'primereact/datatable';
 import { Row } from 'primereact/row';
-import React from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import OwnedSkinsDialog from '../Account/OwnedSkinsDialog';
 
 interface CharactersInfoProps {
@@ -183,24 +183,19 @@ const CharactersInfo: React.FC<CharactersInfoProps> = ({
   useAccordionMenu = false,
   ownedSkins
 }) => {
-  const [showOwnedSkinsDialog, setShowOwnedSkinsDialog] = React.useState(false);
-  const [selectedClassFilter, setSelectedClassFilter] = React.useState<string | undefined>(
-    undefined
-  );
+  const [showOwnedSkinsDialog, setShowOwnedSkinsDialog] = useState(false);
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string | undefined>(undefined);
   const { constants } = useConstants();
 
-  const ownedSkinIds = React.useMemo(
-    () => ownedSkins?.split(',').filter((id) => id) ?? [],
-    [ownedSkins]
-  );
+  const ownedSkinIds = useMemo(() => ownedSkins?.split(',').filter((id) => id) ?? [], [ownedSkins]);
 
-  const getClassName = React.useCallback(
+  const getClassName = useCallback(
     (classTypeId: number) =>
       constants?.classes?.[String(classTypeId) as ClassID]?.name || 'Unknown',
     [constants?.classes]
   );
 
-  const groupedSkins = React.useMemo(
+  const groupedSkins = useMemo(
     () =>
       ownedSkinIds.reduce(
         (acc, skinId) => {

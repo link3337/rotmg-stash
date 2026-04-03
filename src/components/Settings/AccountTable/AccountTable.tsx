@@ -31,7 +31,7 @@ import { FileUpload } from 'primereact/fileupload';
 import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { Tooltip } from 'primereact/tooltip';
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import PasswordEditor from './PasswordEditor';
 
 export const AccountTable: React.FC = () => {
@@ -44,7 +44,7 @@ export const AccountTable: React.FC = () => {
   const isStreamerMode = useAppSelector((state) => state.settings.experimental.isStreamerMode);
   const rateLimit = useAppSelector(selectRateLimit);
 
-  const isRateLimited = React.useMemo(() => {
+  const isRateLimited = useMemo(() => {
     if (!rateLimit.timestamp) return false;
     return Date.now() - rateLimit.timestamp < RATE_LIMIT_DURATION;
   }, [rateLimit.timestamp]);

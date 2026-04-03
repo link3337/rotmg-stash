@@ -3,7 +3,7 @@ import { ExaltUIModel } from '@api/models/exalt-ui-model';
 import LootBoostIcon from '@components/Icons/LootBoostIcon';
 import { useAppSelector } from '@hooks/redux';
 import { selectEnable3DViewer } from '@store/slices/SettingsSlice';
-import React from 'react';
+import React, { useState } from 'react';
 import Character3DViewerDialog from './Character3DViewerDialog';
 import CharacterPortrait from './CharacterPortrait';
 import styles from './Characters.module.scss';
@@ -29,7 +29,7 @@ const getMaxedStatsCount = (stats: MappedCharacterStats[]): string => {
 };
 
 export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId }) => {
-  const [show3DViewer, setShow3DViewer] = React.useState(false);
+  const [show3DViewer, setShow3DViewer] = useState(false);
   const show3DCharacterViewer = useAppSelector(selectEnable3DViewer);
 
   const items = char?.equipment ?? [];

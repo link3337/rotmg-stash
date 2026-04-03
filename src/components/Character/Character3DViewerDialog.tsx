@@ -1,5 +1,5 @@
 import { Dialog } from 'primereact/dialog';
-import React from 'react';
+import React, { useState } from 'react';
 import SkinViewer3D from './SkinViewer3D';
 
 interface Character3DViewerDialogProps {
@@ -27,7 +27,7 @@ const Character3DViewerDialog: React.FC<Character3DViewerDialogProps> = ({
   width = '100%',
   height = 320
 }) => {
-  const [viewerKey, setViewerKey] = React.useState(0);
+  const [viewerKey, setViewerKey] = useState(0);
   const viewerType = Number(type ?? 0);
   const viewerSkin = Number(skin ?? type ?? 0);
 
