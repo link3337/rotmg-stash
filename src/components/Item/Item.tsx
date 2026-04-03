@@ -91,7 +91,6 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
   }
 
   const handleClick = () => {
-    if (itemId === EMPTY_SLOT_ITEM_ID) return;
     info(`Toggling filter for item ${itemId} (${itemInfo.name})`);
     dispatch(toggleFilter(itemId));
   };
