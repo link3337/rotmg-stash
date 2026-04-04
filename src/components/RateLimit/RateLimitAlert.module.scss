@@ -1,0 +1,11 @@
+.alert {
+  height: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.message {
+  font-size: 0.875rem;
+  color: var(--primary-color);
+}

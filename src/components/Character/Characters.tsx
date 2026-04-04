@@ -110,9 +110,9 @@ const Characters: React.FC<CharacterProps> = ({
         selectedItems.length === 0
           ? true
           : selectedItems.some(
-            (item) =>
-              char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
-          );
+              (item) =>
+                char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
+            );
 
       return seasonalFilter && classFilter && itemFilter;
     });
@@ -156,10 +156,14 @@ const Characters: React.FC<CharacterProps> = ({
         copy.sort((a, b) => b.className.localeCompare(a.className));
         break;
       case 'class_id_asc':
-        copy.sort((a, b) => (parseInt(String(a.classId), 10) || 0) - (parseInt(String(b.classId), 10) || 0));
+        copy.sort(
+          (a, b) => (parseInt(String(a.classId), 10) || 0) - (parseInt(String(b.classId), 10) || 0)
+        );
         break;
       case 'class_id_desc':
-        copy.sort((a, b) => (parseInt(String(b.classId), 10) || 0) - (parseInt(String(a.classId), 10) || 0));
+        copy.sort(
+          (a, b) => (parseInt(String(b.classId), 10) || 0) - (parseInt(String(a.classId), 10) || 0)
+        );
         break;
       case 'fame_asc':
         copy.sort((a, b) => a.fame - b.fame);
