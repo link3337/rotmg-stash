@@ -10,6 +10,9 @@ export const localStorageRateLimitKey = 'rate_limit_expiration';
 export const RATE_LIMIT_DURATION = 300000; // 5 minutes in milliseconds
 export const EMPTY_SLOT_ITEM_ID = -1;
 
+export const largeClothMatch = /(?:Large\s+.*\s+Cloth)|Clothing\s+Dye/i;
+export const smallClothMatch = /(?:Small\s+.*\s+Cloth)|Accessory\s+Dye/i;
+
 export const bagPositionMap: { [key: number]: string } = {
   1: '-26px -0px',
   2: '-52px -0px',

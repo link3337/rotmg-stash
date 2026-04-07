@@ -1,3 +1,4 @@
+import { largeClothMatch, smallClothMatch } from '@/constants.ts';
 import { AccountUIModel } from '@api/models/account-ui-model';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { useAppSelector } from '@hooks/redux';
@@ -23,7 +24,7 @@ const CENTER_SLOT_INDEX = 2;
 const STRIP_LENGTH = 30;
 const MIN_ITEMS_AFTER_SELECTED = 4;
 const PREVIEW_ITEMS_LIMIT = 16;
-const BUILD_SLOTS: BuildSlot[] = ['weapon', 'ability', 'armor', 'ring'];
+const BUILD_SLOTS: BuildSlot[] = ['weapon', 'ability', 'armor', 'ring', 'cloth1', 'cloth2'];
 
 const REEL_CONFIG = {
   classSpinDuration: 9000,
@@ -122,7 +123,9 @@ const getClassSlotConfig = (className: string): ClassSlotConfig => {
     weapon: override.weapon ?? DEFAULT_CLASS_SLOT_CONFIG.weapon,
     ability: override.ability ?? DEFAULT_CLASS_SLOT_CONFIG.ability,
     armor: override.armor ?? DEFAULT_CLASS_SLOT_CONFIG.armor,
-    ring: override.ring ?? DEFAULT_CLASS_SLOT_CONFIG.ring
+    ring: override.ring ?? DEFAULT_CLASS_SLOT_CONFIG.ring,
+    cloth1: override.cloth1 ?? DEFAULT_CLASS_SLOT_CONFIG.cloth1,
+    cloth2: override.cloth2 ?? DEFAULT_CLASS_SLOT_CONFIG.cloth2
   };
 };
 
@@ -136,6 +139,7 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
   const [sourceFilters, setSourceFilters] = useState<ItemSourceFilter[]>(
     ITEM_SOURCE_OPTIONS.map((option) => option.value)
   );
+  const [useAllClothItems, setUseAllClothItems] = useState(true);
 
   const classPool = useMemo(() => {
     const fromCharacters = (characters || [])
@@ -150,49 +154,63 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
     weapon: -1,
     ability: -1,
     armor: -1,
-    ring: -1
+    ring: -1,
+    cloth1: -1,
+    cloth2: -1
   });
 
   const [slotStrips, setSlotStrips] = useState<SlotArrayMap>({
     weapon: [],
     ability: [],
     armor: [],
-    ring: []
+    ring: [],
+    cloth1: [],
+    cloth2: []
   });
 
   const [slotOffsets, setSlotOffsets] = useState<SlotNumberMap>({
     weapon: 0,
     ability: 0,
     armor: 0,
-    ring: 0
+    ring: 0,
+    cloth1: 0,
+    cloth2: 0
   });
 
   const [slotDurations, setSlotDurations] = useState<SlotNumberMap>({
     weapon: 0,
     ability: 0,
     armor: 0,
-    ring: 0
+    ring: 0,
+    cloth1: 0,
+    cloth2: 0
   });
 
   const [slotSpinning, setSlotSpinning] = useState<SlotBooleanMap>({
     weapon: false,
     ability: false,
     armor: false,
-    ring: false
+    ring: false,
+    cloth1: false,
+    cloth2: false
   });
 
   const [slotRevealTick, setSlotRevealTick] = useState<SlotNumberMap>({
     weapon: 0,
     ability: 0,
     armor: 0,
-    ring: 0
+    ring: 0,
+    cloth1: 0,
+    cloth2: 0
   });
 
   const [slotPreviewExpanded, setSlotPreviewExpanded] = useState<SlotBooleanMap>({
     weapon: false,
     ability: false,
     armor: false,
-    ring: false
+    ring: false,
+    cloth1: false,
+    cloth2: false
   });
 
   const [skinItem, setSkinItem] = useState(-1);
@@ -208,7 +226,9 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
     weapon: [],
     ability: [],
     armor: [],
-    ring: []
+    ring: [],
+    cloth1: [],
+    cloth2: []
   });
   const [resultPopupVisible, setResultPopupVisible] = useState(false);
   const [resultPopupEntries, setResultPopupEntries] = useState<SpinResultEntry[]>([]);
@@ -318,7 +338,9 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
         weapon: [],
         ability: [],
         armor: [],
-        ring: []
+        ring: [],
+        cloth1: [],
+        cloth2: []
       };
     }
 
@@ -339,9 +361,12 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
       weapon: new Set<number>(),
       ability: new Set<number>(),
       armor: new Set<number>(),
-      ring: new Set<number>()
+      ring: new Set<number>(),
+      cloth1: new Set<number>(),
+      cloth2: new Set<number>()
     };
 
+    // Populate slot-based categories from account-filtered items
     filteredAccountItemIds.forEach((itemId) => {
       const item = items?.[itemId];
       if (!item) return;
@@ -351,13 +376,33 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
       if (armorSlotTypes.has(slotType)) categorySets.armor.add(itemId);
       if (weaponSlotTypes.has(slotType)) categorySets.weapon.add(itemId);
       if (abilitySlotTypes.has(slotType)) categorySets.ability.add(itemId);
+      const name = String(item.name || '');
+      // when not using global items, add matched cloths from the account pool
+      if (!useAllClothItems) {
+        if (largeClothMatch.test(name)) categorySets.cloth1.add(itemId);
+        if (smallClothMatch.test(name)) categorySets.cloth2.add(itemId);
+      }
     });
+
+    // If using all items, scan the full items map for cloth/accessory names
+    if (useAllClothItems && items) {
+      Object.keys(items).forEach((key) => {
+        const id = Number(key);
+        if (!id || !(items as any)[id]) return;
+        const item = (items as any)[id];
+        const name = String(item.name || '');
+        if (largeClothMatch.test(name)) categorySets.cloth1.add(id);
+        if (smallClothMatch.test(name)) categorySets.cloth2.add(id);
+      });
+    }
 
     return {
       weapon: Array.from(categorySets.weapon),
       ability: Array.from(categorySets.ability),
       armor: Array.from(categorySets.armor),
-      ring: Array.from(categorySets.ring)
+      ring: Array.from(categorySets.ring),
+      cloth1: Array.from(categorySets.cloth1),
+      cloth2: Array.from(categorySets.cloth2)
     };
   }, [candidateClasses, filteredAccountItemIds, items]);
 
@@ -371,7 +416,9 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
       weapon: filterExcluded('weapon'),
       ability: filterExcluded('ability'),
       armor: filterExcluded('armor'),
-      ring: filterExcluded('ring')
+      ring: filterExcluded('ring'),
+      cloth1: filterExcluded('cloth1'),
+      cloth2: filterExcluded('cloth2')
     };
   }, [categorizedAll, slotExcludedItems]);
 
@@ -408,43 +455,57 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
       weapon: -1,
       ability: -1,
       armor: -1,
-      ring: -1
+      ring: -1,
+      cloth1: -1,
+      cloth2: -1
     });
     setSlotStrips({
       weapon: [],
       ability: [],
       armor: [],
-      ring: []
+      ring: [],
+      cloth1: [],
+      cloth2: []
     });
     setSlotOffsets({
       weapon: 0,
       ability: 0,
       armor: 0,
-      ring: 0
+      ring: 0,
+      cloth1: 0,
+      cloth2: 0
     });
     setSlotDurations({
       weapon: 0,
       ability: 0,
       armor: 0,
-      ring: 0
+      ring: 0,
+      cloth1: 0,
+      cloth2: 0
     });
     setSlotSpinning({
       weapon: false,
       ability: false,
       armor: false,
-      ring: false
+      ring: false,
+      cloth1: false,
+      cloth2: false
     });
     setSlotRevealTick({
       weapon: 0,
       ability: 0,
       armor: 0,
-      ring: 0
+      ring: 0,
+      cloth1: 0,
+      cloth2: 0
     });
     setSlotPreviewExpanded({
       weapon: false,
       ability: false,
       armor: false,
-      ring: false
+      ring: false,
+      cloth1: false,
+      cloth2: false
     });
     setSkinItem(-1);
     setSkinStrip([]);
@@ -459,6 +520,15 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
     lastResultSignatureRef.current = '';
   }, []);
 
+  const toggleUseAllCloths = useCallback(
+    (checked: boolean) => {
+      clearAllTimers();
+      resetRollState();
+      setUseAllClothItems(checked);
+    },
+    [clearAllTimers, resetRollState]
+  );
+
   useEffect(() => {
     const allSlotsStopped = BUILD_SLOTS.every((slot) => !slotSpinning[slot]);
     const allSlotsHaveResult = BUILD_SLOTS.every((slot) => slotItems[slot] > 0);
@@ -470,7 +540,9 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
       slotItems.weapon,
       slotItems.ability,
       slotItems.armor,
-      slotItems.ring
+      slotItems.ring,
+      slotItems.cloth1,
+      slotItems.cloth2
     ].join(':');
 
     if (signature === lastResultSignatureRef.current) return;
@@ -511,6 +583,21 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
         itemId: skinItem,
         name: constants?.skins?.[skinItem]?.name ?? `Skin #${skinItem}`,
         kind: 'skin'
+      },
+
+      {
+        key: 'cloth1',
+        label: 'Cloth A',
+        itemId: slotItems.cloth1,
+        name: items?.[slotItems.cloth1]?.name ?? `Item #${slotItems.cloth1}`,
+        kind: 'item'
+      },
+      {
+        key: 'cloth2',
+        label: 'Cloth B',
+        itemId: slotItems.cloth2,
+        name: items?.[slotItems.cloth2]?.name ?? `Item #${slotItems.cloth2}`,
+        kind: 'item'
       }
     ]);
     setResultPopupVisible(true);
@@ -721,6 +808,15 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
               </div>
             ))}
           </div>
+          <div style={{ marginLeft: 8 }} className={styles.sourceFilterOption}>
+            <Checkbox
+              inputId="builder-use-all-cloths"
+              checked={useAllClothItems}
+              onChange={(event) => toggleUseAllCloths(Boolean(event.checked))}
+              disabled={Object.values(slotSpinning).some(Boolean) || skinSpinning}
+            />
+            <label htmlFor="builder-use-all-cloths">Use all cloths</label>
+          </div>
           <Button
             className={styles.spinAllButton}
             label="Spin All"
@@ -755,9 +851,11 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
               slotRevealTick={slotRevealTick[slot]}
               onReroll={() => spinSlot(slot)}
               rerollDisabled={
-                !slotPool.length ||
-                slotSpinning[slot] ||
-                (slot !== 'ring' && lockOtherSlotsDuringInferenceSpin && !slotSpinning[slot])
+                slot.startsWith('cloth')
+                  ? false
+                  : !slotPool.length ||
+                  slotSpinning[slot] ||
+                  (slot !== 'ring' && lockOtherSlotsDuringInferenceSpin && !slotSpinning[slot])
               }
               onTogglePreview={() => toggleSlotPreview(slot)}
               isPreviewExpanded={slotPreviewExpanded[slot]}

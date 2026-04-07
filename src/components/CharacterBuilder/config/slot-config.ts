@@ -33,7 +33,9 @@ export const DEFAULT_CLASS_SLOT_CONFIG: ClassSlotConfig = {
     7, // heavy armors
     14 // robes
   ],
-  ring: [9]
+  ring: [9],
+  cloth1: [],
+  cloth2: []
 };
 
 export const CLASS_SLOT_CONFIG: Record<string, Partial<ClassSlotConfig>> = {
@@ -157,8 +159,10 @@ export const SLOT_LABELS: Record<BuildSlot, string> = {
   weapon: 'Weapon',
   ability: 'Ability',
   armor: 'Armor',
-  ring: 'Ring'
+  ring: 'Ring',
+  cloth1: 'Big Cloth',
+  cloth2: 'Small Cloth'
 };
 
-export type BuildSlot = 'weapon' | 'ability' | 'armor' | 'ring';
+export type BuildSlot = 'weapon' | 'ability' | 'armor' | 'ring' | 'cloth1' | 'cloth2';
 export type ClassSlotConfig = Record<BuildSlot, number[]>;
