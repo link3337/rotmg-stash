@@ -851,11 +851,9 @@ const CharacterBuilder: FC<CharacterBuilderProps> = ({ account, characters }) =>
               slotRevealTick={slotRevealTick[slot]}
               onReroll={() => spinSlot(slot)}
               rerollDisabled={
-                slot.startsWith('cloth')
-                  ? false
-                  : !slotPool.length ||
-                  slotSpinning[slot] ||
-                  (slot !== 'ring' && lockOtherSlotsDuringInferenceSpin && !slotSpinning[slot])
+                !slotPool.length ||
+                slotSpinning[slot] ||
+                (slot !== 'ring' && lockOtherSlotsDuringInferenceSpin && !slotSpinning[slot])
               }
               onTogglePreview={() => toggleSlotPreview(slot)}
               isPreviewExpanded={slotPreviewExpanded[slot]}
