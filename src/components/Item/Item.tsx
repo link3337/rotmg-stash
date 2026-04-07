@@ -3,10 +3,9 @@ import { useConstants } from '@/providers/ConstantsProvider';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
 import { selectAssetsBaseUrl, selectEnable3DViewer } from '@store/slices/SettingsSlice';
-import { debug, info } from '@tauri-apps/plugin-log';
+import { debug, error, info } from '@tauri-apps/plugin-log';
 import { FC, useRef, useState } from 'react';
 import styles from './Item.module.scss';
-import Item3DViewerDialog from './Item3DViewerDialog';
 import ItemTooltip, { ItemInfo } from './ItemTooltip';
 import UnknownItem from './UnknownItem';
 
@@ -45,6 +44,7 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
 
   const [showTooltip, setShowTooltip] = useState(false);
   const [show3DViewer, setShow3DViewer] = useState(false);
+  const [ViewerComp, setViewerComp] = useState<React.ComponentType<any> | null>(null);
   const itemRef = useRef<HTMLDivElement>(null);
 
   if (!items) {
@@ -101,7 +101,20 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
     }
 
     event.preventDefault();
-    setShow3DViewer(true);
+
+    if (!ViewerComp) {
+      import('./Item3DViewerDialog')
+        .then((mod) => {
+          const Comp = mod.default as React.ComponentType<any>;
+          setViewerComp(() => Comp);
+          setShow3DViewer(true);
+        })
+        .catch(() => {
+          error('Failed to load 3D viewer component');
+        });
+    } else {
+      setShow3DViewer(true);
+    }
   };
 
   const handleMouseOver = () => {
@@ -157,8 +170,8 @@ const Item: FC<ItemProps> = ({ itemId, amount, enchantmentSlots = 0, enchantment
         </div>
       )}
 
-      {show3DViewerEnabled && (
-        <Item3DViewerDialog
+      {show3DViewerEnabled && ViewerComp && (
+        <ViewerComp
           visible={show3DViewer}
           onHide={() => setShow3DViewer(false)}
           itemName={itemInfo.name}
