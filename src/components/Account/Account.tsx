@@ -6,9 +6,9 @@ import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import RenderIfVisible from '@hooks/renderIfVisible';
 import {
   refreshAccount,
+  selectAccountLoading,
   skipAccountFromQueue,
-  updateAccountLastLaunched,
-  useAccounts
+  updateAccountLastLaunched
 } from '@store/slices/AccountsSlice';
 import { selectSelectedItems } from '@store/slices/FilterSlice';
 import { QueueStatus } from '@store/slices/QueueSlice';
@@ -16,7 +16,7 @@ import { info } from '@tauri-apps/plugin-log';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import Characters from '../Character/Characters';
 import VaultOverview from '../Vault/VaultOverview';
 import AccountInfo from './AccountInfo';
@@ -32,7 +32,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const dispatch = useAppDispatch();
 
   const { decrypt } = useCrypto();
-  const { loading } = useAccounts();
+  const loading = useAppSelector((state) => selectAccountLoading(state, account.id));
 
   const [launchAccount] = useLaunchExaltMutation();
 
@@ -112,7 +112,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
             <div className={styles.header}>
               <div>{settings.experimental.isStreamerMode ? account.id : account.email}</div>
               <div className="text-center">
-                <Button onClick={handleRefresh} disabled={loading[account.id]}>
+                <Button onClick={handleRefresh} disabled={loading}>
                   Fetch Account Data
                 </Button>
               </div>
@@ -130,7 +130,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
         <>
           <AccountInfo
             account={account}
-            loading={loading[account.id]}
+            loading={loading}
             accountData={data.account}
             characters={data.charList}
             characterAmount={data.charList?.length}
@@ -184,4 +184,6 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   );
 };
 
-export default Account;
+export default React.memo(Account, (prev, next) => {
+  return prev.account === next.account && prev.isRateLimited === next.isRateLimited;
+});

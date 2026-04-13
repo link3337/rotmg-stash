@@ -120,7 +120,7 @@ export const skipAccountFromQueue = createAsyncThunk(
 );
 
 export const refreshAccount = createAsyncThunk<
-  AccountModel[],
+  AccountModel,
   AccountModel,
   { state: RootState; rejectValue: string }
 >(
@@ -129,7 +129,9 @@ export const refreshAccount = createAsyncThunk<
     const accounts = getAccountsFromLocalStorage();
 
     if (!canMakeRequest(getState)) {
-      return accounts;
+      // can't make request, return the existing account back to keep flow consistent
+      const existing = accounts.find((acc) => acc.id === account.id);
+      return existing as AccountModel;
     }
 
     try {
@@ -142,23 +144,22 @@ export const refreshAccount = createAsyncThunk<
       );
       const runtimeConstants = constantsResult?.data ?? undefined;
 
-      const updatedAccounts = accounts.map((acc: AccountModel) =>
-        acc.id === account.id
-          ? {
-              ...acc,
-              mappedData: result.success
-                ? mapCharListResponse(result.data!, runtimeConstants?.classes)
-                : acc.mappedData,
-              error: result.error,
-              lastSaved: new Date().toISOString(),
-              queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
-            }
-          : acc
-      );
+      const existing = accounts.find((acc) => acc.id === account.id);
+      if (!existing) return rejectWithValue(backendErrorMessages.UNKNOWN_ERROR);
+
+      const updatedAccount: AccountModel = {
+        ...existing,
+        mappedData: result.success
+          ? mapCharListResponse(result.data!, runtimeConstants?.classes)
+          : existing.mappedData,
+        error: result.error,
+        lastSaved: new Date().toISOString(),
+        queueStatus: result.success ? QueueStatus.COMPLETED : QueueStatus.ERROR
+      } as AccountModel;
 
       if (result.success) {
         dispatch(clearRateLimit());
-        return updatedAccounts;
+        return updatedAccount;
       }
 
       return rejectWithValue(backendErrorMessages.UNKNOWN_ERROR);
@@ -237,7 +238,7 @@ const accountsSlice = createSlice({
         state.loading[action.meta.arg.id] = false;
         const index = state.items.findIndex((acc) => acc.id === action.meta.arg.id);
         if (index !== -1) {
-          state.items = action.payload;
+          state.items[index] = action.payload;
         }
       })
       .addCase(refreshAccount.rejected, (state, action) => {
