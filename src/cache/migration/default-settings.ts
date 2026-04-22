@@ -1,10 +1,10 @@
-import { Theme } from '@tauri-apps/api/window';
 import {
   CursedSettingsModel,
   DisplaySettingsModel,
   ExperimentalSettingsModel,
   SortCriteria,
   SortFields,
+  Theme,
   TotalSettingsModel
 } from '../settings-model';
 
@@ -55,4 +55,4 @@ export const defaultSortSettings: SortCriteria = {
 
 export const defaultQueueFetchIntervalSetting: number = 70000;
 
-export const defaultThemeSetting: Theme = 'dark';
+export const defaultThemeSetting: Theme = 'mdc-dark-deeppurple';

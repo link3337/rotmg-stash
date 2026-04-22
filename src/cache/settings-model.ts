@@ -10,7 +10,8 @@ export interface SettingsModel {
   queueFetchInterval: number;
 }
 
-export type Theme = 'light' | 'dark';
+// Theme is now a string id that matches entries in themeRegistry (e.g. 'mdc-dark-deeppurple')
+export type Theme = string;
 
 export interface DisplaySettingsModel {
   showTotals: boolean;

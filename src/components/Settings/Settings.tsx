@@ -1,3 +1,4 @@
+import { AVAILABLE_THEMES } from '@/themeRegistry';
 import { DisplaySettingsModel, SortFields } from '@cache/settings-model';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import {
@@ -9,7 +10,6 @@ import {
   updateQueueFetchInterval,
   updateTheme
 } from '@store/slices/SettingsSlice';
-import { Theme } from '@tauri-apps/api/window';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
@@ -24,10 +24,7 @@ export interface DisplayOption {
   tooltip?: string;
 }
 
-const themeOptions = [
-  { label: 'Light', value: 'light' },
-  { label: 'Dark', value: 'dark' }
-];
+const themeOptions = AVAILABLE_THEMES.map((t) => ({ label: t.label, value: t.id }));
 
 export interface SortOption {
   label: string;
@@ -85,7 +82,7 @@ const Settings: React.FC = () => {
   const settings = useAppSelector((state) => state.settings);
 
   const handleThemeChange = (e: DropdownChangeEvent) => {
-    dispatch(updateTheme(e.value as Theme));
+    dispatch(updateTheme(e.value as string));
   };
 
   const displayOptions: DisplayOption[] = [

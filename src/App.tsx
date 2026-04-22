@@ -1,4 +1,5 @@
 import UpdateChecker from '@/components/Update/UpdateChecker';
+import { findThemeById } from '@/themeRegistry';
 import MainLayout from '@components/Layout/MainLayout';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import DebugPage from '@pages/DebugPage';
@@ -10,8 +11,6 @@ import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
 import { PrimeReactContext } from 'primereact/api';
 import { Button } from 'primereact/button';
-import dark_deeppurple from 'primereact/resources/themes/mdc-dark-deeppurple/theme.css?url';
-import light_deeppurple from 'primereact/resources/themes/mdc-light-deeppurple/theme.css?url';
 import { useContext, useEffect, useState } from 'react';
 import './App.scss';
 
@@ -32,9 +31,10 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
-    const oldTheme = theme === 'dark' ? 'light' : 'dark';
+    const themeEntry = findThemeById(theme);
 
-    changeTheme!(`mdc-${oldTheme}-deeppurple`, `mdc-${theme}-deeppurple`, 'app-theme', () => {
+    changeTheme!('', '', 'app-theme', () => {
+      console.log('change theme callback', { theme, themeEntry });
       try {
         let link = document.getElementById('app-theme') as HTMLLinkElement | null;
         if (!link) {
@@ -43,14 +43,15 @@ function App() {
           link.rel = 'stylesheet';
           document.head.appendChild(link);
         }
-        // todo: add more themes and dynamically load the correct one based on the theme id instead of hardcoding
-        link.href = theme === 'dark' ? dark_deeppurple : light_deeppurple;
+        console.log('Applying theme', { theme, themeEntry, url: themeEntry?.url });
+        // dynamically load theme URL from theme registry
+        link.href = themeEntry?.url ?? '';
       } catch (e) {
         // ignore link errors
         error(`Failed to apply theme error: ${e}`);
       }
 
-      info(`Theme changed from ${oldTheme} to ${theme}`);
+      info(`Theme changed to ${theme}`);
     });
   }, [theme, changeTheme]);
 

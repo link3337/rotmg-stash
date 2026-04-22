@@ -13,12 +13,14 @@ interface CodeBlockProps {
 const CodeBlock: React.FC<CodeBlockProps> = ({ language, value }) => {
   const theme = useAppSelector(selectTheme);
 
+  const isDark = (theme || '').toLowerCase().includes('dark');
+
   return (
     <SyntaxHighlighter
       showLineNumbers
       startingLineNumber={1}
       language={language || 'powershell'}
-      style={theme === 'dark' ? a11yDark : a11yLight}
+      style={isDark ? a11yDark : a11yLight}
       customStyle={{
         margin: 0,
         borderRadius: '6px'
