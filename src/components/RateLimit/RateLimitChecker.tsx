@@ -1,7 +1,7 @@
 import { RATE_LIMIT_DURATION } from '@/constants';
 import { useAppDispatch } from '@hooks/redux';
 import { clearRateLimit } from '@store/slices/RateLimitSlice';
-import { debug } from 'console';
+import { debug } from '@tauri-apps/plugin-log';
 import React, { useEffect } from 'react';
 
 interface RateLimitCheckerProps {

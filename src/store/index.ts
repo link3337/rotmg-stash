@@ -15,7 +15,7 @@ import reduxLogger from './middleware/redux-logger';
 const middleware = [reduxLogger];
 
 export const store = configureStore({
-  devTools: process.env.NODE_ENV === 'development',
+  devTools: import.meta.env.DEV,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .prepend(accountsStateListener.middleware)

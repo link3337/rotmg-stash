@@ -1,7 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -16,10 +15,12 @@ export default defineConfig({
       babel: {
         plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]]
       }
-    }),
-    nodePolyfills(),
-    tsconfigPaths()
+    } as any),
+    nodePolyfills()
   ],
+  resolve: {
+    tsconfigPaths: true
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   // 1. prevent vite from obscuring rust errors
