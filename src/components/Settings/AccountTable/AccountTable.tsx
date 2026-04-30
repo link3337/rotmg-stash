@@ -16,6 +16,7 @@ import {
   updateAccounts,
   useAccounts
 } from '@store/slices/AccountsSlice';
+import { selectSelectedItems, toggleFilter } from '@store/slices/FilterSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
 import { setSettings, useSettings } from '@store/slices/SettingsSlice';
 import { debug, info } from '@tauri-apps/plugin-log';
@@ -43,6 +44,7 @@ export const AccountTable: React.FC = () => {
   const settings = useSettings();
   const isStreamerMode = useAppSelector((state) => state.settings.experimental.isStreamerMode);
   const rateLimit = useAppSelector(selectRateLimit);
+  const activeFilters = useAppSelector(selectSelectedItems);
 
   const isRateLimited = useMemo(() => {
     if (!rateLimit.timestamp) return false;
@@ -214,8 +216,32 @@ export const AccountTable: React.FC = () => {
     return <span>{'•'.repeat(12)}</span>;
   };
 
-  // Add toggle function
+  const removeUnavailableActiveFilters = (deactivatedAccountIds: string[]) => {
+    if (activeFilters.length === 0) {
+      return;
+    }
+
+    const deactivatedIdSet = new Set(deactivatedAccountIds);
+    const remainingActiveItems = new Set(
+      accounts
+        .filter((acc) => acc.active && !deactivatedIdSet.has(acc.id))
+        .flatMap((acc) => acc.mappedData?.account?.uniqueItems ?? [])
+    );
+
+    const unavailableFilters = activeFilters.filter((itemId) => !remainingActiveItems.has(itemId));
+    unavailableFilters.forEach((itemId) => {
+      debug(`[AccountTable] Cleared item filter after deactivation ${itemId}`);
+      dispatch(toggleFilter(itemId));
+    });
+  };
+
   const toggleActive = (account: AccountModel) => {
+    const isBeingDeactivated = account.active;
+
+    if (isBeingDeactivated) {
+      removeUnavailableActiveFilters([account.id]);
+    }
+
     dispatch(toggleAccountActive(account.id));
 
     toast.current?.show({
@@ -225,9 +251,13 @@ export const AccountTable: React.FC = () => {
     });
   };
 
-  // Add new function to handle bulk toggle
   const toggleAllActive = () => {
     const allActive = accounts.every((acc) => acc.active);
+
+    if (allActive) {
+      removeUnavailableActiveFilters(accounts.map((acc) => acc.id));
+    }
+
     const updatedAccounts = accounts.map((acc) => ({
       ...acc,
       active: !allActive

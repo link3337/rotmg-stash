@@ -14,7 +14,6 @@ console.log(`Mode: ${import.meta.env.MODE}`);
 console.log(`ASSETS URL From env: ${import.meta.env.ROTMG_STASH_ASSETS_URL}`);
 
 const resolveInitialThemeId = () => {
-
   const savedSettings = localStorage.getItem('settings');
   if (!savedSettings) {
     return defaultThemeSetting;
