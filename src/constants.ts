@@ -41,5 +41,7 @@ export const TAURI_COMMANDS = {
   GET_ACCOUNT_DATA: 'get_account_data',
   LAUNCH_EXALT: 'launch_exalt',
   GET_SETTINGS: 'get_settings',
-  EXECUTE_POWERSHELL: 'execute_powershell'
+  EXECUTE_POWERSHELL: 'execute_powershell',
+  SAVE_ACCOUNTS_MAPPED_DATA: 'save_accounts_mapped_data',
+  LOAD_ACCOUNTS_MAPPED_DATA: 'load_accounts_mapped_data'
 };

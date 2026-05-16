@@ -1,4 +1,4 @@
-import { CharUIModel, MappedCharacterStats } from '@api/models/char-ui-model';
+import { CharUIModel } from '@api/models/char-ui-model';
 import { ExaltUIModel } from '@api/models/exalt-ui-model';
 import LootBoostIcon from '@components/Icons/LootBoostIcon';
 import { useAppSelector } from '@hooks/redux';
@@ -14,6 +14,8 @@ interface CharacterProps {
   char?: CharUIModel;
   exalts: ExaltUIModel[] | null;
   accountId?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: (characterId: number) => void;
 }
 
 export interface CharacterItemEntry {
@@ -23,12 +25,13 @@ export interface CharacterItemEntry {
   enchantmentIds: number[];
 }
 
-const getMaxedStatsCount = (stats: MappedCharacterStats[]): string => {
-  const maxedCount = stats.reduce((count, stat) => count + (stat.maxed ? 1 : 0), 0);
-  return `${maxedCount}/8`;
-};
-
-export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId }) => {
+export const Character: React.FC<CharacterProps> = ({
+  char,
+  exalts,
+  accountId,
+  isFavorite,
+  onToggleFavorite
+}) => {
   const [show3DViewer, setShow3DViewer] = useState(false);
   const show3DCharacterViewer = useAppSelector(selectEnable3DViewer);
 
@@ -153,16 +156,28 @@ export const Character: React.FC<CharacterProps> = ({ char, exalts, accountId })
           {boostDisplay()}
           <div className={`${styles.details} ${char?.seasonal ? styles.seasonal : ''}`}>
             <div className={styles.detailRow}>
-              <span className={styles.charInfo}>
+              <span className={`${styles.charInfo} ${styles.charInfoEllipsis}`}>
                 {char?.className} {char?.level}
               </span>
-
               <span className={styles.charId}>#{char?.id}</span>
             </div>
             <div className={styles.detailRow}>
               <span className={styles.fame}>
-                {char?.fame} Fame, {getMaxedStatsCount(stats)}
+                {char?.fame} Fame
               </span>
+              <button
+                type="button"
+                className={`${styles.favoriteButton} ${styles.favoriteInline} ${isFavorite ? styles.favoriteActive : ''}`}
+                aria-label={isFavorite ? 'Remove favorite' : 'Add favorite'}
+                title={isFavorite ? 'Unfavorite character' : 'Favorite character'}
+                onClick={() => {
+                  if (char?.id !== undefined) {
+                    onToggleFavorite?.(char.id);
+                  }
+                }}
+              >
+                <span className={`pi ${isFavorite ? 'pi-star-fill' : 'pi-star'}`} />
+              </button>
             </div>
           </div>
         </div>

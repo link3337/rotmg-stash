@@ -51,6 +51,11 @@ export const AccountTable: React.FC = () => {
     return Date.now() - rateLimit.timestamp < RATE_LIMIT_DURATION;
   }, [rateLimit.timestamp]);
 
+  const accountRows = useMemo(
+    () => accounts.map((account) => ({ ...account, isLoading: !!loading[account.id] })),
+    [accounts, loading]
+  );
+
   const [dialogVisible, setDialogVisible] = useState(false);
   const [newAccount, setNewAccount] = useState<Partial<AccountModel>>({});
   const [emailError, setEmailError] = useState('');
@@ -75,7 +80,6 @@ export const AccountTable: React.FC = () => {
     return `Last Fetched: ${lastSaved}\nLast Launched: ${lastLaunched}`;
   };
 
-  // Add date formatter template
   const lastFetchedBodyTemplate = (rowData: AccountModel) => {
     if (!rowData.lastSaved) return '-';
 
@@ -398,77 +402,84 @@ export const AccountTable: React.FC = () => {
     }
   };
 
-  const actionBodyTemplate = (rowData: AccountModel, { rowIndex }: { rowIndex: number }) => (
-    <div className="flex gap-2">
-      {settings?.experimental?.exaltPath && settings?.experimental?.deviceToken && (
+  const actionBodyTemplate = (
+    rowData: AccountModel & { isLoading?: boolean },
+    { rowIndex }: { rowIndex: number }
+  ) => {
+    const isAccountLoading = !!rowData.isLoading;
+
+    return (
+      <div className="flex gap-2">
+        {settings?.experimental?.exaltPath && settings?.experimental?.deviceToken && (
+          <Button
+            icon="pi pi-play"
+            onClick={() => launchExalt(rowData)}
+            className="p-button-success p-button-text p-button-rounded"
+            disabled={isAccountLoading}
+            tooltip="Launch Exalt"
+            tooltipOptions={{ position: 'top' }}
+          />
+        )}
         <Button
-          icon="pi pi-play"
-          onClick={() => launchExalt(rowData)}
-          className="p-button-success p-button-text p-button-rounded"
-          disabled={loading[rowData.id]}
-          tooltip="Launch Exalt"
+          icon={`pi pi-star${rowData.active ? '-fill' : ''}`}
+          onClick={() => toggleActive(rowData)}
+          className={`p-button-text p-button-rounded ${rowData.active ? 'text-yellow-500' : 'text-gray-500'}`}
+          disabled={isAccountLoading}
+          tooltip={rowData.active ? 'Deactivate' : 'Activate'}
           tooltipOptions={{ position: 'top' }}
         />
-      )}
-      <Button
-        icon={`pi pi-star${rowData.active ? '-fill' : ''}`}
-        onClick={() => toggleActive(rowData)}
-        className={`p-button-text p-button-rounded ${rowData.active ? 'text-yellow-500' : 'text-gray-500'}`}
-        disabled={loading[rowData.id]}
-        tooltip={rowData.active ? 'Deactivate' : 'Activate'}
-        tooltipOptions={{ position: 'top' }}
-      />
-      <Button
-        icon="pi pi-refresh"
-        onClick={() => refreshAccountData(rowData)}
-        className="p-button-text p-button-rounded"
-        loading={loading[rowData.id]}
-        disabled={loading[rowData.id] || isRateLimited}
-        tooltip="Refresh"
-        tooltipOptions={{ position: 'top' }}
-      />
-      <Button
-        icon="pi pi-trash"
-        className="p-button-danger p-button-text p-button-rounded"
-        onClick={() => confirmDelete(rowData)}
-        disabled={loading[rowData.id]}
-        tooltip="Delete"
-        tooltipOptions={{ position: 'top' }}
-      />
-      {showExtraActions && (
-        <>
-          <Button
-            icon="pi pi-arrow-up"
-            tooltip="Move Up"
-            className="p-button-rounded p-button-text"
-            onClick={() => moveUp(rowIndex)}
-            disabled={rowIndex === 0}
-          />
-          <Button
-            icon="pi pi-arrow-down"
-            tooltip="Move Down"
-            className="p-button-rounded p-button-text"
-            onClick={() => moveDown(rowIndex)}
-            disabled={rowIndex === accounts.length - 1}
-          />
-          <Button
-            icon="pi pi-angle-double-up"
-            tooltip="Move to Top"
-            className="p-button-rounded p-button-text"
-            onClick={() => moveToTop(rowIndex)}
-            disabled={rowIndex === 0}
-          />
-          <Button
-            icon="pi pi-angle-double-down"
-            tooltip="Move to Bottom"
-            className="p-button-rounded p-button-text"
-            onClick={() => moveToBottom(rowIndex)}
-            disabled={rowIndex === accounts.length - 1}
-          />
-        </>
-      )}
-    </div>
-  );
+        <Button
+          icon="pi pi-refresh"
+          onClick={() => refreshAccountData(rowData)}
+          className="p-button-text p-button-rounded"
+          loading={isAccountLoading}
+          disabled={isAccountLoading || isRateLimited}
+          tooltip="Refresh"
+          tooltipOptions={{ position: 'top' }}
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-danger p-button-text p-button-rounded"
+          onClick={() => confirmDelete(rowData)}
+          disabled={isAccountLoading}
+          tooltip="Delete"
+          tooltipOptions={{ position: 'top' }}
+        />
+        {showExtraActions && (
+          <>
+            <Button
+              icon="pi pi-arrow-up"
+              tooltip="Move Up"
+              className="p-button-rounded p-button-text"
+              onClick={() => moveUp(rowIndex)}
+              disabled={rowIndex === 0 || isAccountLoading}
+            />
+            <Button
+              icon="pi pi-arrow-down"
+              tooltip="Move Down"
+              className="p-button-rounded p-button-text"
+              onClick={() => moveDown(rowIndex)}
+              disabled={rowIndex === accounts.length - 1 || isAccountLoading}
+            />
+            <Button
+              icon="pi pi-angle-double-up"
+              tooltip="Move to Top"
+              className="p-button-rounded p-button-text"
+              onClick={() => moveToTop(rowIndex)}
+              disabled={rowIndex === 0 || isAccountLoading}
+            />
+            <Button
+              icon="pi pi-angle-double-down"
+              tooltip="Move to Bottom"
+              className="p-button-rounded p-button-text"
+              onClick={() => moveToBottom(rowIndex)}
+              disabled={rowIndex === accounts.length - 1 || isAccountLoading}
+            />
+          </>
+        )}
+      </div>
+    );
+  };
 
   const footer = (
     <div>
@@ -691,7 +702,7 @@ export const AccountTable: React.FC = () => {
 
       <DataTable
         key={`showExtraActions-${showExtraActions}`}
-        value={accounts}
+        value={accountRows}
         tableStyle={{ minWidth: '50rem' }}
         editMode="row"
         dataKey="id"
@@ -734,7 +745,7 @@ export const AccountTable: React.FC = () => {
           />
         )}
         <Column
-          rowEditor
+          rowEditor={(rowData: AccountModel & { isLoading?: boolean }) => !rowData.isLoading}
           headerStyle={{ width: '10%', minWidth: '8rem' }}
           bodyStyle={{ textAlign: 'center' }}
         />

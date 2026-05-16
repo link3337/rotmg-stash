@@ -4,7 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { combineReducers } from 'redux';
 import accountsReducer, { accountsStateListener } from './slices/AccountsSlice';
-import filterReducer from './slices/FilterSlice';
+import filterReducer, { filterStateListener } from './slices/FilterSlice';
 import layoutReducer from './slices/LayoutSlice';
 import queueReducer from './slices/QueueSlice';
 import rateLimitReducer from './slices/RateLimitSlice';
@@ -19,6 +19,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .prepend(accountsStateListener.middleware)
+      .prepend(filterStateListener.middleware)
       .prepend(settingsStateListener.middleware)
       .concat(middleware.concat(tauriApi.middleware).concat(itemsApi.middleware)),
   reducer: combineReducers({

@@ -6,7 +6,9 @@ import { AccountModel } from '@cache/account-model';
 import { AccountExportModel } from '@cache/export-model';
 import {
   getAccountsFromLocalStorage,
-  saveAccountsToLocalStorage
+  loadMappedDataFromDisk,
+  saveAccountsToLocalStorage,
+  saveMappedDataToDisk
 } from '@cache/localstorage-service';
 import { CharListResponse } from '@realm/models/charlist-response';
 import {
@@ -80,7 +82,12 @@ const canMakeRequest = (getState: () => RootState): boolean => {
 
 export const initializeAccounts = createAsyncThunk(`${accountsFeatureKey}/initialize`, async () => {
   const accounts: AccountModel[] = getAccountsFromLocalStorage();
-  return accounts;
+  const mappedDataByAccountId = await loadMappedDataFromDisk();
+
+  return accounts.map((account) => ({
+    ...account,
+    mappedData: mappedDataByAccountId[account.id] ?? account.mappedData
+  }));
 });
 
 export const addAccount = createAsyncThunk(
@@ -298,10 +305,11 @@ accountsStateListener.startListening({
     updateAccounts.fulfilled,
     skipAccountFromQueue.fulfilled
   ),
-  effect: (_action, listenerApi) => {
+  effect: async (_action, listenerApi) => {
     const state = listenerApi.getState() as RootState;
     debug('[AccountsStateListener] Accounts state has changed, saving to local storage');
     saveAccountsToLocalStorage(state.accounts.items);
+    await saveMappedDataToDisk(state.accounts.items);
   }
 });
 

@@ -1,9 +1,20 @@
+import {
+  getFavoriteCharactersFromLocalStorage,
+  saveFavoriteCharactersToLocalStorage
+} from '@cache/localstorage-service';
 import { ClassID } from '@realm/renders/classes';
-import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createListenerMiddleware,
+  createSelector,
+  createSlice,
+  isAnyOf,
+  PayloadAction
+} from '@reduxjs/toolkit';
+import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '../index';
 
-export type FilterType = 'all' | 'seasonal' | 'regular';
+export type FilterType = 'all' | 'seasonal' | 'regular' | 'favorites';
 
 interface AccountFilterMap {
   [accountId: string]: {
@@ -15,12 +26,14 @@ interface AccountFilterMap {
 interface FilterState {
   selectedItems: number[];
   accountFilters: AccountFilterMap;
+  favoriteCharactersByAccount: Record<string, number[]>;
   showHighlightedOnly: boolean;
 }
 
 const initialState: FilterState = {
   selectedItems: [],
   accountFilters: {},
+  favoriteCharactersByAccount: getFavoriteCharactersFromLocalStorage(),
   showHighlightedOnly: false
 };
 
@@ -58,6 +71,18 @@ const filterSlice = createSlice({
       }
       state.accountFilters[accountId].selectedClasses = selectedClasses;
     },
+    toggleFavoriteCharacter: (
+      state,
+      action: PayloadAction<{ accountId: string; characterId: number }>
+    ) => {
+      const { accountId, characterId } = action.payload;
+      const existing = state.favoriteCharactersByAccount[accountId] ?? [];
+      const hasFavorite = existing.includes(characterId);
+
+      state.favoriteCharactersByAccount[accountId] = hasFavorite
+        ? existing.filter((id) => id !== characterId)
+        : [...existing, characterId];
+    },
     toggleHighlightedOnly: (state) => {
       state.showHighlightedOnly = !state.showHighlightedOnly;
     },
@@ -71,14 +96,28 @@ const filterSelector = (state: RootState) => state.filter;
 export const {
   setFilter,
   setSelectedClasses,
+  toggleFavoriteCharacter,
   toggleFilter,
   clearFilters,
   toggleHighlightedOnly,
   setHighlightedOnly
 } = filterSlice.actions;
 
+export const filterStateListener = createListenerMiddleware();
+
+filterStateListener.startListening({
+  matcher: isAnyOf(toggleFavoriteCharacter),
+  effect: (_action, listenerApi) => {
+    const state = listenerApi.getState() as RootState;
+    debug('[FilterStateListener] Favorite characters changed, saving to local storage');
+    saveFavoriteCharactersToLocalStorage(state.filter.favoriteCharactersByAccount);
+  }
+});
+
 export const selectSelectedItems = (state: RootState) => state.filter.selectedItems;
 export const selectAccountFilters = (state: RootState) => state.filter.accountFilters;
+export const selectFavoriteCharactersByAccount = (state: RootState) =>
+  state.filter.favoriteCharactersByAccount;
 export const selectShowHighlightedOnly = (state: RootState) => state.filter.showHighlightedOnly;
 
 export const getCharacterFilterByAccount = createSelector(
@@ -91,6 +130,12 @@ export const getSelectedClassesByAccount = createSelector(
   selectAccountFilters,
   (_: RootState, accountId: string) => accountId,
   (accountFilters, accountId) => accountFilters[accountId]?.selectedClasses || []
+);
+
+export const getFavoriteCharacterIdsByAccount = createSelector(
+  selectFavoriteCharactersByAccount,
+  (_: RootState, accountId: string) => accountId,
+  (favoriteCharactersByAccount, accountId) => favoriteCharactersByAccount[accountId] || []
 );
 
 // hook

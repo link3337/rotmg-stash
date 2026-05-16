@@ -306,6 +306,55 @@ fn get_settings_file_path() -> PathBuf {
     settings_path
 }
 
+fn get_mapped_data_file_path() -> PathBuf {
+    let base_path: PathBuf = get_save_file_path();
+    let mapped_data_file_name = if cfg!(debug_assertions) {
+        "rotmg-stash-mapped-data-dev.json"
+    } else {
+        "rotmg-stash-mapped-data.json"
+    };
+
+    PathBuf::from(base_path).join(mapped_data_file_name)
+}
+
+#[tauri::command]
+async fn save_accounts_mapped_data(mapped_data_by_account_json: &str) -> Result<(), String> {
+    // validate json
+    let _: serde_json::Value =
+        serde_json::from_str(mapped_data_by_account_json).map_err(|e| e.to_string())?;
+
+    let file_path = get_mapped_data_file_path();
+    log::info!(
+        "[Mapped data] Saving mapped account data to {:?} ({} bytes)",
+        file_path,
+        mapped_data_by_account_json.len()
+    );
+    fs::write(file_path, mapped_data_by_account_json).map_err(|e| e.to_string())?;
+    log::info!("[Mapped data] Saved mapped account data successfully");
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_accounts_mapped_data() -> Result<String, String> {
+    let file_path = get_mapped_data_file_path();
+    log::info!(
+        "[Mapped data] Loading mapped account data from {:?}",
+        file_path
+    );
+
+    if !file_path.exists() {
+        log::info!("[Mapped data] Mapped account data file not found, returning empty object");
+        return Ok("{}".to_string());
+    }
+
+    let payload = fs::read_to_string(file_path).map_err(|e| e.to_string())?;
+    log::info!(
+        "[Mapped data] Loaded mapped account data successfully ({} bytes)",
+        payload.len()
+    );
+    Ok(payload)
+}
+
 // Add this near your other command functions
 #[tauri::command]
 async fn execute_powershell() -> Result<String, String> {
@@ -354,7 +403,9 @@ pub fn run() {
             get_account_data,
             get_settings,
             launch_exalt,
-            execute_powershell
+            execute_powershell,
+            save_accounts_mapped_data,
+            load_accounts_mapped_data
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

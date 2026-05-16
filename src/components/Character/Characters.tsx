@@ -7,10 +7,12 @@ import { ClassID } from '@realm/renders/classes';
 import {
   FilterType,
   getCharacterFilterByAccount,
+  getFavoriteCharacterIdsByAccount,
   getSelectedClassesByAccount,
   selectShowHighlightedOnly,
   setFilter,
   setSelectedClasses,
+  toggleFavoriteCharacter,
   useFilter
 } from '@store/slices/FilterSlice';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
@@ -56,6 +58,9 @@ const Characters: React.FC<CharacterProps> = ({
 
   const selectedClasses = useAppSelector((state) => getSelectedClassesByAccount(state, accountId));
   const characterFilter = useAppSelector((state) => getCharacterFilterByAccount(state, accountId));
+  const favoriteCharacterIds = useAppSelector((state) =>
+    getFavoriteCharacterIdsByAccount(state, accountId)
+  );
   const showHighlightedOnly = useAppSelector(selectShowHighlightedOnly);
 
   const { selectedItems } = useFilter();
@@ -64,7 +69,8 @@ const Characters: React.FC<CharacterProps> = ({
   const filterOptions: Option[] = [
     { label: 'All', value: 'all' },
     { label: 'Seasonal', value: 'seasonal' },
-    { label: 'Regular', value: 'regular' }
+    { label: 'Regular', value: 'regular' },
+    { label: 'Favorites', value: 'favorites' }
   ];
 
   const [sortSelection, setSortSelection] = useState<SortValue>('none');
@@ -99,7 +105,9 @@ const Characters: React.FC<CharacterProps> = ({
           ? true
           : characterFilter === 'seasonal'
             ? char.seasonal
-            : !char.seasonal;
+            : characterFilter === 'regular'
+              ? !char.seasonal
+              : favoriteCharacterIds.includes(char.id);
 
       const classFilter =
         selectedClasses.length === 0 ? true : selectedClasses.includes(char.classId);
@@ -110,13 +118,20 @@ const Characters: React.FC<CharacterProps> = ({
         selectedItems.length === 0
           ? true
           : selectedItems.some(
-              (item) =>
-                char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
-            );
+            (item) =>
+              char.equipment.includes(item) || char.equip_qs.map((x) => x.itemId).includes(item)
+          );
 
       return seasonalFilter && classFilter && itemFilter;
     });
-  }, [characters, characterFilter, selectedClasses, selectedItems, showHighlightedOnly]);
+  }, [
+    characters,
+    characterFilter,
+    selectedClasses,
+    selectedItems,
+    showHighlightedOnly,
+    favoriteCharacterIds
+  ]);
 
   const handleFilterChange = useCallback(
     (newFilter: FilterType) => {
@@ -128,6 +143,13 @@ const Characters: React.FC<CharacterProps> = ({
   const handleSelectedClassesChange = useCallback(
     (newSelectedClasses: ClassID[]) => {
       dispatch(setSelectedClasses({ accountId, selectedClasses: newSelectedClasses }));
+    },
+    [dispatch, accountId]
+  );
+
+  const handleFavoriteToggle = useCallback(
+    (characterId: number) => {
+      dispatch(toggleFavoriteCharacter({ accountId, characterId }));
     },
     [dispatch, accountId]
   );
@@ -228,6 +250,8 @@ const Characters: React.FC<CharacterProps> = ({
             accountId={accountId}
             exalts={exalts}
             char={character}
+            isFavorite={favoriteCharacterIds.includes(character.id)}
+            onToggleFavorite={handleFavoriteToggle}
           />
         ))}
       </div>
