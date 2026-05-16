@@ -9,16 +9,13 @@ import { initRateLimitState } from '@store/slices/RateLimitSlice';
 import { error, info } from '@tauri-apps/plugin-log';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
-import { PrimeReactContext } from 'primereact/api';
 import { Button } from 'primereact/button';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.scss';
 
 function App() {
   const dispatch = useAppDispatch();
   const isProd = import.meta.env.PROD;
-
-  const { changeTheme } = useContext(PrimeReactContext);
 
   const theme = useAppSelector((state) => state.settings.theme);
   const isDebugMode = useAppSelector((state) => state.settings.experimental.isDebugMode);
@@ -32,28 +29,36 @@ function App() {
 
   useEffect(() => {
     const themeEntry = findThemeById(theme);
+    if (!themeEntry?.url) {
+      return;
+    }
 
-    changeTheme!('', '', 'app-theme', () => {
-      console.log('change theme callback', { theme, themeEntry });
-      try {
-        let link = document.getElementById('app-theme') as HTMLLinkElement | null;
-        if (!link) {
-          link = document.createElement('link');
-          link.id = 'app-theme';
-          link.rel = 'stylesheet';
-          document.head.appendChild(link);
-        }
-        console.log('Applying theme', { theme, themeEntry, url: themeEntry?.url });
-        // dynamically load theme URL from theme registry
-        link.href = themeEntry?.url ?? '';
-      } catch (e) {
-        // ignore link errors
-        error(`Failed to apply theme error: ${e}`);
+    const currentLink = document.getElementById('app-theme') as HTMLLinkElement | null;
+    if (currentLink?.href === themeEntry.url) {
+      return;
+    }
+
+    const nextLink = document.createElement('link');
+    nextLink.rel = 'stylesheet';
+    nextLink.id = 'app-theme-next';
+    nextLink.href = themeEntry.url;
+
+    nextLink.onload = () => {
+      const activeLink = document.getElementById('app-theme') as HTMLLinkElement | null;
+      nextLink.id = 'app-theme';
+      if (activeLink) {
+        activeLink.remove();
       }
-
       info(`Theme changed to ${theme}`);
-    });
-  }, [theme, changeTheme]);
+    };
+
+    nextLink.onerror = (e) => {
+      error(`Failed to apply theme error: ${String(e)}`);
+      nextLink.remove();
+    };
+
+    document.head.appendChild(nextLink);
+  }, [theme]);
 
   return (
     <div className="App">

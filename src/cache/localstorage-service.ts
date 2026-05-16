@@ -205,6 +205,8 @@ export function getFavoriteCharactersFromLocalStorage(): FavoriteCharactersByAcc
     return acc;
   }, {});
 
-  debug(`[Storage] Loaded favorites for ${Object.keys(favorites).length} accounts from localStorage`);
+  debug(
+    `[Storage] Loaded favorites for ${Object.keys(favorites).length} accounts from localStorage`
+  );
   return favorites;
 }

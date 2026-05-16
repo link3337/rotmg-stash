@@ -162,9 +162,7 @@ export const Character: React.FC<CharacterProps> = ({
               <span className={styles.charId}>#{char?.id}</span>
             </div>
             <div className={styles.detailRow}>
-              <span className={styles.fame}>
-                {char?.fame} Fame
-              </span>
+              <span className={styles.fame}>{char?.fame} Fame</span>
               <button
                 type="button"
                 className={`${styles.favoriteButton} ${styles.favoriteInline} ${isFavorite ? styles.favoriteActive : ''}`}
