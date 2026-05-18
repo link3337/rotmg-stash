@@ -15,10 +15,10 @@ name = "rotmg_stash_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.6.1", features = [] }
+tauri-build = { version = "2.6.2", features = [] }
 
 [dependencies]
-tauri = { version = "2.11.1", features = ["devtools"] }
+tauri = { version = "2.11.2", features = ["devtools"] }
 tauri-plugin-shell = "2.3.5"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
