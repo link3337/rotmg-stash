@@ -68,8 +68,8 @@ const Characters: React.FC<CharacterProps> = ({
 
   const filterOptions: Option[] = [
     { label: 'All', value: 'all' },
-    { label: 'Seasonal', value: 'seasonal' },
     { label: 'Regular', value: 'regular' },
+    { label: 'Seasonal', value: 'seasonal' },
     { label: 'Favorites', value: 'favorites' }
   ];
 
