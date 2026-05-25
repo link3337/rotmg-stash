@@ -14,6 +14,7 @@ export interface SettingsModel {
 export type Theme = string;
 
 export interface DisplaySettingsModel {
+  showBingo: boolean;
   showTotals: boolean;
   showAccountInfo: boolean;
   showExalts: boolean;

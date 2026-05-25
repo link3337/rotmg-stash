@@ -14,6 +14,7 @@ export const defaultTotalSettings: TotalSettingsModel = {
 };
 
 export const defaultDisplaySettings: DisplaySettingsModel = {
+  showBingo: false,
   showTotals: true,
   showAccountInfo: true,
   showExalts: true,

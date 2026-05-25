@@ -22,7 +22,7 @@ import {
   updateQueue
 } from '@store/slices/QueueSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
-import { selectQueueFetchInterval } from '@store/slices/SettingsSlice';
+import { selectQueueFetchInterval, selectShowBingo } from '@store/slices/SettingsSlice';
 import { info } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
 import React, { useEffect, useMemo } from 'react';
@@ -52,6 +52,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
   const isShowQueue = useAppSelector(selectShowQueue);
   const isAutoRefresh = useAppSelector(selectIsAutoRefresh);
   const isBingoOpen = useAppSelector(selectIsBingoOpen);
+  const showBingo = useAppSelector(selectShowBingo);
   const { timestamp } = useAppSelector(selectRateLimit);
 
   const setShowQueue = (value: boolean) => dispatch(showQueue(value));
@@ -110,6 +111,12 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
     };
   }, [isQueueRunning, isQueuePaused, queueFetchInterval, dispatch, isRateLimited]);
 
+  useEffect(() => {
+    if (!showBingo && isBingoOpen) {
+      dispatch(setBingoVisible(false));
+    }
+  }, [showBingo, isBingoOpen, dispatch]);
+
   const initQueue = () => {
     info('Initializing queue');
     dispatch(initializeQueue({ accounts, queueFetchInterval })).then(() => {
@@ -160,13 +167,15 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
         disabled={!isAutoRefresh}
       />
       <Button icon="pi pi-list" label="Queue Status" onClick={() => setShowQueue(true)} />
-      <Button icon="pi pi-th-large" label="Bingo" onClick={() => dispatch(setBingoVisible(true))} />
+      {showBingo && (
+        <Button icon="pi pi-th-large" label="Bingo" onClick={() => dispatch(setBingoVisible(true))} />
+      )}
       <QueueInfoDialog
         visible={isShowQueue}
         onHide={() => setShowQueue(false)}
         queueInfo={queueItems}
       />
-      <Bingo visible={isBingoOpen} onHide={() => dispatch(setBingoVisible(false))} />
+      {showBingo && <Bingo visible={isBingoOpen} onHide={() => dispatch(setBingoVisible(false))} />}
     </div>
   );
 };

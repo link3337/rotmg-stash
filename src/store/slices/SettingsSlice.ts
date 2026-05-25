@@ -23,7 +23,7 @@ import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 
-export interface SettingsState extends SettingsModel {}
+export interface SettingsState extends SettingsModel { }
 
 const initialState: SettingsState = {
   displaySettings: defaultDisplaySettings,
@@ -162,6 +162,9 @@ export const selectExperimentalSettings = (state: RootState) =>
   settingsSelector(state).experimental;
 
 export const selectDisplaySettings = (state: RootState) => settingsSelector(state).displaySettings;
+
+export const selectShowBingo = (state: RootState) =>
+  settingsSelector(state).displaySettings.showBingo;
 
 export const selectTotalSettings = (state: RootState) => settingsSelector(state).totalSettings;
 
