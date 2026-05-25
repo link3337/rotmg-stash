@@ -1,221 +1,226 @@
 .bingoContainer {
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    padding: 1rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1rem;
 }
 
 .headerRow {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 .title {
-    margin: 0;
-    color: var(--primary-color);
+  margin: 0;
+  color: var(--primary-color);
 }
 
 .subtitle {
-    margin: 0.25rem 0 0;
-    color: var(--text-color-secondary);
+  margin: 0.25rem 0 0;
+  color: var(--text-color-secondary);
 }
 
 .meta {
-    font-size: 0.9rem;
-    color: var(--text-color-secondary);
-    background: var(--surface-ground);
-    border: 1px solid var(--surface-border);
-    border-radius: 999px;
-    padding: 0.35rem 0.75rem;
-    white-space: nowrap;
+  font-size: 0.9rem;
+  color: var(--text-color-secondary);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
 }
 
 .optionsRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .pagerRow {
-    margin-top: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .pagerStatus {
-    color: var(--text-color-secondary);
-    font-weight: 600;
+  color: var(--text-color-secondary);
+  font-weight: 600;
 }
 
 .cardNameRow {
-    margin-top: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 
-    label {
-        font-weight: 600;
-        min-width: 90px;
-    }
+  label {
+    font-weight: 600;
+    min-width: 90px;
+  }
 }
 
 .sectionDivider {
-    margin-top: 1rem;
-    border-top: 1px solid var(--surface-border);
+  margin-top: 1rem;
+  border-top: 1px solid var(--surface-border);
 }
 
 .cardNameInput {
-    width: min(420px, 100%);
+  width: min(420px, 100%);
 }
 
 .cardActionsRow {
-    margin-top: 0.75rem;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .dateMetaRow {
-    margin-top: 0.5rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .datePill {
-    font-size: 0.85rem;
-    color: var(--text-color-secondary);
-    background: var(--surface-ground);
-    border: 1px solid var(--surface-border);
-    border-radius: 999px;
-    padding: 0.3rem 0.65rem;
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
 }
 
 .controlBlock {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    flex: 0 1 360px;
-    width: 360px;
-    max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 0 1 360px;
+  width: 360px;
+  max-width: 100%;
 
-    label {
-        font-weight: 600;
-    }
+  label {
+    font-weight: 600;
+  }
 
-    small {
-        color: var(--text-color-secondary);
-    }
+  small {
+    color: var(--text-color-secondary);
+  }
 }
 
 .controlInput {
-    width: 100%;
+  width: 100%;
 }
 
 .selectButton {
-    :global(.p-selectbutton) {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-    }
+  :global(.p-selectbutton) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
 }
 
 .checkboxRow {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .checkboxLabel {
-    font-weight: 500;
-    margin: 0;
+  font-weight: 500;
+  margin: 0;
 }
 
 .actionsRow {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 .error {
-    margin-top: 0.75rem;
-    color: var(--red-500);
+  margin-top: 0.75rem;
+  color: var(--red-500);
 }
 
 .shareStatus {
-    margin-top: 0.75rem;
-    color: var(--text-color-secondary);
+  margin-top: 0.75rem;
+  color: var(--text-color-secondary);
 }
 
 .grid {
-    margin-top: 1rem;
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.5rem;
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
 }
 
 .cell {
-    min-height: 88px;
-    border: 1px solid var(--surface-border);
-    border-radius: 8px;
-    background: var(--surface-ground);
-    color: var(--text-color);
-    padding: 0.5rem;
-    font-size: 0.85rem;
-    line-height: 1.2;
-    text-align: left;
-    cursor: pointer;
-    transition:
-        transform 120ms ease,
-        box-shadow 120ms ease,
-        border-color 120ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88px;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  background: var(--surface-ground);
+  color: var(--text-color);
+  padding: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
 
-    &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        border-color: var(--primary-color);
-    }
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    border-color: var(--primary-color);
+  }
 }
 
 .cellFree {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    font-weight: 700;
-    background: color-mix(in srgb, var(--primary-color) 15%, var(--surface-ground));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--primary-color) 15%, var(--surface-ground));
 }
 
 .cellMarked {
-    background: color-mix(in srgb, var(--green-500) 20%, var(--surface-ground));
-    border-color: var(--green-500);
+  background: color-mix(in srgb, var(--green-500) 20%, var(--surface-ground));
+  border-color: var(--green-500);
 }
 
 @media (max-width: 1100px) {
-    .optionsRow {
-        flex-direction: column;
-    }
+  .optionsRow {
+    flex-direction: column;
+  }
 
-    .controlBlock {
-        flex: 1 1 auto;
-        width: 100%;
-    }
+  .controlBlock {
+    flex: 1 1 auto;
+    width: 100%;
+  }
 }
 
 @media (max-width: 768px) {
-    .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-    .cell {
-        min-height: 74px;
-    }
+  .cell {
+    min-height: 74px;
+  }
 }

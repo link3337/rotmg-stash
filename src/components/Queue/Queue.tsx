@@ -168,7 +168,11 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
       />
       <Button icon="pi pi-list" label="Queue Status" onClick={() => setShowQueue(true)} />
       {showBingo && (
-        <Button icon="pi pi-th-large" label="Bingo" onClick={() => dispatch(setBingoVisible(true))} />
+        <Button
+          icon="pi pi-th-large"
+          label="Bingo"
+          onClick={() => dispatch(setBingoVisible(true))}
+        />
       )}
       <QueueInfoDialog
         visible={isShowQueue}
