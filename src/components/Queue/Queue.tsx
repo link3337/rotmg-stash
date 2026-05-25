@@ -1,7 +1,9 @@
 import { RATE_LIMIT_DURATION } from '@/constants';
 import { AccountModel } from '@cache/account-model';
+import Bingo from '@components/Bingo/Bingo';
 import useCrypto from '@hooks/crypto';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
+import { selectIsBingoOpen, setBingoVisible } from '@store/slices/LayoutSlice';
 import {
   autoRefresh,
   initializeQueue,
@@ -49,6 +51,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
   const isQueuePaused = useAppSelector(selectIsQueuePaused);
   const isShowQueue = useAppSelector(selectShowQueue);
   const isAutoRefresh = useAppSelector(selectIsAutoRefresh);
+  const isBingoOpen = useAppSelector(selectIsBingoOpen);
   const { timestamp } = useAppSelector(selectRateLimit);
 
   const setShowQueue = (value: boolean) => dispatch(showQueue(value));
@@ -157,11 +160,13 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
         disabled={!isAutoRefresh}
       />
       <Button icon="pi pi-list" label="Queue Status" onClick={() => setShowQueue(true)} />
+      <Button icon="pi pi-th-large" label="Bingo" onClick={() => dispatch(setBingoVisible(true))} />
       <QueueInfoDialog
         visible={isShowQueue}
         onHide={() => setShowQueue(false)}
         queueInfo={queueItems}
       />
+      <Bingo visible={isBingoOpen} onHide={() => dispatch(setBingoVisible(false))} />
     </div>
   );
 };

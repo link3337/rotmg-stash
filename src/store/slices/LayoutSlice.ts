@@ -4,10 +4,12 @@ import { RootState } from '../index';
 
 interface LayoutState {
   isSettingsOpen: boolean;
+  isBingoOpen: boolean;
 }
 
 const initialState: LayoutState = {
-  isSettingsOpen: false
+  isSettingsOpen: false,
+  isBingoOpen: false
 };
 
 const layoutFeatureKey = 'layout';
@@ -18,15 +20,19 @@ const layoutSlice = createSlice({
   reducers: {
     setSettingsVisible: (state, action: PayloadAction<boolean>) => {
       state.isSettingsOpen = action.payload;
+    },
+    setBingoVisible: (state, action: PayloadAction<boolean>) => {
+      state.isBingoOpen = action.payload;
     }
   }
 });
 
-export const { setSettingsVisible } = layoutSlice.actions;
+export const { setSettingsVisible, setBingoVisible } = layoutSlice.actions;
 
 const layoutSelector = (state: RootState) => state.layout;
 
 export const selectIsSettingsOpen = (state: RootState) => state.layout.isSettingsOpen;
+export const selectIsBingoOpen = (state: RootState) => state.layout.isBingoOpen;
 
 export default layoutSlice.reducer;
 
