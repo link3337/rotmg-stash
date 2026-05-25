@@ -1,6 +1,6 @@
 [package]
 name = "rotmg-stash"
-version = "1.1.6"
+version = "1.1.7"
 description = "RotMG Stash"
 authors = ["link3337"]
 edition = "2021"
@@ -21,13 +21,13 @@ tauri-build = { version = "2.6.2", features = [] }
 tauri = { version = "2.11.2", features = ["devtools"] }
 tauri-plugin-shell = "2.3.5"
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
-reqwest = { version = "0.13.3", features = ["blocking", "json", "form"] }
+serde_json = "1.0.150"
+reqwest = { version = "0.13.4", features = ["blocking", "json", "form"] }
 url = "2.5.8"
 regex = "1.12.3"
 rand = "0.10.1"
 dirs = "6.0.0"
-log = "0.4.29"
+log = "0.4.30"
 tauri-plugin-log = "2.8.0"
 base64 = "0.22.1"
 tauri-plugin-dialog = "2.7.1"

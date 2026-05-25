@@ -42,15 +42,25 @@ interface PersistedBingoCard {
     centerMode: BingoCenterMode;
     card: BingoCardCell[];
     marked: boolean[];
+    runtimeMs: number;
+    timerStartedAt?: number;
     createdAt: number;
+    isArchived: boolean;
+    finishedAt?: number;
+    archivedAt?: number;
 }
+
+type BingoCardView = 'active' | 'archived';
 
 interface PersistedBingoState {
     cards: PersistedBingoCard[];
+    archivedCards: PersistedBingoCard[];
     activeCardIndex: number;
+    archivedCardIndex: number;
     selectedPresetId: string;
     difficulty: BingoDifficultyFilter;
     centerMode: BingoCenterMode;
+    cardView: BingoCardView;
 }
 
 interface BingoProps {
@@ -63,13 +73,45 @@ const getDefaultSelectedPresetId = (): string => BINGO_PRESETS[0]?.id ?? '';
 const buildDefaultCardName = (presetName: string, cardNumber: number): string =>
     `${presetName} ${cardNumber}`;
 
+const formatCardDate = (value?: number): string => {
+    if (!value) {
+        return 'Not finished yet';
+    }
+
+    return new Date(value).toLocaleString();
+};
+
+const formatRuntime = (runtimeMs: number): string => {
+    const totalSeconds = Math.max(0, Math.floor(runtimeMs / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const hh = String(hours).padStart(2, '0');
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+
+    return `${hh}:${mm}:${ss}`;
+};
+
+const getCardRuntimeMs = (card: PersistedBingoCard, now: number): number => {
+    if (!card.timerStartedAt) {
+        return card.runtimeMs;
+    }
+
+    return card.runtimeMs + Math.max(0, now - card.timerStartedAt);
+};
+
 const loadBingoState = (): PersistedBingoState => {
     const fallback: PersistedBingoState = {
         cards: [],
+        archivedCards: [],
         activeCardIndex: 0,
+        archivedCardIndex: 0,
         selectedPresetId: getDefaultSelectedPresetId(),
         difficulty: 'mixed',
-        centerMode: 'free'
+        centerMode: 'free',
+        cardView: 'active'
     };
 
     if (typeof localStorage === 'undefined') {
@@ -83,54 +125,95 @@ const loadBingoState = (): PersistedBingoState => {
         }
 
         const parsed = JSON.parse(raw) as Partial<PersistedBingoState>;
-        const parsedCards = Array.isArray(parsed.cards)
-            ? parsed.cards.reduce<PersistedBingoCard[]>((acc, entry, index) => {
-                if (!entry || !Array.isArray(entry.card) || !Array.isArray(entry.marked)) {
+
+        const normalizeCards = (
+            entries: unknown,
+            archivedFallback: boolean
+        ): PersistedBingoCard[] => {
+            if (!Array.isArray(entries)) {
+                return [];
+            }
+
+            return entries.reduce<PersistedBingoCard[]>((acc, entry, index) => {
+                if (!entry || typeof entry !== 'object') {
                     return acc;
                 }
 
-                const presetId = typeof entry.presetId === 'string' ? entry.presetId : getDefaultSelectedPresetId();
+                const candidate = entry as Partial<PersistedBingoCard>;
+                if (!Array.isArray(candidate.card) || !Array.isArray(candidate.marked)) {
+                    return acc;
+                }
+
+                const presetId =
+                    typeof candidate.presetId === 'string'
+                        ? candidate.presetId
+                        : getDefaultSelectedPresetId();
                 const presetName =
                     BINGO_PRESETS.find((preset) => preset.id === presetId)?.name ?? 'Bingo Card';
 
                 const normalizedName =
-                    typeof entry.name === 'string' && entry.name.trim().length > 0
-                        ? entry.name.trim()
+                    typeof candidate.name === 'string' && candidate.name.trim().length > 0
+                        ? candidate.name.trim()
                         : buildDefaultCardName(presetName, index + 1);
 
                 const normalizedDifficulty: BingoDifficultyFilter =
-                    entry.difficulty === 'easy' ||
-                        entry.difficulty === 'medium' ||
-                        entry.difficulty === 'hard' ||
-                        entry.difficulty === 'mixed'
-                        ? entry.difficulty
+                    candidate.difficulty === 'easy' ||
+                        candidate.difficulty === 'medium' ||
+                        candidate.difficulty === 'hard' ||
+                        candidate.difficulty === 'mixed'
+                        ? candidate.difficulty
                         : 'mixed';
 
                 const normalizedCenterMode: BingoCenterMode =
-                    entry.centerMode === 'free' || entry.centerMode === 'goal'
-                        ? entry.centerMode
-                        : inferCenterModeFromCard(entry.card);
+                    candidate.centerMode === 'free' || candidate.centerMode === 'goal'
+                        ? candidate.centerMode
+                        : inferCenterModeFromCard(candidate.card);
 
                 acc.push({
-                    id: typeof entry.id === 'string' ? entry.id : `${Date.now()}-${index}`,
+                    id: typeof candidate.id === 'string' ? candidate.id : `${Date.now()}-${index}`,
                     name: normalizedName,
                     presetId,
                     difficulty: normalizedDifficulty,
                     centerMode: normalizedCenterMode,
-                    card: entry.card,
-                    marked: entry.marked,
-                    createdAt: typeof entry.createdAt === 'number' ? entry.createdAt : Date.now()
+                    card: candidate.card,
+                    marked: candidate.marked,
+                    runtimeMs: typeof candidate.runtimeMs === 'number' ? candidate.runtimeMs : 0,
+                    timerStartedAt:
+                        typeof candidate.timerStartedAt === 'number' ? candidate.timerStartedAt : undefined,
+                    createdAt: typeof candidate.createdAt === 'number' ? candidate.createdAt : Date.now(),
+                    isArchived:
+                        typeof candidate.isArchived === 'boolean'
+                            ? candidate.isArchived
+                            : archivedFallback,
+                    finishedAt:
+                        typeof candidate.finishedAt === 'number'
+                            ? candidate.finishedAt
+                            : typeof candidate.archivedAt === 'number'
+                                ? candidate.archivedAt
+                                : undefined,
+                    archivedAt: undefined
                 });
 
                 return acc;
-            }, [])
-            : [];
+            }, []);
+        };
 
-        const boundedIndex = Math.max(
+        const parsedCards = normalizeCards(parsed.cards, false);
+        const parsedArchivedCards = normalizeCards(parsed.archivedCards, true);
+
+        const boundedActiveIndex = Math.max(
             0,
             Math.min(
                 Number.isFinite(parsed.activeCardIndex) ? Number(parsed.activeCardIndex) : 0,
                 Math.max(parsedCards.length - 1, 0)
+            )
+        );
+
+        const boundedArchivedIndex = Math.max(
+            0,
+            Math.min(
+                Number.isFinite(parsed.archivedCardIndex) ? Number(parsed.archivedCardIndex) : 0,
+                Math.max(parsedArchivedCards.length - 1, 0)
             )
         );
 
@@ -152,12 +235,20 @@ const loadBingoState = (): PersistedBingoState => {
                 ? parsed.centerMode
                 : 'free';
 
+        const cardView: BingoCardView =
+            parsed.cardView === 'active' || parsed.cardView === 'archived'
+                ? parsed.cardView
+                : 'active';
+
         return {
             cards: parsedCards,
-            activeCardIndex: boundedIndex,
+            archivedCards: parsedArchivedCards,
+            activeCardIndex: boundedActiveIndex,
+            archivedCardIndex: boundedArchivedIndex,
             selectedPresetId,
             difficulty,
-            centerMode
+            centerMode,
+            cardView
         };
     } catch {
         return fallback;
@@ -170,9 +261,18 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     const [difficulty, setDifficulty] = useState<BingoDifficultyFilter>(persisted.difficulty);
     const [centerMode, setCenterMode] = useState<BingoCenterMode>(persisted.centerMode);
     const [cards, setCards] = useState<PersistedBingoCard[]>(persisted.cards);
+    const [archivedCards, setArchivedCards] = useState<PersistedBingoCard[]>(persisted.archivedCards);
     const [activeCardIndex, setActiveCardIndex] = useState<number>(persisted.activeCardIndex);
+    const [archivedCardIndex, setArchivedCardIndex] = useState<number>(persisted.archivedCardIndex);
+    const [cardView, setCardView] = useState<BingoCardView>(persisted.cardView);
     const [error, setError] = useState<string | null>(null);
     const [shareStatus, setShareStatus] = useState<string | null>(null);
+    const [runtimeNow, setRuntimeNow] = useState<number>(Date.now());
+
+    const cardViewOptions: { label: string; value: BingoCardView }[] = [
+        { label: 'Active Cards', value: 'active' },
+        { label: 'Finished Cards', value: 'archived' }
+    ];
 
     const selectedPreset = useMemo<BingoPreset | undefined>(
         () => BINGO_PRESETS.find((preset) => preset.id === selectedPresetId),
@@ -191,9 +291,27 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
         return selectedPreset.goals.filter((goal) => goal.difficulty === difficulty).length;
     }, [difficulty, selectedPreset]);
 
-    const activeCard = cards[activeCardIndex];
+    const visibleCards = cardView === 'active' ? cards : archivedCards;
+    const visibleCardIndex = cardView === 'active' ? activeCardIndex : archivedCardIndex;
+    const activeCard = visibleCards[visibleCardIndex];
+    const isArchivedView = cardView === 'archived';
     const activeMarked = activeCard?.marked ?? emptyMarkState(centerMode);
     const completedLines = useMemo(() => countCompletedLines(activeMarked), [activeMarked]);
+    const activeRuntimeMs = activeCard ? getCardRuntimeMs(activeCard, runtimeNow) : 0;
+
+    useEffect(() => {
+        if (!cards.some((card) => !!card.timerStartedAt)) {
+            return;
+        }
+
+        const intervalId = window.setInterval(() => {
+            setRuntimeNow(Date.now());
+        }, 1000);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, [cards]);
 
     useEffect(() => {
         if (typeof localStorage === 'undefined') {
@@ -202,14 +320,26 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
 
         const payload: PersistedBingoState = {
             cards,
+            archivedCards,
             activeCardIndex,
+            archivedCardIndex,
             selectedPresetId,
             difficulty,
-            centerMode
+            centerMode,
+            cardView
         };
 
         localStorage.setItem(bingoStateStorageKey, JSON.stringify(payload));
-    }, [activeCardIndex, cards, difficulty, selectedPresetId, centerMode]);
+    }, [
+        activeCardIndex,
+        archivedCardIndex,
+        archivedCards,
+        cards,
+        difficulty,
+        selectedPresetId,
+        centerMode,
+        cardView
+    ]);
 
     const generateCard = () => {
         if (!selectedPreset) {
@@ -227,10 +357,14 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
                     centerMode,
                     card: nextCard,
                     marked: emptyMarkState(centerMode),
-                    createdAt: Date.now()
+                    runtimeMs: 0,
+                    timerStartedAt: undefined,
+                    createdAt: Date.now(),
+                    isArchived: false
                 };
                 const nextCards = [...prev, nextPersistedCard];
                 setActiveCardIndex(nextCards.length - 1);
+                setCardView('active');
                 return nextCards;
             });
             setError(null);
@@ -244,6 +378,10 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
 
     const handleCellClick = (cell: BingoCardCell) => {
         if (!activeCard) {
+            return;
+        }
+
+        if (isArchivedView) {
             return;
         }
 
@@ -266,7 +404,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     };
 
     const resetMarks = () => {
-        if (!activeCard) {
+        if (!activeCard || isArchivedView) {
             return;
         }
 
@@ -284,13 +422,127 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     };
 
     const showPreviousCard = () => {
-        setActiveCardIndex((prev) => Math.max(prev - 1, 0));
+        if (cardView === 'active') {
+            setActiveCardIndex((prev) => Math.max(prev - 1, 0));
+        } else {
+            setArchivedCardIndex((prev) => Math.max(prev - 1, 0));
+        }
         setShareStatus(null);
     };
 
     const showNextCard = () => {
-        setActiveCardIndex((prev) => Math.min(prev + 1, Math.max(cards.length - 1, 0)));
+        if (cardView === 'active') {
+            setActiveCardIndex((prev) => Math.min(prev + 1, Math.max(cards.length - 1, 0)));
+        } else {
+            setArchivedCardIndex((prev) => Math.min(prev + 1, Math.max(archivedCards.length - 1, 0)));
+        }
         setShareStatus(null);
+    };
+
+    const archiveActiveCard = () => {
+        if (!activeCard || isArchivedView) {
+            return;
+        }
+
+        const now = Date.now();
+
+        const archivedTarget: PersistedBingoCard = {
+            ...activeCard,
+            runtimeMs: getCardRuntimeMs(activeCard, now),
+            timerStartedAt: undefined,
+            isArchived: true,
+            finishedAt: now,
+            archivedAt: undefined
+        };
+
+        setCards((prev) => {
+            const remainingCards = prev.filter((card) => card.id !== activeCard.id);
+
+            setActiveCardIndex((prevIndex) =>
+                Math.min(prevIndex, Math.max(remainingCards.length - 1, 0))
+            );
+
+            return remainingCards;
+        });
+
+        setArchivedCards((archivedPrev) => {
+            if (archivedPrev.some((card) => card.id === archivedTarget.id)) {
+                return archivedPrev;
+            }
+
+            const nextArchived = [...archivedPrev, archivedTarget];
+            setArchivedCardIndex(nextArchived.length - 1);
+            return nextArchived;
+        });
+
+        setShareStatus(null);
+    };
+
+    const startTimer = () => {
+        if (!activeCard || isArchivedView || activeCard.timerStartedAt) {
+            return;
+        }
+
+        const now = Date.now();
+        setCards((prev) => {
+            const nextCards = [...prev];
+            const target = nextCards[activeCardIndex];
+            if (!target) {
+                return prev;
+            }
+
+            nextCards[activeCardIndex] = {
+                ...target,
+                timerStartedAt: now
+            };
+
+            return nextCards;
+        });
+    };
+
+    const pauseTimer = () => {
+        if (!activeCard || isArchivedView || !activeCard.timerStartedAt) {
+            return;
+        }
+
+        const now = Date.now();
+        setCards((prev) => {
+            const nextCards = [...prev];
+            const target = nextCards[activeCardIndex];
+            if (!target || !target.timerStartedAt) {
+                return prev;
+            }
+
+            nextCards[activeCardIndex] = {
+                ...target,
+                runtimeMs: getCardRuntimeMs(target, now),
+                timerStartedAt: undefined
+            };
+
+            return nextCards;
+        });
+    };
+
+    const stopTimer = () => {
+        if (!activeCard || isArchivedView) {
+            return;
+        }
+
+        setCards((prev) => {
+            const nextCards = [...prev];
+            const target = nextCards[activeCardIndex];
+            if (!target) {
+                return prev;
+            }
+
+            nextCards[activeCardIndex] = {
+                ...target,
+                runtimeMs: 0,
+                timerStartedAt: undefined
+            };
+
+            return nextCards;
+        });
     };
 
     const discardActiveCard = () => {
@@ -298,19 +550,35 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
             return;
         }
 
-        setCards((prev) => {
-            const nextCards = prev.filter((card) => card.id !== activeCard.id);
+        if (cardView === 'active') {
+            setCards((prev) => {
+                const nextCards = prev.filter((card) => card.id !== activeCard.id);
 
-            setActiveCardIndex((prevIndex) => {
-                if (nextCards.length === 0) {
-                    return 0;
-                }
+                setActiveCardIndex((prevIndex) => {
+                    if (nextCards.length === 0) {
+                        return 0;
+                    }
 
-                return Math.min(prevIndex, nextCards.length - 1);
+                    return Math.min(prevIndex, nextCards.length - 1);
+                });
+
+                return nextCards;
             });
+        } else {
+            setArchivedCards((prev) => {
+                const nextCards = prev.filter((card) => card.id !== activeCard.id);
 
-            return nextCards;
-        });
+                setArchivedCardIndex((prevIndex) => {
+                    if (nextCards.length === 0) {
+                        return 0;
+                    }
+
+                    return Math.min(prevIndex, nextCards.length - 1);
+                });
+
+                return nextCards;
+            });
+        }
 
         setShareStatus(null);
         setError(null);
@@ -318,6 +586,10 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
 
     const handleCardNameChange = (value: string) => {
         if (!activeCard) {
+            return;
+        }
+
+        if (isArchivedView) {
             return;
         }
 
@@ -422,6 +694,25 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
 
                 <div className={styles.optionsRow}>
                     <div className={styles.controlBlock}>
+                        <label>View</label>
+                        <SelectButton
+                            value={cardView}
+                            options={cardViewOptions}
+                            optionLabel="label"
+                            optionValue="value"
+                            onChange={(event: SelectButtonChangeEvent) =>
+                                setCardView(event.value as BingoCardView)
+                            }
+                            className={styles.selectButton}
+                        />
+                        <small>
+                            {cardView === 'active'
+                                ? `${cards.length} active card(s)`
+                                : `${archivedCards.length} finished card(s)`}
+                        </small>
+                    </div>
+
+                    <div className={styles.controlBlock}>
                         <label htmlFor="bingo-preset">Preset</label>
                         <Dropdown
                             inputId="bingo-preset"
@@ -485,12 +776,12 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
                         severity="secondary"
                         outlined
                         onClick={showPreviousCard}
-                        disabled={cards.length === 0 || activeCardIndex === 0}
+                        disabled={visibleCards.length === 0 || visibleCardIndex === 0}
                     />
                     <span className={styles.pagerStatus}>
-                        {cards.length === 0
+                        {visibleCards.length === 0
                             ? 'No cards generated yet'
-                            : `Card ${activeCardIndex + 1} of ${cards.length}`}
+                            : `Card ${visibleCardIndex + 1} of ${visibleCards.length}`}
                     </span>
                     <Button
                         label="Next"
@@ -499,7 +790,9 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
                         severity="secondary"
                         outlined
                         onClick={showNextCard}
-                        disabled={cards.length === 0 || activeCardIndex >= cards.length - 1}
+                        disabled={
+                            visibleCards.length === 0 || visibleCardIndex >= visibleCards.length - 1
+                        }
                     />
                 </div>
 
@@ -513,26 +806,73 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
                                 value={activeCard.name}
                                 onChange={(event) => handleCardNameChange(event.target.value)}
                                 placeholder="Name this card"
+                                readOnly={isArchivedView}
                             />
                             <div className={styles.meta}>
                                 <span>{completedLines} line(s) complete</span>
                             </div>
                         </div>
+                        <div className={styles.dateMetaRow}>
+                            <div className={styles.datePill}>
+                                <strong>Created:</strong> {formatCardDate(activeCard.createdAt)}
+                            </div>
+                            <div className={styles.datePill}>
+                                <strong>Finished:</strong> {formatCardDate(activeCard.finishedAt)}
+                            </div>
+                            <div className={styles.datePill}>
+                                <strong>Run Time:</strong> {formatRuntime(activeRuntimeMs)}
+                            </div>
+                        </div>
                         <div className={styles.cardActionsRow}>
-                            <Button
-                                label="Reset Marks"
-                                icon="pi pi-undo"
-                                severity="secondary"
-                                outlined
-                                onClick={resetMarks}
-                            />
-                            <Button
-                                label="Copy Share Text"
-                                icon="pi pi-share-alt"
-                                severity="info"
-                                outlined
-                                onClick={handleCopyShareText}
-                            />
+                            {!isArchivedView && (
+                                <>
+                                    <Button
+                                        label="Start Timer"
+                                        icon="pi pi-play"
+                                        severity="success"
+                                        outlined
+                                        onClick={startTimer}
+                                        disabled={!!activeCard.timerStartedAt}
+                                    />
+                                    <Button
+                                        label="Pause Timer"
+                                        icon="pi pi-pause"
+                                        severity="warning"
+                                        outlined
+                                        onClick={pauseTimer}
+                                        disabled={!activeCard.timerStartedAt}
+                                    />
+                                    <Button
+                                        label="Stop Timer"
+                                        icon="pi pi-stop"
+                                        severity="secondary"
+                                        outlined
+                                        onClick={stopTimer}
+                                        disabled={!activeCard.timerStartedAt && activeCard.runtimeMs === 0}
+                                    />
+                                    <Button
+                                        label="Reset Marks"
+                                        icon="pi pi-undo"
+                                        severity="secondary"
+                                        outlined
+                                        onClick={resetMarks}
+                                    />
+                                    <Button
+                                        label="Copy Share Text"
+                                        icon="pi pi-share-alt"
+                                        severity="info"
+                                        outlined
+                                        onClick={handleCopyShareText}
+                                    />
+                                    <Button
+                                        label="Finish"
+                                        icon="pi pi-check"
+                                        severity="success"
+                                        outlined
+                                        onClick={archiveActiveCard}
+                                    />
+                                </>
+                            )}
                             <Button
                                 label="Delete"
                                 icon="pi pi-trash"
@@ -561,6 +901,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
                                         cell.isFree ? styles.cellFree : '',
                                         isMarked ? styles.cellMarked : ''
                                     ].join(' ')}
+                                    disabled={cell.isFree || isArchivedView}
                                     onClick={() => handleCellClick(cell)}
                                 >
                                     {cell.isFree ? 'FREE' : cell.goal?.label}
