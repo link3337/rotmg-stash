@@ -32,6 +32,20 @@
   white-space: nowrap;
 }
 
+.classBadge {
+  font-size: 0.9rem;
+  color: var(--text-color-secondary);
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  white-space: nowrap;
+
+  strong {
+    color: var(--text-color);
+  }
+}
+
 .optionsRow {
   display: flex;
   flex-wrap: wrap;
@@ -137,6 +151,24 @@
   margin: 0;
 }
 
+.classRollRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.classRollValue {
+  flex: 1;
+}
+
+.classRollButton {
+  flex: 0 0 auto;
+}
+
+.classClearButton {
+  flex: 0 0 auto;
+}
+
 .actionsRow {
   display: flex;
   align-items: center;
@@ -155,8 +187,85 @@
   color: var(--text-color-secondary);
 }
 
-.grid {
+.gridArea {
+  position: relative;
   margin-top: 1rem;
+}
+
+.gridAreaCelebrating::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at center,
+      color-mix(in srgb, var(--green-400) 26%, transparent) 0%,
+      color-mix(in srgb, var(--primary-color) 14%, transparent) 48%,
+      transparent 72%);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  animation: bingoBoardGlow 560ms ease-out;
+}
+
+.bingoCelebration {
+  position: absolute;
+  left: 50%;
+  top: 28%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--green-500) 55%, transparent);
+  border-radius: 14px;
+  padding: 0.85rem 1.3rem;
+  width: max-content;
+  max-width: min(92%, 760px);
+  background: linear-gradient(120deg,
+      color-mix(in srgb, var(--green-500) 20%, var(--surface-ground)),
+      color-mix(in srgb, var(--primary-color) 16%, var(--surface-ground)));
+  color: color-mix(in srgb, var(--green-900) 75%, var(--text-color));
+  font-size: clamp(1.2rem, 2.8vw, 2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--green-500) 28%, transparent);
+  animation: bingoBannerPop 1800ms ease;
+  overflow: hidden;
+
+  &::before,
+  &::after {
+    content: '✦';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: color-mix(in srgb, var(--green-600) 80%, var(--primary-color));
+    opacity: 0;
+    animation: bingoSparkle 900ms ease 220ms;
+  }
+
+  &::before {
+    left: 0.65rem;
+  }
+
+  &::after {
+    right: 0.65rem;
+    animation-delay: 340ms;
+  }
+}
+
+.metaCelebrate {
+  display: inline-block;
+  animation: bingoMetaPulse 520ms ease 2;
+}
+
+.gridCelebrating .cellMarked {
+  animation: bingoCellFlash 900ms ease;
+}
+
+.grid {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.5rem;
@@ -204,6 +313,87 @@
   border-color: var(--green-500);
 }
 
+@keyframes bingoBannerPop {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+  }
+
+  12% {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  88% {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 0;
+    filter: blur(1px);
+  }
+}
+
+@keyframes bingoSparkle {
+  0% {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.5);
+  }
+
+  40% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.7);
+  }
+}
+
+@keyframes bingoMetaPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bingoCellFlash {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--green-500) 45%, transparent);
+  }
+
+  45% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--green-500) 20%, transparent);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes bingoBoardGlow {
+  0% {
+    opacity: 0;
+  }
+
+  38% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (max-width: 1100px) {
   .optionsRow {
     flex-direction: column;
@@ -222,5 +412,17 @@
 
   .cell {
     min-height: 74px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .bingoCelebration,
+  .bingoCelebration::before,
+  .bingoCelebration::after,
+  .gridAreaCelebrating::after,
+  .metaCelebrate,
+  .gridCelebrating .cellMarked {
+    animation: none;
   }
 }

@@ -11,7 +11,7 @@ import { BINGO_PRESETS } from './bingo-presets';
 
 describe('bingo generator', () => {
   it('creates a full card with a free center when free mode is used', () => {
-    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed');
+    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'free', 'existing');
 
     expect(card).toHaveLength(BINGO_CELL_COUNT);
     expect(card[BINGO_CENTER_INDEX]?.isFree).toBe(true);
@@ -24,7 +24,7 @@ describe('bingo generator', () => {
   });
 
   it('biases goal selection toward the selected difficulty', () => {
-    const card = generateBingoCard(BINGO_PRESETS[0], 'hard');
+    const card = generateBingoCard(BINGO_PRESETS[0], 'hard', 'free', 'existing');
 
     const hardGoals = card.filter((cell) => cell.goal?.difficulty === 'hard');
 
@@ -32,7 +32,7 @@ describe('bingo generator', () => {
   });
 
   it('always generates a goat goal in the center tile', () => {
-    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'goat');
+    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'goat', 'existing');
 
     expect(card[BINGO_CENTER_INDEX]?.isFree).toBe(false);
     expect(card[BINGO_CENTER_INDEX]?.goal).toBeDefined();
@@ -44,12 +44,20 @@ describe('bingo generator', () => {
   });
 
   it('uses a free center icon when center mode is free', () => {
-    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'free');
+    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'free', 'existing');
     const marks = Array.from({ length: BINGO_CELL_COUNT }, () => false);
     marks[BINGO_CENTER_INDEX] = true;
 
-    const message = formatBingoShareText('Adventurer Mix', 'mixed', card, marks, 0);
+    const message = formatBingoShareText('Adventurer Mix', 'mixed', 'existing', card, marks, 0);
     expect(message).toContain('⭐');
+  });
+
+  it('filters out existing-only goals for new characters', () => {
+    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'free', 'new');
+    const labels = card.filter((cell) => !cell.isFree).map((cell) => cell.goal?.label ?? '');
+
+    expect(labels.some((label) => label.includes('Solo Void'))).toBe(false);
+    expect(labels.some((label) => label.includes('Solo Shatters'))).toBe(false);
   });
 
   it('counts completed lines correctly', () => {
@@ -70,16 +78,16 @@ describe('bingo generator', () => {
   });
 
   it('formats share text with summary and goals', () => {
-    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed');
+    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'free', 'existing');
     const marks = Array.from(
       { length: BINGO_CELL_COUNT },
       (_, index) => index === BINGO_CENTER_INDEX
     );
     marks[0] = true;
 
-    const message = formatBingoShareText('Adventurer Mix', 'mixed', card, marks, 0);
+    const message = formatBingoShareText('Adventurer Mix', 'mixed', 'existing', card, marks, 0);
 
-    expect(message).toContain('RotMG Stash Bingo - Adventurer Mix (Mixed)');
+    expect(message).toContain('RotMG Stash Bingo - Adventurer Mix (Mixed, Existing Character)');
     expect(message).toContain('Completed lines: 0');
     expect(message).toContain('Goals:');
     expect(message).toContain('[x]');
@@ -87,16 +95,16 @@ describe('bingo generator', () => {
   });
 
   it('formats center icon as regular mark when center is not free', () => {
-    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'goat');
+    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'goat', 'existing');
     const marks = Array.from({ length: BINGO_CELL_COUNT }, () => false);
     marks[BINGO_CENTER_INDEX] = true;
 
-    const message = formatBingoShareText('Adventurer Mix', 'mixed', card, marks, 0);
+    const message = formatBingoShareText('Adventurer Mix', 'mixed', 'existing', card, marks, 0);
     expect(message).toContain('✅');
   });
 
   it('returns fallback message when card data is invalid', () => {
-    const message = formatBingoShareText('Adventurer Mix', 'mixed', [], [], 0);
+    const message = formatBingoShareText('Adventurer Mix', 'mixed', 'existing', [], [], 0);
 
     expect(message).toBe('No bingo card generated yet.');
   });

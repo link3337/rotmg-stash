@@ -1,7 +1,8 @@
-import { BingoDifficulty, BingoGoal, BingoPreset } from './bingo-presets';
+import { BingoDifficulty, BingoGoal, BingoGoalCharacterMode, BingoPreset } from './bingo-presets';
 
 export type BingoDifficultyFilter = BingoDifficulty | 'mixed';
 export type BingoCenterMode = 'free' | 'goat';
+export type BingoCharacterMode = Exclude<BingoGoalCharacterMode, 'any'>;
 
 export interface BingoCardCell {
   index: number;
@@ -46,18 +47,31 @@ const pickGoalsByDifficultyPreference = (
   return buckets.flat();
 };
 
+const filterGoalsByCharacterMode = (
+  goals: BingoGoal[],
+  characterMode: BingoCharacterMode
+): BingoGoal[] =>
+  goals.filter(
+    (goal) =>
+      goal.characterMode === undefined ||
+      goal.characterMode === 'any' ||
+      goal.characterMode === characterMode
+  );
+
 export const generateBingoCard = (
   preset: BingoPreset,
   difficulty: BingoDifficultyFilter,
-  centerMode: BingoCenterMode = 'free'
+  centerMode: BingoCenterMode = 'free',
+  characterMode: BingoCharacterMode = 'existing'
 ): BingoCardCell[] => {
-  const pool = pickGoalsByDifficultyPreference(preset.goals, difficulty);
+  const modeFilteredGoals = filterGoalsByCharacterMode(preset.goals, characterMode);
+  const pool = pickGoalsByDifficultyPreference(modeFilteredGoals, difficulty);
 
   if (centerMode === 'free') {
     if (pool.length < BINGO_GOAL_COUNT) {
       throw new Error(
-        `Not enough goals in preset "${preset.name}". ` +
-          `Need at least ${BINGO_GOAL_COUNT}, got ${pool.length}.`
+        `Not enough goals in preset "${preset.name}" for ${characterMode} characters. ` +
+        `Need at least ${BINGO_GOAL_COUNT}, got ${pool.length}.`
       );
     }
 
@@ -85,7 +99,9 @@ export const generateBingoCard = (
 
   const goatGoals = pool.filter((goal) => goal.difficulty === 'goat');
   if (goatGoals.length === 0) {
-    throw new Error(`Preset "${preset.name}" has no goat goals available for center tile.`);
+    throw new Error(
+      `Preset "${preset.name}" has no goat goals available for ${characterMode} characters.`
+    );
   }
 
   const centerGoal = shuffle(goatGoals)[0];
@@ -93,8 +109,8 @@ export const generateBingoCard = (
 
   if (nonCenterPool.length < BINGO_GOAL_COUNT) {
     throw new Error(
-      `Not enough goals in preset "${preset.name}". ` +
-        `Need at least ${BINGO_CELL_COUNT}, got ${pool.length}.`
+      `Not enough goals in preset "${preset.name}" for ${characterMode} characters. ` +
+      `Need at least ${BINGO_CELL_COUNT}, got ${pool.length}.`
     );
   }
 
@@ -150,9 +166,13 @@ const formatDifficultyLabel = (difficulty: BingoDifficultyFilter): string => {
   return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 };
 
+const formatCharacterModeLabel = (characterMode: BingoCharacterMode): string =>
+  characterMode === 'new' ? 'New Character' : 'Existing Character';
+
 export const formatBingoShareText = (
   presetName: string,
   difficulty: BingoDifficultyFilter,
+  characterMode: BingoCharacterMode,
   card: BingoCardCell[],
   marked: boolean[],
   completedLines: number
@@ -186,7 +206,7 @@ export const formatBingoShareText = (
     .join('\n');
 
   return [
-    `RotMG Stash Bingo - ${presetName} (${formatDifficultyLabel(difficulty)})`,
+    `RotMG Stash Bingo - ${presetName} (${formatDifficultyLabel(difficulty)}, ${formatCharacterModeLabel(characterMode)})`,
     `Completed lines: ${completedLines}`,
     iconGrid,
     '',

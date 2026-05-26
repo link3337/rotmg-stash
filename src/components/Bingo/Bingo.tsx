@@ -1,14 +1,16 @@
+import { CLASS_SLOT_CONFIG } from '@components/CharacterBuilder/config/slot-config';
 import { Button } from 'primereact/button';
 import { Checkbox, CheckboxChangeEvent } from 'primereact/checkbox';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { SelectButton, SelectButtonChangeEvent } from 'primereact/selectbutton';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BINGO_CELL_COUNT,
   BingoCardCell,
   BingoCenterMode,
+  BingoCharacterMode,
   BingoDifficultyFilter,
   countCompletedLines,
   formatBingoShareText,
@@ -24,6 +26,14 @@ const difficultyOptions: { label: string; value: BingoDifficultyFilter }[] = [
   { label: 'Hard', value: 'hard' }
 ];
 
+const randomFrom = <T,>(values: T[]): T | null => {
+  if (!values.length) {
+    return null;
+  }
+
+  return values[Math.floor(Math.random() * values.length)];
+};
+
 const emptyMarkState = (centerMode: BingoCenterMode): boolean[] =>
   Array.from({ length: BINGO_CELL_COUNT }, (_, index) =>
     centerMode === 'free' ? index === Math.floor(BINGO_CELL_COUNT / 2) : false
@@ -37,8 +47,10 @@ const bingoStateStorageKey = 'bingo_state';
 interface PersistedBingoCard {
   id: string;
   name: string;
+  className?: string;
   presetId: string;
   difficulty: BingoDifficultyFilter;
+  characterMode: BingoCharacterMode;
   centerMode: BingoCenterMode;
   card: BingoCardCell[];
   marked: boolean[];
@@ -58,7 +70,9 @@ interface PersistedBingoState {
   activeCardIndex: number;
   archivedCardIndex: number;
   selectedPresetId: string;
+  selectedClassName: string;
   difficulty: BingoDifficultyFilter;
+  characterMode: BingoCharacterMode;
   centerMode: BingoCenterMode;
   cardView: BingoCardView;
 }
@@ -109,7 +123,9 @@ const loadBingoState = (): PersistedBingoState => {
     activeCardIndex: 0,
     archivedCardIndex: 0,
     selectedPresetId: getDefaultSelectedPresetId(),
+    selectedClassName: '',
     difficulty: 'mixed',
+    characterMode: 'existing',
     centerMode: 'free',
     cardView: 'active'
   };
@@ -155,9 +171,9 @@ const loadBingoState = (): PersistedBingoState => {
 
         const normalizedDifficulty: BingoDifficultyFilter =
           candidate.difficulty === 'easy' ||
-          candidate.difficulty === 'medium' ||
-          candidate.difficulty === 'hard' ||
-          candidate.difficulty === 'mixed'
+            candidate.difficulty === 'medium' ||
+            candidate.difficulty === 'hard' ||
+            candidate.difficulty === 'mixed'
             ? candidate.difficulty
             : 'mixed';
 
@@ -169,8 +185,10 @@ const loadBingoState = (): PersistedBingoState => {
         acc.push({
           id: typeof candidate.id === 'string' ? candidate.id : `${Date.now()}-${index}`,
           name: normalizedName,
+          className: typeof candidate.className === 'string' ? candidate.className : undefined,
           presetId,
           difficulty: normalizedDifficulty,
+          characterMode: candidate.characterMode === 'new' ? 'new' : 'existing',
           centerMode: normalizedCenterMode,
           card: candidate.card,
           marked: candidate.marked,
@@ -217,16 +235,24 @@ const loadBingoState = (): PersistedBingoState => {
         ? parsed.selectedPresetId
         : fallback.selectedPresetId;
 
+    const selectedClassName =
+      typeof parsed.selectedClassName === 'string' ? parsed.selectedClassName : '';
+
     const difficulty: BingoDifficultyFilter =
       parsed.difficulty === 'easy' ||
-      parsed.difficulty === 'medium' ||
-      parsed.difficulty === 'hard' ||
-      parsed.difficulty === 'mixed'
+        parsed.difficulty === 'medium' ||
+        parsed.difficulty === 'hard' ||
+        parsed.difficulty === 'mixed'
         ? parsed.difficulty
         : 'mixed';
 
     const centerMode: BingoCenterMode =
       parsed.centerMode === 'free' || parsed.centerMode === 'goat' ? parsed.centerMode : 'free';
+
+    const characterMode: BingoCharacterMode =
+      parsed.characterMode === 'new' || parsed.characterMode === 'existing'
+        ? parsed.characterMode
+        : 'existing';
 
     const cardView: BingoCardView =
       parsed.cardView === 'active' || parsed.cardView === 'archived' ? parsed.cardView : 'active';
@@ -237,7 +263,9 @@ const loadBingoState = (): PersistedBingoState => {
       activeCardIndex: boundedActiveIndex,
       archivedCardIndex: boundedArchivedIndex,
       selectedPresetId,
+      selectedClassName,
       difficulty,
+      characterMode,
       centerMode,
       cardView
     };
@@ -249,7 +277,9 @@ const loadBingoState = (): PersistedBingoState => {
 const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
   const persisted = useMemo(loadBingoState, []);
   const [selectedPresetId, setSelectedPresetId] = useState<string>(persisted.selectedPresetId);
+  const [selectedClassName, setSelectedClassName] = useState<string>(persisted.selectedClassName);
   const [difficulty, setDifficulty] = useState<BingoDifficultyFilter>(persisted.difficulty);
+  const [characterMode, setCharacterMode] = useState<BingoCharacterMode>(persisted.characterMode);
   const [centerMode, setCenterMode] = useState<BingoCenterMode>(persisted.centerMode);
   const [cards, setCards] = useState<PersistedBingoCard[]>(persisted.cards);
   const [archivedCards, setArchivedCards] = useState<PersistedBingoCard[]>(persisted.archivedCards);
@@ -259,11 +289,18 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
   const [error, setError] = useState<string | null>(null);
   const [shareStatus, setShareStatus] = useState<string | null>(null);
   const [runtimeNow, setRuntimeNow] = useState<number>(Date.now());
+  const [bingoCelebrationKey, setBingoCelebrationKey] = useState<number>(0);
+  const [bingoCelebrationText, setBingoCelebrationText] = useState<string>('');
+  const [isCelebratingBingo, setIsCelebratingBingo] = useState<boolean>(false);
+  const previousCompletedLinesRef = useRef<number>(0);
+  const celebrationTimeoutRef = useRef<number | undefined>(undefined);
 
   const cardViewOptions: { label: string; value: BingoCardView }[] = [
     { label: 'Active Cards', value: 'active' },
     { label: 'Finished Cards', value: 'archived' }
   ];
+
+  const classPool = useMemo(() => Object.keys(CLASS_SLOT_CONFIG).sort((a, b) => a.localeCompare(b)), []);
 
   const selectedPreset = useMemo<BingoPreset | undefined>(
     () => BINGO_PRESETS.find((preset) => preset.id === selectedPresetId),
@@ -275,12 +312,19 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
       return 0;
     }
 
+    const modeFiltered = selectedPreset.goals.filter(
+      (goal) =>
+        goal.characterMode === undefined ||
+        goal.characterMode === 'any' ||
+        goal.characterMode === characterMode
+    );
+
     if (difficulty === 'mixed') {
-      return selectedPreset.goals.length;
+      return modeFiltered.length;
     }
 
-    return selectedPreset.goals.filter((goal) => goal.difficulty === difficulty).length;
-  }, [difficulty, selectedPreset]);
+    return modeFiltered.filter((goal) => goal.difficulty === difficulty).length;
+  }, [characterMode, difficulty, selectedPreset]);
 
   const visibleCards = cardView === 'active' ? cards : archivedCards;
   const visibleCardIndex = cardView === 'active' ? activeCardIndex : archivedCardIndex;
@@ -289,6 +333,46 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
   const activeMarked = activeCard?.marked ?? emptyMarkState(centerMode);
   const completedLines = useMemo(() => countCompletedLines(activeMarked), [activeMarked]);
   const activeRuntimeMs = activeCard ? getCardRuntimeMs(activeCard, runtimeNow) : 0;
+
+  useEffect(() => {
+    return () => {
+      if (celebrationTimeoutRef.current !== undefined) {
+        window.clearTimeout(celebrationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!activeCard || isArchivedView) {
+      previousCompletedLinesRef.current = completedLines;
+      return;
+    }
+
+    const previous = previousCompletedLinesRef.current;
+    if (completedLines > previous && completedLines > 0) {
+      const gained = completedLines - previous;
+      const text =
+        gained > 1
+          ? `BINGO x${gained}! ${completedLines} lines complete!`
+          : completedLines === 1
+            ? 'BINGO! First line complete!'
+            : `BINGO! ${completedLines} lines complete!`;
+
+      setBingoCelebrationText(text);
+      setBingoCelebrationKey((prevKey) => prevKey + 1);
+      setIsCelebratingBingo(true);
+
+      if (celebrationTimeoutRef.current !== undefined) {
+        window.clearTimeout(celebrationTimeoutRef.current);
+      }
+
+      celebrationTimeoutRef.current = window.setTimeout(() => {
+        setIsCelebratingBingo(false);
+      }, 1800);
+    }
+
+    previousCompletedLinesRef.current = completedLines;
+  }, [activeCard, completedLines, isArchivedView]);
 
   useEffect(() => {
     if (!cards.some((card) => !!card.timerStartedAt)) {
@@ -315,7 +399,9 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
       activeCardIndex,
       archivedCardIndex,
       selectedPresetId,
+      selectedClassName,
       difficulty,
+      characterMode,
       centerMode,
       cardView
     };
@@ -326,11 +412,42 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     archivedCardIndex,
     archivedCards,
     cards,
+    characterMode,
     difficulty,
+    selectedClassName,
     selectedPresetId,
     centerMode,
     cardView
   ]);
+
+  const randomizeClass = () => {
+    const nextClass = randomFrom(classPool);
+    if (!nextClass) {
+      return;
+    }
+
+    if (nextClass !== selectedClassName) {
+      setSelectedClassName(nextClass);
+      return;
+    }
+
+    if (classPool.length <= 1) {
+      return;
+    }
+
+    const fallbackClass = classPool.find((className) => className !== selectedClassName);
+    if (fallbackClass) {
+      setSelectedClassName(fallbackClass);
+    }
+  };
+
+  const clearSelectedClass = () => {
+    if (!selectedClassName) {
+      return;
+    }
+
+    setSelectedClassName('');
+  };
 
   const generateCard = () => {
     if (!selectedPreset) {
@@ -338,13 +455,15 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     }
 
     try {
-      const nextCard = generateBingoCard(selectedPreset, difficulty, centerMode);
+      const nextCard = generateBingoCard(selectedPreset, difficulty, centerMode, characterMode);
       setCards((prev) => {
         const nextPersistedCard: PersistedBingoCard = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           name: buildDefaultCardName(selectedPreset.name, prev.length + 1),
+          className: selectedClassName || undefined,
           presetId: selectedPreset.id,
           difficulty,
+          characterMode,
           centerMode,
           card: nextCard,
           marked: emptyMarkState(centerMode),
@@ -634,6 +753,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     const payload = formatBingoShareText(
       activeCard.name || activePreset.name,
       activeCard.difficulty,
+      activeCard.characterMode,
       activeCard.card,
       activeCard.marked,
       completedLines
@@ -663,11 +783,19 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     if (centerMode !== activeCard.centerMode) {
       setCenterMode(activeCard.centerMode);
     }
+
+    if (characterMode !== activeCard.characterMode) {
+      setCharacterMode(activeCard.characterMode);
+    }
+
+    if ((activeCard.className ?? '') !== selectedClassName) {
+      setSelectedClassName(activeCard.className ?? '');
+    }
   }, [activeCard]);
 
   return (
     <Dialog
-      header="Bingo Challenge"
+      header="Bingo"
       visible={visible}
       onHide={onHide}
       style={{ width: '95vw', maxWidth: '1500px' }}
@@ -733,6 +861,61 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
           </div>
 
           <div className={styles.controlBlock}>
+            <label>Character</label>
+            <div className={styles.checkboxRow}>
+              <Checkbox
+                inputId="bingo-character-new"
+                checked={characterMode === 'new'}
+                onChange={(event: CheckboxChangeEvent) =>
+                  setCharacterMode(event.checked ? 'new' : 'existing')
+                }
+              />
+              <label htmlFor="bingo-character-new" className={styles.checkboxLabel}>
+                New character
+              </label>
+            </div>
+            <small>
+              {characterMode === 'new'
+                ? 'Filters toward fresh-character friendly goals.'
+                : 'Filters toward progression goals for established characters.'}
+            </small>
+          </div>
+
+          <div className={styles.controlBlock}>
+            <label>Class</label>
+            <div className={styles.classRollRow}>
+              <InputText
+                value={selectedClassName || 'Open'}
+                readOnly
+                className={styles.classRollValue}
+              />
+              <Button
+                icon="pi pi-times"
+                severity="secondary"
+                text
+                onClick={clearSelectedClass}
+                disabled={!selectedClassName}
+                aria-label="Clear class selection"
+                className={styles.classClearButton}
+              />
+              <Button
+                icon="pi pi-sync"
+                severity="secondary"
+                outlined
+                onClick={randomizeClass}
+                disabled={!classPool.length}
+                aria-label="Randomize class"
+                className={styles.classRollButton}
+              />
+            </div>
+            <small>
+              {selectedClassName
+                ? `Next card class: ${selectedClassName}.`
+                : 'Class is Open. Player chooses their own class.'}
+            </small>
+          </div>
+
+          <div className={styles.controlBlock}>
             <label>Center Tile</label>
             <div className={styles.checkboxRow}>
               <Checkbox
@@ -795,8 +978,13 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
                 placeholder="Name this card"
                 readOnly={isArchivedView}
               />
+              <div className={styles.classBadge}>
+                <strong>Class:</strong> {activeCard.className || 'Open'}
+              </div>
               <div className={styles.meta}>
-                <span>{completedLines} line(s) complete</span>
+                <span className={isCelebratingBingo ? styles.metaCelebrate : ''}>
+                  {completedLines} line(s) complete
+                </span>
               </div>
             </div>
             <div className={styles.dateMetaRow}>
@@ -875,26 +1063,39 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
         {shareStatus && <div className={styles.shareStatus}>{shareStatus}</div>}
 
         {activeCard && (
-          <div className={styles.grid}>
-            {activeCard.card.map((cell) => {
-              const isMarked = activeMarked[cell.index];
+          <div className={[styles.gridArea, isCelebratingBingo ? styles.gridAreaCelebrating : ''].join(' ')}>
+            {isCelebratingBingo && (
+              <div
+                key={bingoCelebrationKey}
+                className={styles.bingoCelebration}
+                role="status"
+                aria-live="polite"
+              >
+                {bingoCelebrationText}
+              </div>
+            )}
 
-              return (
-                <button
-                  key={cell.index}
-                  type="button"
-                  className={[
-                    styles.cell,
-                    cell.isFree ? styles.cellFree : '',
-                    isMarked ? styles.cellMarked : ''
-                  ].join(' ')}
-                  disabled={cell.isFree || isArchivedView}
-                  onClick={() => handleCellClick(cell)}
-                >
-                  {cell.isFree ? 'FREE' : cell.goal?.label}
-                </button>
-              );
-            })}
+            <div className={[styles.grid, isCelebratingBingo ? styles.gridCelebrating : ''].join(' ')}>
+              {activeCard.card.map((cell) => {
+                const isMarked = activeMarked[cell.index];
+
+                return (
+                  <button
+                    key={cell.index}
+                    type="button"
+                    className={[
+                      styles.cell,
+                      cell.isFree ? styles.cellFree : '',
+                      isMarked ? styles.cellMarked : ''
+                    ].join(' ')}
+                    disabled={cell.isFree || isArchivedView}
+                    onClick={() => handleCellClick(cell)}
+                  >
+                    {cell.isFree ? 'FREE' : cell.goal?.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </section>
