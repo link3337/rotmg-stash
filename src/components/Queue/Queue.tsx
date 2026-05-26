@@ -22,7 +22,13 @@ import {
   updateQueue
 } from '@store/slices/QueueSlice';
 import { selectRateLimit } from '@store/slices/RateLimitSlice';
-import { selectQueueFetchInterval, selectShowBingo } from '@store/slices/SettingsSlice';
+import {
+  selectOpenBingoInNewWindow,
+  selectQueueFetchInterval,
+  selectShowBingo
+} from '@store/slices/SettingsSlice';
+import { isTauri } from '@tauri-apps/api/core';
+import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { info } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
 import React, { useEffect, useMemo } from 'react';
@@ -53,11 +59,53 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
   const isAutoRefresh = useAppSelector(selectIsAutoRefresh);
   const isBingoOpen = useAppSelector(selectIsBingoOpen);
   const showBingo = useAppSelector(selectShowBingo);
+  const openBingoInNewWindow = useAppSelector(selectOpenBingoInNewWindow);
   const { timestamp } = useAppSelector(selectRateLimit);
 
   const setShowQueue = (value: boolean) => dispatch(showQueue(value));
   const setAutoRefresh = (value: boolean) => dispatch(autoRefresh(value));
   const setIsPaused = (value: boolean) => dispatch(pauseQueue(value));
+
+  const openBingoWindow = async () => {
+    if (!openBingoInNewWindow) {
+      dispatch(setBingoVisible(true));
+      return;
+    }
+
+    if (!isTauri()) {
+      dispatch(setBingoVisible(true));
+      return;
+    }
+
+    const existingWindow = await WebviewWindow.getByLabel('bingo-window');
+    if (existingWindow) {
+      await existingWindow.setFocus();
+      return;
+    }
+
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('bingoWindow', '1');
+
+      const bingoWindow = new WebviewWindow('bingo-window', {
+        title: 'RotMG Stash - Bingo',
+        url: url.toString(),
+        width: 1500,
+        height: 980,
+        center: true,
+        resizable: true,
+        focus: true
+      });
+
+      bingoWindow.once('tauri://error', (windowError) => {
+        info(`[Bingo Window] Failed to open detached bingo window: ${String(windowError)}`);
+        dispatch(setBingoVisible(true));
+      });
+    } catch (windowError) {
+      info(`[Bingo Window] Exception while creating detached window: ${String(windowError)}`);
+      dispatch(setBingoVisible(true));
+    }
+  };
 
   // Compute if the user is rate limited locally
   const isRateLimited = useMemo(() => {
@@ -171,7 +219,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
         <Button
           icon="pi pi-th-large"
           label="Bingo"
-          onClick={() => dispatch(setBingoVisible(true))}
+          onClick={openBingoWindow}
         />
       )}
       <QueueInfoDialog

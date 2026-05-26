@@ -1,11 +1,13 @@
 import UpdateChecker from '@/components/Update/UpdateChecker';
 import { findThemeById } from '@/themeRegistry';
+import Bingo from '@components/Bingo/Bingo';
 import MainLayout from '@components/Layout/MainLayout';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import DebugPage from '@pages/DebugPage';
 import MainPage from '@pages/MainPage';
 import { initializeAccounts } from '@store/slices/AccountsSlice';
 import { initRateLimitState } from '@store/slices/RateLimitSlice';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { error, info } from '@tauri-apps/plugin-log';
 import 'primeflex/primeflex.css';
 import 'primeicons/primeicons.css';
@@ -16,6 +18,8 @@ import './App.scss';
 function App() {
   const dispatch = useAppDispatch();
   const isProd = import.meta.env.PROD;
+  const searchParams = new URLSearchParams(window.location.search);
+  const isBingoWindow = searchParams.get('bingoWindow') === '1';
 
   const theme = useAppSelector((state) => state.settings.theme);
   const isDebugMode = useAppSelector((state) => state.settings.experimental.isDebugMode);
@@ -23,9 +27,13 @@ function App() {
   const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
+    if (isBingoWindow) {
+      return;
+    }
+
     dispatch(initializeAccounts());
     dispatch(initRateLimitState());
-  }, [dispatch]);
+  }, [dispatch, isBingoWindow]);
 
   useEffect(() => {
     const themeEntry = findThemeById(theme);
@@ -59,6 +67,22 @@ function App() {
 
     document.head.appendChild(nextLink);
   }, [theme]);
+
+  if (isBingoWindow) {
+    const handleBingoWindowHide = async () => {
+      try {
+        await getCurrentWindow().close();
+      } catch {
+        window.close();
+      }
+    };
+
+    return (
+      <div className="App">
+        <Bingo visible onHide={handleBingoWindowHide} renderInDialog={false} />
+      </div>
+    );
+  }
 
   return (
     <div className="App">

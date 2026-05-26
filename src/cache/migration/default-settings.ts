@@ -15,6 +15,7 @@ export const defaultTotalSettings: TotalSettingsModel = {
 
 export const defaultDisplaySettings: DisplaySettingsModel = {
   showBingo: false,
+  openBingoInNewWindow: false,
   showTotals: true,
   showAccountInfo: true,
   showExalts: true,

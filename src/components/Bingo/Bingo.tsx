@@ -80,6 +80,7 @@ interface PersistedBingoState {
 interface BingoProps {
   visible: boolean;
   onHide: () => void;
+  renderInDialog?: boolean;
 }
 
 const getDefaultSelectedPresetId = (): string => BINGO_PRESETS[0]?.id ?? '';
@@ -274,7 +275,7 @@ const loadBingoState = (): PersistedBingoState => {
   }
 };
 
-const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
+const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true }) => {
   const persisted = useMemo(loadBingoState, []);
   const [selectedPresetId, setSelectedPresetId] = useState<string>(persisted.selectedPresetId);
   const [selectedClassName, setSelectedClassName] = useState<string>(persisted.selectedClassName);
@@ -293,7 +294,6 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
   const [bingoCelebrationText, setBingoCelebrationText] = useState<string>('');
   const [isCelebratingBingo, setIsCelebratingBingo] = useState<boolean>(false);
   const previousCompletedLinesRef = useRef<number>(0);
-  const celebrationTimeoutRef = useRef<number | undefined>(undefined);
 
   const cardViewOptions: { label: string; value: BingoCardView }[] = [
     { label: 'Active Cards', value: 'active' },
@@ -335,12 +335,18 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
   const activeRuntimeMs = activeCard ? getCardRuntimeMs(activeCard, runtimeNow) : 0;
 
   useEffect(() => {
+    if (!isCelebratingBingo) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsCelebratingBingo(false);
+    }, 1800);
+
     return () => {
-      if (celebrationTimeoutRef.current !== undefined) {
-        window.clearTimeout(celebrationTimeoutRef.current);
-      }
+      window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [isCelebratingBingo, bingoCelebrationKey]);
 
   useEffect(() => {
     if (!activeCard || isArchivedView) {
@@ -361,14 +367,6 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
       setBingoCelebrationText(text);
       setBingoCelebrationKey((prevKey) => prevKey + 1);
       setIsCelebratingBingo(true);
-
-      if (celebrationTimeoutRef.current !== undefined) {
-        window.clearTimeout(celebrationTimeoutRef.current);
-      }
-
-      celebrationTimeoutRef.current = window.setTimeout(() => {
-        setIsCelebratingBingo(false);
-      }, 1800);
     }
 
     previousCompletedLinesRef.current = completedLines;
@@ -793,6 +791,314 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
     }
   }, [activeCard]);
 
+  const bingoContent = (
+    <section className={styles.bingoContainer}>
+      <div className={styles.headerRow}>
+        <div>
+          <p className={styles.subtitle}>
+            Generate cards from presets, then page through them as you play.
+          </p>
+        </div>
+      </div>
+
+      <div className={styles.optionsRow}>
+        <div className={styles.controlBlock}>
+          <label>View</label>
+          <SelectButton
+            value={cardView}
+            options={cardViewOptions}
+            optionLabel="label"
+            optionValue="value"
+            onChange={(event: SelectButtonChangeEvent) =>
+              setCardView(event.value as BingoCardView)
+            }
+            className={styles.selectButton}
+          />
+          <small>
+            {cardView === 'active'
+              ? `${cards.length} active card(s)`
+              : `${archivedCards.length} finished card(s)`}
+          </small>
+        </div>
+
+        <div className={styles.controlBlock}>
+          <label htmlFor="bingo-preset">Preset</label>
+          <Dropdown
+            inputId="bingo-preset"
+            value={selectedPresetId}
+            onChange={(event: DropdownChangeEvent) => setSelectedPresetId(event.value as string)}
+            options={BINGO_PRESETS}
+            optionLabel="name"
+            optionValue="id"
+            className={styles.controlInput}
+          />
+          <small>{selectedPreset?.description}</small>
+        </div>
+
+        <div className={styles.controlBlock}>
+          <label>Difficulty</label>
+          <SelectButton
+            value={difficulty}
+            options={difficultyOptions}
+            optionLabel="label"
+            optionValue="value"
+            onChange={(event: SelectButtonChangeEvent) =>
+              setDifficulty(event.value as BingoDifficultyFilter)
+            }
+            className={styles.selectButton}
+          />
+          <small>{availableGoalCount} goals available for this selection.</small>
+        </div>
+
+        <div className={styles.controlBlock}>
+          <label>Character</label>
+          <div className={styles.checkboxRow}>
+            <Checkbox
+              inputId="bingo-character-new"
+              checked={characterMode === 'new'}
+              onChange={(event: CheckboxChangeEvent) =>
+                setCharacterMode(event.checked ? 'new' : 'existing')
+              }
+            />
+            <label htmlFor="bingo-character-new" className={styles.checkboxLabel}>
+              New character
+            </label>
+          </div>
+          <small>
+            {characterMode === 'new'
+              ? 'Filters toward fresh-character friendly goals.'
+              : 'Filters toward progression goals for established characters.'}
+          </small>
+        </div>
+
+        <div className={styles.controlBlock}>
+          <label>Class</label>
+          <div className={styles.classRollRow}>
+            <InputText
+              value={selectedClassName || 'Open'}
+              readOnly
+              className={styles.classRollValue}
+            />
+            <Button
+              icon="pi pi-times"
+              severity="secondary"
+              text
+              onClick={clearSelectedClass}
+              disabled={!selectedClassName}
+              aria-label="Clear class selection"
+              className={styles.classClearButton}
+            />
+            <Button
+              icon="pi pi-sync"
+              severity="secondary"
+              outlined
+              onClick={randomizeClass}
+              disabled={!classPool.length}
+              aria-label="Randomize class"
+              className={styles.classRollButton}
+            />
+          </div>
+          <small>
+            {selectedClassName
+              ? `Class: ${selectedClassName}`
+              : 'Class is Open. Player chooses their own class.'}
+          </small>
+        </div>
+
+        <div className={styles.controlBlock}>
+          <label>Center Tile</label>
+          <div className={styles.checkboxRow}>
+            <Checkbox
+              inputId="bingo-center-free"
+              checked={centerMode === 'free'}
+              onChange={(event: CheckboxChangeEvent) =>
+                setCenterMode(event.checked ? 'free' : 'goat')
+              }
+            />
+            <label htmlFor="bingo-center-free" className={styles.checkboxLabel}>
+              Use FREE center tile
+            </label>
+          </div>
+          <small>
+            {centerMode === 'free'
+              ? 'Middle tile is auto-completed as FREE.'
+              : 'Middle tile uses a generated goal.'}
+          </small>
+        </div>
+      </div>
+
+      <div className={styles.actionsRow}>
+        <Button label="Generate Card" icon="pi pi-plus" onClick={generateCard} />
+      </div>
+
+      <div className={styles.pagerRow}>
+        <Button
+          label="Prev"
+          icon="pi pi-angle-left"
+          severity="secondary"
+          outlined
+          onClick={showPreviousCard}
+          disabled={visibleCards.length === 0 || visibleCardIndex === 0}
+        />
+        <span className={styles.pagerStatus}>
+          {visibleCards.length === 0
+            ? 'No cards generated yet'
+            : `Card ${visibleCardIndex + 1} of ${visibleCards.length}`}
+        </span>
+        <Button
+          label="Next"
+          icon="pi pi-angle-right"
+          iconPos="right"
+          severity="secondary"
+          outlined
+          onClick={showNextCard}
+          disabled={visibleCards.length === 0 || visibleCardIndex >= visibleCards.length - 1}
+        />
+      </div>
+
+      {activeCard && (
+        <>
+          <div className={styles.sectionDivider} />
+          <div className={styles.cardNameRow}>
+            <InputText
+              id="bingo-card-name"
+              className={styles.cardNameInput}
+              value={activeCard.name}
+              onChange={(event) => handleCardNameChange(event.target.value)}
+              placeholder="Name this card"
+              readOnly={isArchivedView}
+            />
+            <div className={styles.classBadge}>
+              <strong>Class:</strong> {activeCard.className || 'Open'}
+            </div>
+            <div className={styles.classBadge}>
+              <strong>Character:</strong>{' '}
+              {activeCard.characterMode === 'new' ? 'New' : 'Existing'}
+            </div>
+            <div className={styles.meta}>
+              <span className={isCelebratingBingo ? styles.metaCelebrate : ''}>
+                {completedLines} line(s) complete
+              </span>
+            </div>
+          </div>
+          <div className={styles.dateMetaRow}>
+            <div className={styles.datePill}>
+              <strong>Created:</strong> {formatCardDate(activeCard.createdAt)}
+            </div>
+            <div className={styles.datePill}>
+              <strong>Finished:</strong> {formatCardDate(activeCard.finishedAt)}
+            </div>
+            <div className={styles.datePill}>
+              <strong>Run Time:</strong> {formatRuntime(activeRuntimeMs)}
+            </div>
+          </div>
+          <div className={styles.cardActionsRow}>
+            {!isArchivedView && (
+              <>
+                <Button
+                  label="Start Timer"
+                  icon="pi pi-play"
+                  severity="success"
+                  outlined
+                  onClick={startTimer}
+                  disabled={!!activeCard.timerStartedAt}
+                />
+                <Button
+                  label="Pause Timer"
+                  icon="pi pi-pause"
+                  severity="warning"
+                  outlined
+                  onClick={pauseTimer}
+                  disabled={!activeCard.timerStartedAt}
+                />
+                <Button
+                  label="Reset Timer"
+                  icon="pi pi-stop"
+                  severity="secondary"
+                  outlined
+                  onClick={stopTimer}
+                  disabled={!activeCard.timerStartedAt && activeCard.runtimeMs === 0}
+                />
+                <Button
+                  label="Reset Marks"
+                  icon="pi pi-undo"
+                  severity="secondary"
+                  outlined
+                  onClick={resetMarks}
+                />
+                <Button
+                  label="Copy Share Text"
+                  icon="pi pi-share-alt"
+                  severity="info"
+                  outlined
+                  onClick={handleCopyShareText}
+                />
+                <Button
+                  label="Finish"
+                  icon="pi pi-check"
+                  severity="success"
+                  outlined
+                  onClick={archiveActiveCard}
+                />
+              </>
+            )}
+            <Button
+              label="Delete"
+              icon="pi pi-trash"
+              severity="danger"
+              outlined
+              onClick={discardActiveCard}
+            />
+          </div>
+        </>
+      )}
+
+      {error && <div className={styles.error}>{error}</div>}
+      {shareStatus && <div className={styles.shareStatus}>{shareStatus}</div>}
+
+      {activeCard && (
+        <div className={[styles.gridArea, isCelebratingBingo ? styles.gridAreaCelebrating : ''].join(' ')}>
+          {isCelebratingBingo && (
+            <div
+              key={bingoCelebrationKey}
+              className={styles.bingoCelebration}
+              role="status"
+              aria-live="polite"
+            >
+              {bingoCelebrationText}
+            </div>
+          )}
+
+          <div className={[styles.grid, isCelebratingBingo ? styles.gridCelebrating : ''].join(' ')}>
+            {activeCard.card.map((cell) => {
+              const isMarked = activeMarked[cell.index];
+
+              return (
+                <button
+                  key={cell.index}
+                  type="button"
+                  className={[
+                    styles.cell,
+                    cell.isFree ? styles.cellFree : '',
+                    isMarked ? styles.cellMarked : ''
+                  ].join(' ')}
+                  disabled={cell.isFree || isArchivedView}
+                  onClick={() => handleCellClick(cell)}
+                >
+                  {cell.isFree ? 'FREE' : cell.goal?.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+
+  if (!renderInDialog) {
+    return bingoContent;
+  }
+
   return (
     <Dialog
       header="Bingo"
@@ -802,303 +1108,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide }) => {
       dismissableMask
       closeOnEscape
     >
-      <section className={styles.bingoContainer}>
-        <div className={styles.headerRow}>
-          <div>
-            <p className={styles.subtitle}>
-              Generate cards from presets, then page through them as you play.
-            </p>
-          </div>
-        </div>
-
-        <div className={styles.optionsRow}>
-          <div className={styles.controlBlock}>
-            <label>View</label>
-            <SelectButton
-              value={cardView}
-              options={cardViewOptions}
-              optionLabel="label"
-              optionValue="value"
-              onChange={(event: SelectButtonChangeEvent) =>
-                setCardView(event.value as BingoCardView)
-              }
-              className={styles.selectButton}
-            />
-            <small>
-              {cardView === 'active'
-                ? `${cards.length} active card(s)`
-                : `${archivedCards.length} finished card(s)`}
-            </small>
-          </div>
-
-          <div className={styles.controlBlock}>
-            <label htmlFor="bingo-preset">Preset</label>
-            <Dropdown
-              inputId="bingo-preset"
-              value={selectedPresetId}
-              onChange={(event: DropdownChangeEvent) => setSelectedPresetId(event.value as string)}
-              options={BINGO_PRESETS}
-              optionLabel="name"
-              optionValue="id"
-              className={styles.controlInput}
-            />
-            <small>{selectedPreset?.description}</small>
-          </div>
-
-          <div className={styles.controlBlock}>
-            <label>Difficulty</label>
-            <SelectButton
-              value={difficulty}
-              options={difficultyOptions}
-              optionLabel="label"
-              optionValue="value"
-              onChange={(event: SelectButtonChangeEvent) =>
-                setDifficulty(event.value as BingoDifficultyFilter)
-              }
-              className={styles.selectButton}
-            />
-            <small>{availableGoalCount} goals available for this selection.</small>
-          </div>
-
-          <div className={styles.controlBlock}>
-            <label>Character</label>
-            <div className={styles.checkboxRow}>
-              <Checkbox
-                inputId="bingo-character-new"
-                checked={characterMode === 'new'}
-                onChange={(event: CheckboxChangeEvent) =>
-                  setCharacterMode(event.checked ? 'new' : 'existing')
-                }
-              />
-              <label htmlFor="bingo-character-new" className={styles.checkboxLabel}>
-                New character
-              </label>
-            </div>
-            <small>
-              {characterMode === 'new'
-                ? 'Filters toward fresh-character friendly goals.'
-                : 'Filters toward progression goals for established characters.'}
-            </small>
-          </div>
-
-          <div className={styles.controlBlock}>
-            <label>Class</label>
-            <div className={styles.classRollRow}>
-              <InputText
-                value={selectedClassName || 'Open'}
-                readOnly
-                className={styles.classRollValue}
-              />
-              <Button
-                icon="pi pi-times"
-                severity="secondary"
-                text
-                onClick={clearSelectedClass}
-                disabled={!selectedClassName}
-                aria-label="Clear class selection"
-                className={styles.classClearButton}
-              />
-              <Button
-                icon="pi pi-sync"
-                severity="secondary"
-                outlined
-                onClick={randomizeClass}
-                disabled={!classPool.length}
-                aria-label="Randomize class"
-                className={styles.classRollButton}
-              />
-            </div>
-            <small>
-              {selectedClassName
-                ? `Next card class: ${selectedClassName}.`
-                : 'Class is Open. Player chooses their own class.'}
-            </small>
-          </div>
-
-          <div className={styles.controlBlock}>
-            <label>Center Tile</label>
-            <div className={styles.checkboxRow}>
-              <Checkbox
-                inputId="bingo-center-free"
-                checked={centerMode === 'free'}
-                onChange={(event: CheckboxChangeEvent) =>
-                  setCenterMode(event.checked ? 'free' : 'goat')
-                }
-              />
-              <label htmlFor="bingo-center-free" className={styles.checkboxLabel}>
-                Use FREE center tile
-              </label>
-            </div>
-            <small>
-              {centerMode === 'free'
-                ? 'Middle tile is auto-completed as FREE.'
-                : 'Middle tile uses a generated goal.'}
-            </small>
-          </div>
-        </div>
-
-        <div className={styles.actionsRow}>
-          <Button label="Generate Card" icon="pi pi-plus" onClick={generateCard} />
-        </div>
-
-        <div className={styles.pagerRow}>
-          <Button
-            label="Prev"
-            icon="pi pi-angle-left"
-            severity="secondary"
-            outlined
-            onClick={showPreviousCard}
-            disabled={visibleCards.length === 0 || visibleCardIndex === 0}
-          />
-          <span className={styles.pagerStatus}>
-            {visibleCards.length === 0
-              ? 'No cards generated yet'
-              : `Card ${visibleCardIndex + 1} of ${visibleCards.length}`}
-          </span>
-          <Button
-            label="Next"
-            icon="pi pi-angle-right"
-            iconPos="right"
-            severity="secondary"
-            outlined
-            onClick={showNextCard}
-            disabled={visibleCards.length === 0 || visibleCardIndex >= visibleCards.length - 1}
-          />
-        </div>
-
-        {activeCard && (
-          <>
-            <div className={styles.sectionDivider} />
-            <div className={styles.cardNameRow}>
-              <InputText
-                id="bingo-card-name"
-                className={styles.cardNameInput}
-                value={activeCard.name}
-                onChange={(event) => handleCardNameChange(event.target.value)}
-                placeholder="Name this card"
-                readOnly={isArchivedView}
-              />
-              <div className={styles.classBadge}>
-                <strong>Class:</strong> {activeCard.className || 'Open'}
-              </div>
-              <div className={styles.meta}>
-                <span className={isCelebratingBingo ? styles.metaCelebrate : ''}>
-                  {completedLines} line(s) complete
-                </span>
-              </div>
-            </div>
-            <div className={styles.dateMetaRow}>
-              <div className={styles.datePill}>
-                <strong>Created:</strong> {formatCardDate(activeCard.createdAt)}
-              </div>
-              <div className={styles.datePill}>
-                <strong>Finished:</strong> {formatCardDate(activeCard.finishedAt)}
-              </div>
-              <div className={styles.datePill}>
-                <strong>Run Time:</strong> {formatRuntime(activeRuntimeMs)}
-              </div>
-            </div>
-            <div className={styles.cardActionsRow}>
-              {!isArchivedView && (
-                <>
-                  <Button
-                    label="Start Timer"
-                    icon="pi pi-play"
-                    severity="success"
-                    outlined
-                    onClick={startTimer}
-                    disabled={!!activeCard.timerStartedAt}
-                  />
-                  <Button
-                    label="Pause Timer"
-                    icon="pi pi-pause"
-                    severity="warning"
-                    outlined
-                    onClick={pauseTimer}
-                    disabled={!activeCard.timerStartedAt}
-                  />
-                  <Button
-                    label="Stop Timer"
-                    icon="pi pi-stop"
-                    severity="secondary"
-                    outlined
-                    onClick={stopTimer}
-                    disabled={!activeCard.timerStartedAt && activeCard.runtimeMs === 0}
-                  />
-                  <Button
-                    label="Reset Marks"
-                    icon="pi pi-undo"
-                    severity="secondary"
-                    outlined
-                    onClick={resetMarks}
-                  />
-                  <Button
-                    label="Copy Share Text"
-                    icon="pi pi-share-alt"
-                    severity="info"
-                    outlined
-                    onClick={handleCopyShareText}
-                  />
-                  <Button
-                    label="Finish"
-                    icon="pi pi-check"
-                    severity="success"
-                    outlined
-                    onClick={archiveActiveCard}
-                  />
-                </>
-              )}
-              <Button
-                label="Delete"
-                icon="pi pi-trash"
-                severity="danger"
-                outlined
-                onClick={discardActiveCard}
-              />
-            </div>
-          </>
-        )}
-
-        {error && <div className={styles.error}>{error}</div>}
-        {shareStatus && <div className={styles.shareStatus}>{shareStatus}</div>}
-
-        {activeCard && (
-          <div className={[styles.gridArea, isCelebratingBingo ? styles.gridAreaCelebrating : ''].join(' ')}>
-            {isCelebratingBingo && (
-              <div
-                key={bingoCelebrationKey}
-                className={styles.bingoCelebration}
-                role="status"
-                aria-live="polite"
-              >
-                {bingoCelebrationText}
-              </div>
-            )}
-
-            <div className={[styles.grid, isCelebratingBingo ? styles.gridCelebrating : ''].join(' ')}>
-              {activeCard.card.map((cell) => {
-                const isMarked = activeMarked[cell.index];
-
-                return (
-                  <button
-                    key={cell.index}
-                    type="button"
-                    className={[
-                      styles.cell,
-                      cell.isFree ? styles.cellFree : '',
-                      isMarked ? styles.cellMarked : ''
-                    ].join(' ')}
-                    disabled={cell.isFree || isArchivedView}
-                    onClick={() => handleCellClick(cell)}
-                  >
-                    {cell.isFree ? 'FREE' : cell.goal?.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </section>
+      {bingoContent}
     </Dialog>
   );
 };
