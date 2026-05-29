@@ -38,7 +38,7 @@ export const migrateSettings = (settings: Partial<SettingsState>): SettingsState
     },
     experimental: {
       ...defaultExperimentalSettings,
-      ...settings.experimental
+      ...settings.experimental,
     },
     itemSort: {
       ...defaultSortSettings,

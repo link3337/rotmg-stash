@@ -134,7 +134,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
             onClick={refreshButtonClicked}
             icon="pi pi-refresh"
           />
-          {accountData && characters.length > 0 && (
+          {experimentalSettings.enableCharacterBuilderRoulette && accountData && characters.length > 0 && (
             <Button
               label="Character Builder Roulette"
               icon="pi pi-compass"
@@ -182,7 +182,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
         ownedSkinIds={ownedSkinIds}
       />
 
-      {accountData && characters.length > 0 && (
+      {experimentalSettings.enableCharacterBuilderRoulette && accountData && characters.length > 0 && (
         <CharacterBuilderDialog
           account={accountData}
           characters={characters}

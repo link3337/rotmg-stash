@@ -14,8 +14,6 @@ export const defaultTotalSettings: TotalSettingsModel = {
 };
 
 export const defaultDisplaySettings: DisplaySettingsModel = {
-  showBingo: false,
-  openBingoInNewWindow: false,
   showTotals: true,
   showAccountInfo: true,
   showExalts: true,
@@ -32,10 +30,13 @@ export const defaultDisplaySettings: DisplaySettingsModel = {
   showAccountName: true,
   showIngameNameInQueue: true,
   showLastLaunched: false,
-  compactVaults: true
+  compactVaults: true,
 };
 
 export const defaultExperimentalSettings: ExperimentalSettingsModel = {
+  showBingo: false,
+  openBingoInNewWindow: false,
+  enableCharacterBuilderRoulette: true,
   lazyLoading: false,
   lazyLoadingKeepRendered: false,
   lazyLoadingHeight: 1000,

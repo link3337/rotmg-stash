@@ -102,9 +102,7 @@ const Settings: React.FC = () => {
     { label: 'Show Account Name', key: 'showAccountName' },
     { label: 'Show IGN in Queue Status', key: 'showIngameNameInQueue' },
     { label: 'Show Last Launched Column', key: 'showLastLaunched' },
-    { label: 'Compact Vaults', key: 'compactVaults' },
-    { label: 'Enable Bingo Feature', key: 'showBingo' },
-    { label: 'Open Bingo in Extra Window', key: 'openBingoInNewWindow' }
+    { label: 'Compact Vaults', key: 'compactVaults' }
   ];
 
   return (

@@ -395,6 +395,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
   const [isCelebratingBingo, setIsCelebratingBingo] = useState<boolean>(false);
   const [presetEditorVisible, setPresetEditorVisible] = useState<boolean>(false);
   const [editingPresetId, setEditingPresetId] = useState<string>(persisted.selectedPresetId);
+  const importPresetsInputRef = useRef<HTMLInputElement | null>(null);
   const previousCompletedLinesRef = useRef<number>(0);
   const previousCardIdRef = useRef<string | null>(null);
 
@@ -613,6 +614,28 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
     setEditingPresetId(id);
   };
 
+  const duplicateEditingPreset = () => {
+    if (!editingPreset) {
+      return;
+    }
+
+    const duplicatedId = createEditorId('preset');
+    const duplicatedPreset: BingoPreset = {
+      ...editingPreset,
+      id: duplicatedId,
+      name: `${editingPreset.name} Copy`,
+      goals: editingPreset.goals.map((goal) => ({
+        ...goal,
+        id: createEditorId('goal')
+      }))
+    };
+
+    setPresets((prev) => [...prev, duplicatedPreset]);
+    setSelectedPresetId(duplicatedId);
+    setEditingPresetId(duplicatedId);
+    setError(null);
+  };
+
   const confirmDeleteEditingPreset = () => {
     if (!editingPreset) {
       return;
@@ -678,6 +701,96 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
       ...preset,
       goals: preset.goals.filter((goal) => goal.id !== goalId)
     }));
+  };
+
+  const moveGoalInEditingPreset = (goalId: string, direction: 'up' | 'down') => {
+    updateEditingPreset((preset) => {
+      const fromIndex = preset.goals.findIndex((goal) => goal.id === goalId);
+      if (fromIndex < 0) {
+        return preset;
+      }
+
+      const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+      if (toIndex < 0 || toIndex >= preset.goals.length) {
+        return preset;
+      }
+
+      const goals = [...preset.goals];
+      const [movedGoal] = goals.splice(fromIndex, 1);
+      goals.splice(toIndex, 0, movedGoal);
+
+      return {
+        ...preset,
+        goals
+      };
+    });
+  };
+
+  const exportPresets = () => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    const payload = {
+      version: 1,
+      presets
+    };
+
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `bingo-presets-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+    setShareStatus('Presets exported.');
+    setError(null);
+  };
+
+  const openPresetImportPicker = () => {
+    importPresetsInputRef.current?.click();
+  };
+
+  const handleImportPresets = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as unknown;
+
+      let importSource: unknown = parsed;
+      if (parsed && typeof parsed === 'object' && 'presets' in parsed) {
+        importSource = (parsed as { presets?: unknown }).presets;
+      }
+
+      const importedPresets = normalizePresets(importSource, []);
+      if (importedPresets.length === 0) {
+        setError('No valid presets found in the selected file.');
+        return;
+      }
+
+      const rekeyedPresets = importedPresets.map((preset) => ({
+        ...preset,
+        id: createEditorId('preset'),
+        goals: preset.goals.map((goal) => ({
+          ...goal,
+          id: createEditorId('goal')
+        }))
+      }));
+
+      setPresets((prev) => [...prev, ...rekeyedPresets]);
+      setSelectedPresetId(rekeyedPresets[0].id);
+      setEditingPresetId(rekeyedPresets[0].id);
+      setShareStatus(`Imported ${rekeyedPresets.length} preset(s).`);
+      setError(null);
+    } catch {
+      setError('Failed to import presets. Use a valid JSON file.');
+    }
   };
 
   const generateCard = () => {
@@ -1453,12 +1566,41 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
           />
           <Button label="Add Preset" icon="pi pi-plus" severity="success" onClick={addPreset} />
           <Button
+            label="Duplicate"
+            icon="pi pi-copy"
+            severity="secondary"
+            outlined
+            onClick={duplicateEditingPreset}
+            disabled={!editingPreset}
+          />
+          <Button
+            label="Export"
+            icon="pi pi-download"
+            severity="secondary"
+            outlined
+            onClick={exportPresets}
+          />
+          <Button
+            label="Import"
+            icon="pi pi-upload"
+            severity="secondary"
+            outlined
+            onClick={openPresetImportPicker}
+          />
+          <Button
             label="Delete Preset"
             icon="pi pi-trash"
             severity="danger"
             outlined
             onClick={confirmDeleteEditingPreset}
             disabled={!editingPreset || presets.length <= 1}
+          />
+          <input
+            ref={importPresetsInputRef}
+            type="file"
+            accept=".json,application/json"
+            className={styles.hiddenFileInput}
+            onChange={handleImportPresets}
           />
         </div>
 
@@ -1499,7 +1641,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
             </div>
 
             <div className={styles.presetEditorGoals}>
-              {editingPreset.goals.map((goal) => (
+              {editingPreset.goals.map((goal, goalIndex) => (
                 <div key={goal.id} className={styles.presetEditorGoalRow}>
                   <InputText
                     value={goal.label}
@@ -1533,6 +1675,28 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
                     }
                     className={styles.presetEditorGoalSelect}
                   />
+                  <div className={styles.presetEditorGoalMoveActions}>
+                    <Button
+                      icon="pi pi-arrow-up"
+                      severity="secondary"
+                      outlined
+                      tooltip="Move Up"
+                      tooltipOptions={{ position: 'top' }}
+                      aria-label="Move Goal Up"
+                      onClick={() => moveGoalInEditingPreset(goal.id, 'up')}
+                      disabled={goalIndex === 0}
+                    />
+                    <Button
+                      icon="pi pi-arrow-down"
+                      severity="secondary"
+                      outlined
+                      tooltip="Move Down"
+                      tooltipOptions={{ position: 'top' }}
+                      aria-label="Move Goal Down"
+                      onClick={() => moveGoalInEditingPreset(goal.id, 'down')}
+                      disabled={goalIndex === editingPreset.goals.length - 1}
+                    />
+                  </div>
                   <Button
                     icon="pi pi-trash"
                     severity="danger"

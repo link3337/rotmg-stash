@@ -140,6 +140,50 @@ const ExperimentalSettings: React.FC<ExperimentalSettingsProps> = ({ experimenta
             </label>
           </div>
 
+          <div>
+            <h5 className="mb-2">Misc</h5>
+
+            <div className="flex flex-column gap-2">
+              <div className="flex align-items-center gap-2">
+                <Checkbox
+                  checked={experimentalSettings?.showBingo}
+                  onChange={() => dispatch(updateExperimentalSetting({ key: 'showBingo' }))}
+                  id="showBingo"
+                />
+                <label htmlFor="showBingo" className="ml-2">
+                  Bingo
+                </label>
+              </div>
+
+              <div className="flex align-items-center gap-2">
+                <Checkbox
+                  checked={experimentalSettings?.openBingoInNewWindow}
+                  onChange={() =>
+                    dispatch(updateExperimentalSetting({ key: 'openBingoInNewWindow' }))
+                  }
+                  id="openBingoInNewWindow"
+                  disabled={!experimentalSettings?.showBingo}
+                />
+                <label htmlFor="openBingoInNewWindow" className="ml-2">
+                  Open Bingo in Extra Window
+                </label>
+              </div>
+
+              <div className="flex align-items-center gap-2">
+                <Checkbox
+                  checked={experimentalSettings?.enableCharacterBuilderRoulette}
+                  onChange={() =>
+                    dispatch(updateExperimentalSetting({ key: 'enableCharacterBuilderRoulette' }))
+                  }
+                  id="enableCharacterBuilderRoulette"
+                />
+                <label htmlFor="enableCharacterBuilderRoulette" className="ml-2">
+                  Character Builder Roulette
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-column gap-2 mt-3">
             <label htmlFor="exaltPath">Exalt Path</label>
             <div className="p-inputgroup">

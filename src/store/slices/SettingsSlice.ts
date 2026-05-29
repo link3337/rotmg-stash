@@ -23,7 +23,7 @@ import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 
-export interface SettingsState extends SettingsModel {}
+export interface SettingsState extends SettingsModel { }
 
 const initialState: SettingsState = {
   displaySettings: defaultDisplaySettings,
@@ -81,7 +81,13 @@ const settingsSlice = createSlice({
       if (key === 'deviceToken' || key === 'exaltPath') {
         state.experimental[key] = value as string;
       }
-      if (key === 'lazyLoading' || key === 'lazyLoadingKeepRendered') {
+      if (
+        key === 'lazyLoading' ||
+        key === 'lazyLoadingKeepRendered' ||
+        key === 'showBingo' ||
+        key === 'openBingoInNewWindow' ||
+        key === 'enableCharacterBuilderRoulette'
+      ) {
         state.experimental[key] = !state.experimental[key];
       } else if (key === 'lazyLoadingHeight' || key === 'lazyLoadingOffset') {
         state.experimental[key] = value as number;
@@ -164,10 +170,10 @@ export const selectExperimentalSettings = (state: RootState) =>
 export const selectDisplaySettings = (state: RootState) => settingsSelector(state).displaySettings;
 
 export const selectShowBingo = (state: RootState) =>
-  settingsSelector(state).displaySettings.showBingo;
+  settingsSelector(state).experimental.showBingo;
 
 export const selectOpenBingoInNewWindow = (state: RootState) =>
-  settingsSelector(state).displaySettings.openBingoInNewWindow;
+  settingsSelector(state).experimental.openBingoInNewWindow;
 
 export const selectTotalSettings = (state: RootState) => settingsSelector(state).totalSettings;
 

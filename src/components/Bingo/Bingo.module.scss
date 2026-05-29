@@ -209,6 +209,10 @@
   min-width: min(100%, 360px);
 }
 
+.hiddenFileInput {
+  display: none;
+}
+
 .presetEditorContent {
   margin-top: 1rem;
   display: flex;
@@ -257,6 +261,12 @@
 
 .presetEditorGoalSelect {
   width: 180px;
+  flex: 0 0 auto;
+}
+
+.presetEditorGoalMoveActions {
+  display: flex;
+  gap: 0.35rem;
   flex: 0 0 auto;
 }
 
@@ -529,6 +539,11 @@
 
   .presetEditorGoalSelect {
     width: 100%;
+  }
+
+  .presetEditorGoalMoveActions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .grid {

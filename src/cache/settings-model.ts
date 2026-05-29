@@ -14,8 +14,6 @@ export interface SettingsModel {
 export type Theme = string;
 
 export interface DisplaySettingsModel {
-  showBingo: boolean;
-  openBingoInNewWindow: boolean;
   showTotals: boolean;
   showAccountInfo: boolean;
   showExalts: boolean;
@@ -51,6 +49,9 @@ export interface SortCriteria {
 }
 
 export interface ExperimentalSettingsModel {
+  showBingo: boolean;
+  openBingoInNewWindow: boolean;
+  enableCharacterBuilderRoulette: boolean;
   lazyLoading: boolean;
   lazyLoadingKeepRendered: boolean;
   lazyLoadingHeight?: number;
