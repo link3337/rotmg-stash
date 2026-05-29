@@ -17,7 +17,7 @@ import {
   formatBingoShareText,
   generateBingoCard
 } from './bingo-generator';
-import { BINGO_PRESETS, BingoPreset } from './bingo-presets';
+import { BINGO_PRESETS, BingoDifficulty, BingoGoalCharacterMode, BingoPreset } from './bingo-presets';
 import styles from './Bingo.module.scss';
 
 const difficultyOptions: { label: string; value: BingoDifficultyFilter }[] = [
@@ -25,6 +25,19 @@ const difficultyOptions: { label: string; value: BingoDifficultyFilter }[] = [
   { label: 'Easy', value: 'easy' },
   { label: 'Medium', value: 'medium' },
   { label: 'Hard', value: 'hard' }
+];
+
+const goalDifficultyOptions: { label: string; value: BingoDifficulty }[] = [
+  { label: 'Easy', value: 'easy' },
+  { label: 'Medium', value: 'medium' },
+  { label: 'Hard', value: 'hard' },
+  { label: 'GOAT', value: 'goat' }
+];
+
+const goalCharacterModeOptions: { label: string; value: BingoGoalCharacterMode }[] = [
+  { label: 'Any', value: 'any' },
+  { label: 'New Character', value: 'new' },
+  { label: 'Existing Character', value: 'existing' }
 ];
 
 const randomFrom = <T,>(values: T[]): T | null => {
@@ -66,6 +79,7 @@ interface PersistedBingoCard {
 type BingoCardView = 'active' | 'archived';
 
 interface PersistedBingoState {
+  presets: BingoPreset[];
   cards: PersistedBingoCard[];
   archivedCards: PersistedBingoCard[];
   activeCardIndex: number;
@@ -84,7 +98,79 @@ interface BingoProps {
   renderInDialog?: boolean;
 }
 
-const getDefaultSelectedPresetId = (): string => BINGO_PRESETS[0]?.id ?? '';
+const cloneDefaultPresets = (): BingoPreset[] =>
+  BINGO_PRESETS.map((preset) => ({
+    ...preset,
+    goals: preset.goals.map((goal) => ({ ...goal }))
+  }));
+
+const getDefaultSelectedPresetId = (presets: BingoPreset[]): string => presets[0]?.id ?? '';
+
+const isValidDifficulty = (value: unknown): value is BingoDifficulty =>
+  value === 'easy' || value === 'medium' || value === 'hard' || value === 'goat';
+
+const isValidGoalCharacterMode = (value: unknown): value is BingoGoalCharacterMode =>
+  value === 'any' || value === 'new' || value === 'existing';
+
+const normalizePresets = (entries: unknown, fallbackPresets: BingoPreset[]): BingoPreset[] => {
+  if (!Array.isArray(entries)) {
+    return fallbackPresets;
+  }
+
+  const normalized = entries.reduce<BingoPreset[]>((acc, entry, presetIndex) => {
+    if (!entry || typeof entry !== 'object') {
+      return acc;
+    }
+
+    const candidate = entry as Partial<BingoPreset>;
+    const goals = Array.isArray(candidate.goals)
+      ? candidate.goals.reduce<BingoPreset['goals']>((goalAcc, goalEntry, goalIndex) => {
+        if (!goalEntry || typeof goalEntry !== 'object') {
+          return goalAcc;
+        }
+
+        const goalCandidate = goalEntry as Partial<BingoPreset['goals'][number]>;
+        const difficulty = goalCandidate.difficulty;
+        if (!goalCandidate.label || !isValidDifficulty(difficulty)) {
+          return goalAcc;
+        }
+
+        goalAcc.push({
+          id:
+            typeof goalCandidate.id === 'string' && goalCandidate.id.trim().length > 0
+              ? goalCandidate.id
+              : `goal-${presetIndex + 1}-${goalIndex + 1}`,
+          label: goalCandidate.label,
+          difficulty,
+          characterMode: isValidGoalCharacterMode(goalCandidate.characterMode)
+            ? goalCandidate.characterMode
+            : undefined
+        });
+
+        return goalAcc;
+      }, [])
+      : [];
+
+    if (!candidate.name || goals.length === 0) {
+      return acc;
+    }
+
+    acc.push({
+      id:
+        typeof candidate.id === 'string' && candidate.id.trim().length > 0
+          ? candidate.id
+          : `preset-${presetIndex + 1}`,
+      name: candidate.name,
+      description:
+        typeof candidate.description === 'string' ? candidate.description : 'Custom bingo preset.',
+      goals
+    });
+
+    return acc;
+  }, []);
+
+  return normalized.length > 0 ? normalized : fallbackPresets;
+};
 
 const buildDefaultCardName = (presetName: string, cardNumber: number): string =>
   `${presetName} ${cardNumber}`;
@@ -119,12 +205,15 @@ const getCardRuntimeMs = (card: PersistedBingoCard, now: number): number => {
 };
 
 const loadBingoState = (): PersistedBingoState => {
+  const defaultPresets = cloneDefaultPresets();
+
   const fallback: PersistedBingoState = {
+    presets: defaultPresets,
     cards: [],
     archivedCards: [],
     activeCardIndex: 0,
     archivedCardIndex: 0,
-    selectedPresetId: getDefaultSelectedPresetId(),
+    selectedPresetId: getDefaultSelectedPresetId(defaultPresets),
     selectedClassName: '',
     difficulty: 'mixed',
     characterMode: 'existing',
@@ -144,7 +233,13 @@ const loadBingoState = (): PersistedBingoState => {
 
     const parsed = JSON.parse(raw) as Partial<PersistedBingoState>;
 
-    const normalizeCards = (entries: unknown, archivedFallback: boolean): PersistedBingoCard[] => {
+    const parsedPresets = normalizePresets(parsed.presets, defaultPresets);
+
+    const normalizeCards = (
+      entries: unknown,
+      archivedFallback: boolean,
+      presetSource: BingoPreset[]
+    ): PersistedBingoCard[] => {
       if (!Array.isArray(entries)) {
         return [];
       }
@@ -162,9 +257,9 @@ const loadBingoState = (): PersistedBingoState => {
         const presetId =
           typeof candidate.presetId === 'string'
             ? candidate.presetId
-            : getDefaultSelectedPresetId();
+            : getDefaultSelectedPresetId(presetSource);
         const presetName =
-          BINGO_PRESETS.find((preset) => preset.id === presetId)?.name ?? 'Bingo Card';
+          presetSource.find((preset) => preset.id === presetId)?.name ?? 'Bingo Card';
 
         const normalizedName =
           typeof candidate.name === 'string' && candidate.name.trim().length > 0
@@ -213,8 +308,8 @@ const loadBingoState = (): PersistedBingoState => {
       }, []);
     };
 
-    const parsedCards = normalizeCards(parsed.cards, false);
-    const parsedArchivedCards = normalizeCards(parsed.archivedCards, true);
+    const parsedCards = normalizeCards(parsed.cards, false, parsedPresets);
+    const parsedArchivedCards = normalizeCards(parsed.archivedCards, true, parsedPresets);
 
     const boundedActiveIndex = Math.max(
       0,
@@ -233,9 +328,11 @@ const loadBingoState = (): PersistedBingoState => {
     );
 
     const selectedPresetId =
-      typeof parsed.selectedPresetId === 'string' && parsed.selectedPresetId
+      typeof parsed.selectedPresetId === 'string' &&
+        parsed.selectedPresetId &&
+        parsedPresets.some((preset) => preset.id === parsed.selectedPresetId)
         ? parsed.selectedPresetId
-        : fallback.selectedPresetId;
+        : getDefaultSelectedPresetId(parsedPresets);
 
     const selectedClassName =
       typeof parsed.selectedClassName === 'string' ? parsed.selectedClassName : '';
@@ -260,6 +357,7 @@ const loadBingoState = (): PersistedBingoState => {
       parsed.cardView === 'active' || parsed.cardView === 'archived' ? parsed.cardView : 'active';
 
     return {
+      presets: parsedPresets,
       cards: parsedCards,
       archivedCards: parsedArchivedCards,
       activeCardIndex: boundedActiveIndex,
@@ -278,6 +376,7 @@ const loadBingoState = (): PersistedBingoState => {
 
 const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true }) => {
   const persisted = useMemo(loadBingoState, []);
+  const [presets, setPresets] = useState<BingoPreset[]>(persisted.presets);
   const [selectedPresetId, setSelectedPresetId] = useState<string>(persisted.selectedPresetId);
   const [selectedClassName, setSelectedClassName] = useState<string>(persisted.selectedClassName);
   const [difficulty, setDifficulty] = useState<BingoDifficultyFilter>(persisted.difficulty);
@@ -294,6 +393,8 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
   const [bingoCelebrationKey, setBingoCelebrationKey] = useState<number>(0);
   const [bingoCelebrationText, setBingoCelebrationText] = useState<string>('');
   const [isCelebratingBingo, setIsCelebratingBingo] = useState<boolean>(false);
+  const [presetEditorVisible, setPresetEditorVisible] = useState<boolean>(false);
+  const [editingPresetId, setEditingPresetId] = useState<string>(persisted.selectedPresetId);
   const previousCompletedLinesRef = useRef<number>(0);
   const previousCardIdRef = useRef<string | null>(null);
 
@@ -303,8 +404,13 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
   );
 
   const selectedPreset = useMemo<BingoPreset | undefined>(
-    () => BINGO_PRESETS.find((preset) => preset.id === selectedPresetId),
-    [selectedPresetId]
+    () => presets.find((preset) => preset.id === selectedPresetId),
+    [presets, selectedPresetId]
+  );
+
+  const editingPreset = useMemo<BingoPreset | undefined>(
+    () => presets.find((preset) => preset.id === editingPresetId),
+    [editingPresetId, presets]
   );
 
   const availableGoalCount = useMemo(() => {
@@ -333,6 +439,18 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
   const activeMarked = activeCard?.marked ?? emptyMarkState(centerMode);
   const completedLines = useMemo(() => countCompletedLines(activeMarked), [activeMarked]);
   const activeRuntimeMs = activeCard ? getCardRuntimeMs(activeCard, runtimeNow) : 0;
+
+  useEffect(() => {
+    if (!presets.some((preset) => preset.id === selectedPresetId)) {
+      setSelectedPresetId(getDefaultSelectedPresetId(presets));
+    }
+  }, [presets, selectedPresetId]);
+
+  useEffect(() => {
+    if (!presets.some((preset) => preset.id === editingPresetId)) {
+      setEditingPresetId(getDefaultSelectedPresetId(presets));
+    }
+  }, [editingPresetId, presets]);
 
   useEffect(() => {
     if (!isCelebratingBingo) {
@@ -401,6 +519,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
     }
 
     const payload: PersistedBingoState = {
+      presets,
       cards,
       archivedCards,
       activeCardIndex,
@@ -419,6 +538,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
     archivedCardIndex,
     archivedCards,
     cards,
+    presets,
     characterMode,
     difficulty,
     selectedClassName,
@@ -454,6 +574,110 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
     }
 
     setSelectedClassName('');
+  };
+
+  const createEditorId = (prefix: string): string =>
+    `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+  const openPresetEditor = () => {
+    setEditingPresetId(selectedPresetId || getDefaultSelectedPresetId(presets));
+    setPresetEditorVisible(true);
+  };
+
+  const updateEditingPreset = (updater: (preset: BingoPreset) => BingoPreset) => {
+    if (!editingPreset) {
+      return;
+    }
+
+    setPresets((prev) => prev.map((preset) => (preset.id === editingPreset.id ? updater(preset) : preset)));
+  };
+
+  const addPreset = () => {
+    const id = createEditorId('preset');
+    const newPreset: BingoPreset = {
+      id,
+      name: `Custom Preset ${presets.length + 1}`,
+      description: 'Custom bingo preset.',
+      goals: [
+        {
+          id: createEditorId('goal'),
+          label: 'New goal',
+          difficulty: 'easy',
+          characterMode: 'any'
+        }
+      ]
+    };
+
+    setPresets((prev) => [...prev, newPreset]);
+    setSelectedPresetId(id);
+    setEditingPresetId(id);
+  };
+
+  const confirmDeleteEditingPreset = () => {
+    if (!editingPreset) {
+      return;
+    }
+
+    if (presets.length <= 1) {
+      setError('At least one preset must remain.');
+      return;
+    }
+
+    const usedByCards = [...cards, ...archivedCards].some((card) => card.presetId === editingPreset.id);
+    if (usedByCards) {
+      setError('Cannot delete a preset that is used by existing cards.');
+      return;
+    }
+
+    confirmDialog({
+      message: `Delete preset ${editingPreset.name}?`,
+      header: 'Delete Preset',
+      icon: 'pi pi-exclamation-triangle',
+      acceptClassName: 'p-button-danger',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      accept: () => {
+        setPresets((prev) => {
+          const nextPresets = prev.filter((preset) => preset.id !== editingPreset.id);
+          const fallbackPresetId = getDefaultSelectedPresetId(nextPresets);
+          setSelectedPresetId(fallbackPresetId);
+          setEditingPresetId(fallbackPresetId);
+          return nextPresets;
+        });
+      }
+    });
+  };
+
+  const addGoalToEditingPreset = () => {
+    updateEditingPreset((preset) => ({
+      ...preset,
+      goals: [
+        ...preset.goals,
+        {
+          id: createEditorId('goal'),
+          label: 'New goal',
+          difficulty: 'easy',
+          characterMode: 'any'
+        }
+      ]
+    }));
+  };
+
+  const updateGoalInEditingPreset = (
+    goalId: string,
+    patch: Partial<BingoPreset['goals'][number]>
+  ) => {
+    updateEditingPreset((preset) => ({
+      ...preset,
+      goals: preset.goals.map((goal) => (goal.id === goalId ? { ...goal, ...patch } : goal))
+    }));
+  };
+
+  const removeGoalFromEditingPreset = (goalId: string) => {
+    updateEditingPreset((preset) => ({
+      ...preset,
+      goals: preset.goals.filter((goal) => goal.id !== goalId)
+    }));
   };
 
   const generateCard = () => {
@@ -813,7 +1037,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
       return;
     }
 
-    const activePreset = BINGO_PRESETS.find((preset) => preset.id === activeCard.presetId);
+    const activePreset = presets.find((preset) => preset.id === activeCard.presetId);
     if (!activePreset) {
       setShareStatus('Unable to resolve preset for this card.');
       return;
@@ -906,7 +1130,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
             inputId="bingo-preset"
             value={selectedPresetId}
             onChange={(event: DropdownChangeEvent) => setSelectedPresetId(event.value as string)}
-            options={BINGO_PRESETS}
+            options={presets}
             optionLabel="name"
             optionValue="id"
             className={styles.controlInput}
@@ -1008,6 +1232,13 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
 
       <div className={styles.actionsRow}>
         <Button label="Generate Card" icon="pi pi-plus" onClick={generateCard} />
+        <Button
+          label="Edit Presets"
+          icon="pi pi-pencil"
+          severity="secondary"
+          outlined
+          onClick={openPresetEditor}
+        />
       </div>
 
       <div className={styles.pagerRow}>
@@ -1203,6 +1434,120 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
       )}
 
       <ConfirmDialog />
+
+      <Dialog
+        header="Preset Editor"
+        visible={presetEditorVisible}
+        onHide={() => setPresetEditorVisible(false)}
+        style={{ width: '95vw', maxWidth: '1100px' }}
+        dismissableMask
+      >
+        <div className={styles.presetEditorHeader}>
+          <Dropdown
+            value={editingPresetId}
+            onChange={(event: DropdownChangeEvent) => setEditingPresetId(event.value as string)}
+            options={presets}
+            optionLabel="name"
+            optionValue="id"
+            className={styles.presetEditorPresetSelect}
+          />
+          <Button label="Add Preset" icon="pi pi-plus" severity="success" onClick={addPreset} />
+          <Button
+            label="Delete Preset"
+            icon="pi pi-trash"
+            severity="danger"
+            outlined
+            onClick={confirmDeleteEditingPreset}
+            disabled={!editingPreset || presets.length <= 1}
+          />
+        </div>
+
+        {editingPreset && (
+          <div className={styles.presetEditorContent}>
+            <div className={styles.presetEditorMeta}>
+              <div className={styles.controlBlock}>
+                <label htmlFor="preset-editor-name">Preset Name</label>
+                <InputText
+                  id="preset-editor-name"
+                  value={editingPreset.name}
+                  onChange={(event) =>
+                    updateEditingPreset((preset) => ({ ...preset, name: event.target.value }))
+                  }
+                />
+              </div>
+              <div className={styles.controlBlock}>
+                <label htmlFor="preset-editor-description">Description</label>
+                <InputText
+                  id="preset-editor-description"
+                  value={editingPreset.description}
+                  onChange={(event) =>
+                    updateEditingPreset((preset) => ({ ...preset, description: event.target.value }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className={styles.presetEditorGoalsHeader}>
+              <h3>Goals</h3>
+              <Button
+                label="Add Goal"
+                icon="pi pi-plus"
+                severity="success"
+                outlined
+                onClick={addGoalToEditingPreset}
+              />
+            </div>
+
+            <div className={styles.presetEditorGoals}>
+              {editingPreset.goals.map((goal) => (
+                <div key={goal.id} className={styles.presetEditorGoalRow}>
+                  <InputText
+                    value={goal.label}
+                    onChange={(event) =>
+                      updateGoalInEditingPreset(goal.id, { label: event.target.value })
+                    }
+                    placeholder="Goal label"
+                    className={styles.presetEditorGoalLabel}
+                  />
+                  <Dropdown
+                    value={goal.difficulty}
+                    options={goalDifficultyOptions}
+                    optionLabel="label"
+                    optionValue="value"
+                    onChange={(event: DropdownChangeEvent) =>
+                      updateGoalInEditingPreset(goal.id, {
+                        difficulty: event.value as BingoDifficulty
+                      })
+                    }
+                    className={styles.presetEditorGoalSelect}
+                  />
+                  <Dropdown
+                    value={goal.characterMode ?? 'any'}
+                    options={goalCharacterModeOptions}
+                    optionLabel="label"
+                    optionValue="value"
+                    onChange={(event: DropdownChangeEvent) =>
+                      updateGoalInEditingPreset(goal.id, {
+                        characterMode: event.value as BingoGoalCharacterMode
+                      })
+                    }
+                    className={styles.presetEditorGoalSelect}
+                  />
+                  <Button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    outlined
+                    tooltip="Delete Goal"
+                    tooltipOptions={{ position: 'top' }}
+                    aria-label="Delete Goal"
+                    onClick={() => removeGoalFromEditingPreset(goal.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Dialog>
     </section>
   );
 
