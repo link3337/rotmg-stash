@@ -297,11 +297,6 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
   const previousCompletedLinesRef = useRef<number>(0);
   const previousCardIdRef = useRef<string | null>(null);
 
-  const cardViewOptions: { label: string; value: BingoCardView }[] = [
-    { label: 'Active Cards', value: 'active' },
-    { label: 'Finished Cards', value: 'archived' }
-  ];
-
   const classPool = useMemo(
     () => Object.keys(CLASS_SLOT_CONFIG).sort((a, b) => a.localeCompare(b)),
     []
@@ -880,14 +875,24 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
       <div className={styles.optionsRow}>
         <div className={styles.controlBlock}>
           <label>View</label>
-          <SelectButton
-            value={cardView}
-            options={cardViewOptions}
-            optionLabel="label"
-            optionValue="value"
-            onChange={(event: SelectButtonChangeEvent) => setCardView(event.value as BingoCardView)}
-            className={styles.selectButton}
-          />
+          <div className={styles.cardViewToggle} role="group" aria-label="Bingo card view">
+            <Button
+              label={`Active (${cards.length})`}
+              icon="pi pi-bookmark"
+              severity="secondary"
+              outlined={cardView !== 'active'}
+              onClick={() => setCardView('active')}
+              className={styles.cardViewButton}
+            />
+            <Button
+              label={`Finished (${archivedCards.length})`}
+              icon="pi pi-check-circle"
+              severity="secondary"
+              outlined={cardView !== 'archived'}
+              onClick={() => setCardView('archived')}
+              className={styles.cardViewButton}
+            />
+          </div>
           <small>
             {cardView === 'active'
               ? `${cards.length} active card(s)`
