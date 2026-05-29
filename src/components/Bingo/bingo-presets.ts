@@ -112,9 +112,8 @@ export const BINGO_PRESETS: BingoPreset[] = [
       { id: 'loot-medium-08', label: 'Find 1 UT ability', difficulty: 'medium' },
       { id: 'loot-medium-09', label: 'Find 1 UT armor', difficulty: 'medium' },
       { id: 'loot-medium-10', label: 'Find 1 UT weapon', difficulty: 'medium' },
-      { id: 'loot-medium-11', label: 'Get 2 item drops from the same boss', difficulty: 'medium' },
-      { id: 'loot-medium-12', label: 'Find 3 feed items over 500 power', difficulty: 'medium' },
-      { id: 'loot-medium-13', label: 'Collect 2 different ST pieces', difficulty: 'medium' },
+      { id: 'loot-medium-11', label: 'Find 3 feed items over 500 power', difficulty: 'medium' },
+      { id: 'loot-medium-12', label: 'Collect 2 different ST pieces', difficulty: 'medium' },
 
       { id: 'loot-hard-01', label: 'Collect 5 different UT items', difficulty: 'hard' },
       { id: 'loot-hard-02', label: 'Find 1 skin token or skin unlock', difficulty: 'hard' },

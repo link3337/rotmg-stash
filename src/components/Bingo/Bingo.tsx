@@ -1,6 +1,7 @@
 import { CLASS_SLOT_CONFIG } from '@components/CharacterBuilder/config/slot-config';
 import { Button } from 'primereact/button';
 import { Checkbox, CheckboxChangeEvent } from 'primereact/checkbox';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
@@ -172,9 +173,9 @@ const loadBingoState = (): PersistedBingoState => {
 
         const normalizedDifficulty: BingoDifficultyFilter =
           candidate.difficulty === 'easy' ||
-          candidate.difficulty === 'medium' ||
-          candidate.difficulty === 'hard' ||
-          candidate.difficulty === 'mixed'
+            candidate.difficulty === 'medium' ||
+            candidate.difficulty === 'hard' ||
+            candidate.difficulty === 'mixed'
             ? candidate.difficulty
             : 'mixed';
 
@@ -241,9 +242,9 @@ const loadBingoState = (): PersistedBingoState => {
 
     const difficulty: BingoDifficultyFilter =
       parsed.difficulty === 'easy' ||
-      parsed.difficulty === 'medium' ||
-      parsed.difficulty === 'hard' ||
-      parsed.difficulty === 'mixed'
+        parsed.difficulty === 'medium' ||
+        parsed.difficulty === 'hard' ||
+        parsed.difficulty === 'mixed'
         ? parsed.difficulty
         : 'mixed';
 
@@ -705,6 +706,68 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
     setError(null);
   };
 
+  const confirmDiscardActiveCard = () => {
+    if (!activeCard) {
+      return;
+    }
+
+    const cardLabel = activeCard.name?.trim() || 'this card';
+
+    confirmDialog({
+      message: `Are you sure you want to delete ${cardLabel}?`,
+      header: 'Delete Card',
+      icon: 'pi pi-exclamation-triangle',
+      acceptClassName: 'p-button-danger',
+      acceptLabel: 'Delete',
+      rejectLabel: 'Cancel',
+      accept: discardActiveCard
+    });
+  };
+
+  const reopenArchivedCard = () => {
+    if (!activeCard || !isArchivedView) {
+      return;
+    }
+
+    const reopenedCard: PersistedBingoCard = {
+      ...activeCard,
+      isArchived: false,
+      finishedAt: undefined,
+      archivedAt: undefined,
+      timerStartedAt: undefined
+    };
+
+    setArchivedCards((prev) => {
+      const nextCards = prev.filter((card) => card.id !== activeCard.id);
+
+      setArchivedCardIndex((prevIndex) => {
+        if (nextCards.length === 0) {
+          return 0;
+        }
+
+        return Math.min(prevIndex, nextCards.length - 1);
+      });
+
+      return nextCards;
+    });
+
+    setCards((prev) => {
+      const existingIndex = prev.findIndex((card) => card.id === reopenedCard.id);
+      if (existingIndex >= 0) {
+        setActiveCardIndex(existingIndex);
+        return prev;
+      }
+
+      const nextCards = [...prev, reopenedCard];
+      setActiveCardIndex(nextCards.length - 1);
+      return nextCards;
+    });
+
+    setCardView('active');
+    setShareStatus(null);
+    setError(null);
+  };
+
   const handleCardNameChange = (value: string) => {
     if (!activeCard) {
       return;
@@ -1006,58 +1069,83 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
             {!isArchivedView && (
               <>
                 <Button
-                  label="Start Timer"
                   icon="pi pi-play"
                   severity="success"
                   outlined
+                  tooltip="Start Timer"
+                  tooltipOptions={{ position: 'top' }}
+                  aria-label="Start Timer"
                   onClick={startTimer}
                   disabled={!!activeCard.timerStartedAt}
                 />
                 <Button
-                  label="Pause Timer"
                   icon="pi pi-pause"
                   severity="warning"
                   outlined
+                  tooltip="Pause Timer"
+                  tooltipOptions={{ position: 'top' }}
+                  aria-label="Pause Timer"
                   onClick={pauseTimer}
                   disabled={!activeCard.timerStartedAt}
                 />
                 <Button
-                  label="Reset Timer"
                   icon="pi pi-stop"
                   severity="secondary"
                   outlined
+                  tooltip="Reset Timer"
+                  tooltipOptions={{ position: 'top' }}
+                  aria-label="Reset Timer"
                   onClick={stopTimer}
                   disabled={!activeCard.timerStartedAt && activeCard.runtimeMs === 0}
                 />
                 <Button
-                  label="Reset Marks"
                   icon="pi pi-undo"
                   severity="secondary"
                   outlined
+                  tooltip="Reset Marks"
+                  tooltipOptions={{ position: 'top' }}
+                  aria-label="Reset Marks"
                   onClick={resetMarks}
                 />
                 <Button
-                  label="Copy Share Text"
                   icon="pi pi-share-alt"
                   severity="info"
                   outlined
+                  tooltip="Copy Share Text"
+                  tooltipOptions={{ position: 'top' }}
+                  aria-label="Copy Share Text"
                   onClick={handleCopyShareText}
                 />
                 <Button
-                  label="Finish"
                   icon="pi pi-check"
                   severity="success"
                   outlined
+                  tooltip="Finish"
+                  tooltipOptions={{ position: 'top' }}
+                  aria-label="Finish"
                   onClick={archiveActiveCard}
                 />
               </>
             )}
+            {isArchivedView && (
+              <Button
+                icon="pi pi-replay"
+                severity="secondary"
+                outlined
+                tooltip="Reopen"
+                tooltipOptions={{ position: 'top' }}
+                aria-label="Reopen"
+                onClick={reopenArchivedCard}
+              />
+            )}
             <Button
-              label="Delete"
               icon="pi pi-trash"
               severity="danger"
               outlined
-              onClick={discardActiveCard}
+              tooltip="Delete"
+              tooltipOptions={{ position: 'top' }}
+              aria-label="Delete"
+              onClick={confirmDiscardActiveCard}
             />
           </div>
         </>
@@ -1108,6 +1196,8 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
           </div>
         </div>
       )}
+
+      <ConfirmDialog />
     </section>
   );
 
