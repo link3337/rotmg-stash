@@ -2,15 +2,8 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window on desktop platforms",
-  "platforms": [
-    "macOS",
-    "windows",
-    "linux"
-  ],
-  "windows": [
-    "main",
-    "bingo-window"
-  ],
+  "platforms": ["macOS", "windows", "linux"],
+  "windows": ["main", "bingo-window"],
   "permissions": [
     "core:default",
     "core:webview:allow-create-webview-window",

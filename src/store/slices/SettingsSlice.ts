@@ -23,7 +23,7 @@ import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
 
-export interface SettingsState extends SettingsModel { }
+export interface SettingsState extends SettingsModel {}
 
 const initialState: SettingsState = {
   displaySettings: defaultDisplaySettings,

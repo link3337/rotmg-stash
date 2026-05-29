@@ -71,7 +71,7 @@ export const generateBingoCard = (
     if (pool.length < BINGO_GOAL_COUNT) {
       throw new Error(
         `Not enough goals in preset "${preset.name}" for ${characterMode} characters. ` +
-        `Need at least ${BINGO_GOAL_COUNT}, got ${pool.length}.`
+          `Need at least ${BINGO_GOAL_COUNT}, got ${pool.length}.`
       );
     }
 
@@ -110,7 +110,7 @@ export const generateBingoCard = (
   if (nonCenterPool.length < BINGO_GOAL_COUNT) {
     throw new Error(
       `Not enough goals in preset "${preset.name}" for ${characterMode} characters. ` +
-      `Need at least ${BINGO_CELL_COUNT}, got ${pool.length}.`
+        `Need at least ${BINGO_CELL_COUNT}, got ${pool.length}.`
     );
   }
 

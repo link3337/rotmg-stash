@@ -215,13 +215,7 @@ const Queue: React.FC<QueueProps> = ({ accounts }) => {
         disabled={!isAutoRefresh}
       />
       <Button icon="pi pi-list" label="Queue Status" onClick={() => setShowQueue(true)} />
-      {showBingo && (
-        <Button
-          icon="pi pi-th-large"
-          label="Bingo"
-          onClick={openBingoWindow}
-        />
-      )}
+      {showBingo && <Button icon="pi pi-th-large" label="Bingo" onClick={openBingoWindow} />}
       <QueueInfoDialog
         visible={isShowQueue}
         onHide={() => setShowQueue(false)}

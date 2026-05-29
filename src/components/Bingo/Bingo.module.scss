@@ -199,10 +199,12 @@
   position: absolute;
   inset: 0;
   border-radius: 12px;
-  background: radial-gradient(ellipse at center,
-      color-mix(in srgb, var(--yellow-300, #fde047) 42%, transparent) 0%,
-      color-mix(in srgb, var(--amber-400, #fbbf24) 24%, transparent) 48%,
-      transparent 72%);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--yellow-300, #fde047) 42%, transparent) 0%,
+    color-mix(in srgb, var(--amber-400, #fbbf24) 24%, transparent) 48%,
+    transparent 72%
+  );
   opacity: 0;
   pointer-events: none;
   z-index: 1;
@@ -222,16 +224,24 @@
   width: max-content;
   max-width: min(92%, 760px);
   background:
-    linear-gradient(108deg,
+    linear-gradient(
+      108deg,
       transparent 18%,
       color-mix(in srgb, #fff7cc 72%, transparent) 38%,
-      transparent 58%),
-    linear-gradient(126deg,
+      transparent 58%
+    ),
+    linear-gradient(
+      126deg,
       color-mix(in srgb, var(--yellow-300, #fde047) 72%, #fff 28%),
       color-mix(in srgb, var(--amber-400, #fbbf24) 78%, #fff 22%),
-      color-mix(in srgb, var(--yellow-500, #eab308) 86%, #fff 14%));
-  background-size: 240% 100%, 100% 100%;
-  background-position: -180% 0, 0 0;
+      color-mix(in srgb, var(--yellow-500, #eab308) 86%, #fff 14%)
+    );
+  background-size:
+    240% 100%,
+    100% 100%;
+  background-position:
+    -180% 0,
+    0 0;
   color: color-mix(in srgb, var(--amber-900, #78350f) 86%, var(--text-color));
   font-size: clamp(1.2rem, 2.8vw, 2rem);
   font-weight: 800;
@@ -271,11 +281,15 @@
 
 @keyframes bingoGoldShimmer {
   0% {
-    background-position: -180% 0, 0 0;
+    background-position:
+      -180% 0,
+      0 0;
   }
 
   100% {
-    background-position: 180% 0, 0 0;
+    background-position:
+      180% 0,
+      0 0;
   }
 }
 
@@ -450,7 +464,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   .bingoCelebration,
   .bingoCelebration::before,
   .bingoCelebration::after,
@@ -461,6 +474,8 @@
   }
 
   .bingoCelebration {
-    background-position: 0 0, 0 0;
+    background-position:
+      0 0,
+      0 0;
   }
 }

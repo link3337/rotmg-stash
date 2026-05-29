@@ -172,9 +172,9 @@ const loadBingoState = (): PersistedBingoState => {
 
         const normalizedDifficulty: BingoDifficultyFilter =
           candidate.difficulty === 'easy' ||
-            candidate.difficulty === 'medium' ||
-            candidate.difficulty === 'hard' ||
-            candidate.difficulty === 'mixed'
+          candidate.difficulty === 'medium' ||
+          candidate.difficulty === 'hard' ||
+          candidate.difficulty === 'mixed'
             ? candidate.difficulty
             : 'mixed';
 
@@ -241,9 +241,9 @@ const loadBingoState = (): PersistedBingoState => {
 
     const difficulty: BingoDifficultyFilter =
       parsed.difficulty === 'easy' ||
-        parsed.difficulty === 'medium' ||
-        parsed.difficulty === 'hard' ||
-        parsed.difficulty === 'mixed'
+      parsed.difficulty === 'medium' ||
+      parsed.difficulty === 'hard' ||
+      parsed.difficulty === 'mixed'
         ? parsed.difficulty
         : 'mixed';
 
@@ -294,13 +294,17 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
   const [bingoCelebrationText, setBingoCelebrationText] = useState<string>('');
   const [isCelebratingBingo, setIsCelebratingBingo] = useState<boolean>(false);
   const previousCompletedLinesRef = useRef<number>(0);
+  const previousCardIdRef = useRef<string | null>(null);
 
   const cardViewOptions: { label: string; value: BingoCardView }[] = [
     { label: 'Active Cards', value: 'active' },
     { label: 'Finished Cards', value: 'archived' }
   ];
 
-  const classPool = useMemo(() => Object.keys(CLASS_SLOT_CONFIG).sort((a, b) => a.localeCompare(b)), []);
+  const classPool = useMemo(
+    () => Object.keys(CLASS_SLOT_CONFIG).sort((a, b) => a.localeCompare(b)),
+    []
+  );
 
   const selectedPreset = useMemo<BingoPreset | undefined>(
     () => BINGO_PRESETS.find((preset) => preset.id === selectedPresetId),
@@ -350,7 +354,15 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
 
   useEffect(() => {
     if (!activeCard || isArchivedView) {
+      previousCardIdRef.current = activeCard?.id ?? null;
       previousCompletedLinesRef.current = completedLines;
+      return;
+    }
+
+    if (previousCardIdRef.current !== activeCard.id) {
+      previousCardIdRef.current = activeCard.id;
+      previousCompletedLinesRef.current = completedLines;
+      setIsCelebratingBingo(false);
       return;
     }
 
@@ -369,6 +381,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
       setIsCelebratingBingo(true);
     }
 
+    previousCardIdRef.current = activeCard.id;
     previousCompletedLinesRef.current = completedLines;
   }, [activeCard, completedLines, isArchivedView]);
 
@@ -809,9 +822,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
             options={cardViewOptions}
             optionLabel="label"
             optionValue="value"
-            onChange={(event: SelectButtonChangeEvent) =>
-              setCardView(event.value as BingoCardView)
-            }
+            onChange={(event: SelectButtonChangeEvent) => setCardView(event.value as BingoCardView)}
             className={styles.selectButton}
           />
           <small>
@@ -972,8 +983,7 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
               <strong>Class:</strong> {activeCard.className || 'Open'}
             </div>
             <div className={styles.classBadge}>
-              <strong>Character:</strong>{' '}
-              {activeCard.characterMode === 'new' ? 'New' : 'Existing'}
+              <strong>Character:</strong> {activeCard.characterMode === 'new' ? 'New' : 'Existing'}
             </div>
             <div className={styles.meta}>
               <span className={isCelebratingBingo ? styles.metaCelebrate : ''}>
@@ -1057,7 +1067,11 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
       {shareStatus && <div className={styles.shareStatus}>{shareStatus}</div>}
 
       {activeCard && (
-        <div className={[styles.gridArea, isCelebratingBingo ? styles.gridAreaCelebrating : ''].join(' ')}>
+        <div
+          className={[styles.gridArea, isCelebratingBingo ? styles.gridAreaCelebrating : ''].join(
+            ' '
+          )}
+        >
           {isCelebratingBingo && (
             <div
               key={bingoCelebrationKey}
@@ -1069,7 +1083,9 @@ const Bingo: React.FC<BingoProps> = ({ visible, onHide, renderInDialog = true })
             </div>
           )}
 
-          <div className={[styles.grid, isCelebratingBingo ? styles.gridCelebrating : ''].join(' ')}>
+          <div
+            className={[styles.grid, isCelebratingBingo ? styles.gridCelebrating : ''].join(' ')}
+          >
             {activeCard.card.map((cell) => {
               const isMarked = activeMarked[cell.index];
 
