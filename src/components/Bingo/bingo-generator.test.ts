@@ -53,11 +53,18 @@ describe('bingo generator', () => {
   });
 
   it('filters out existing-only goals for new characters', () => {
-    const card = generateBingoCard(BINGO_PRESETS[0], 'mixed', 'free', 'new');
-    const labels = card.filter((cell) => !cell.isFree).map((cell) => cell.goal?.label ?? '');
+    const preset = BINGO_PRESETS[0];
+    const card = generateBingoCard(preset, 'mixed', 'free', 'new');
+    const goalIds = card
+      .filter((cell) => !cell.isFree)
+      .map((cell) => cell.goal?.id)
+      .filter((value): value is string => !!value);
 
-    expect(labels.some((label) => label.includes('Solo Void'))).toBe(false);
-    expect(labels.some((label) => label.includes('Solo Shatters'))).toBe(false);
+    const generatedGoals = goalIds
+      .map((id) => preset.goals.find((goal) => goal.id === id))
+      .filter((goal): goal is NonNullable<typeof goal> => !!goal);
+
+    expect(generatedGoals.every((goal) => goal.characterMode !== 'existing')).toBe(true);
   });
 
   it('counts completed lines correctly', () => {
