@@ -48,22 +48,31 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
     getClassName(a.classId).localeCompare(getClassName(b.classId))
   );
 
+  const allClassesFullyExalted = sortedExalts.every((row) => {
+    const orderedValues = mapToOrderedExalts(row.exalts);
+    return orderedValues.every((cell) => parseInt(cell, 10) >= 75);
+  });
+
   const renderExaltCell = (exaltValue: string, cellIndex: number) => {
     const stat = orderedExaltStats[cellIndex];
     const valueNum = parseInt(exaltValue, 10) || 0;
     const isCellMax = valueNum >= 75;
-    const cellClass = isCellMax || fullyExaltedStats.has(stat) ? styles.golden : undefined;
+    const cellClass = allClassesFullyExalted
+      ? styles.allClassesExalted
+      : isCellMax || fullyExaltedStats.has(stat)
+        ? styles.golden
+        : undefined;
     const showTooltip = isCellMax;
     const tooltipProps = showTooltip
       ? {
-          'data-pr-tooltip': exaltValue,
-          'aria-label': `Exalt ${stat}: ${exaltValue}`
-        }
+        'data-pr-tooltip': exaltValue,
+        'aria-label': `Exalt ${stat}: ${exaltValue}`
+      }
       : {};
     const tabIndex = showTooltip ? 0 : -1;
 
     return (
-      <td key={cellIndex} className={cellClass}>
+      <td key={cellIndex} className={cellClass} data-stat={stat}>
         <span {...tooltipProps} tabIndex={tabIndex}>
           {renderValue(exaltValue)}
         </span>
@@ -73,11 +82,16 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
 
   return (
     <>
-      <h2 style={{ textAlign: 'center' }}>Exalts</h2>
+      <h2
+        style={{ textAlign: 'center' }}
+        className={allClassesFullyExalted ? styles.allClassesExalted : undefined}
+      >
+        Exalts
+      </h2>
       <div className={styles.exalts}>
         <Tooltip position="top" target="[data-pr-tooltip]" />
-        <table>
-          <thead>
+        <table className={allClassesFullyExalted ? styles.allClassesExalted : undefined}>
+          <thead style={{ textShadow: 'none' }}>
             <tr>
               <th>Class</th>
               {orderedExaltStats.map((stat, index) => (
@@ -93,7 +107,16 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
               const isFullyExalted = orderedValues.every((cell) => parseInt(cell, 10) >= 75);
 
               return (
-                <tr key={rowIndex} className={isFullyExalted ? styles.golden : undefined}>
+                <tr
+                  key={rowIndex}
+                  className={
+                    allClassesFullyExalted
+                      ? styles.allClassesExalted
+                      : isFullyExalted
+                        ? styles.golden
+                        : undefined
+                  }
+                >
                   <td>{getClassName(row.classId)}</td>
                   {orderedValues.map((exaltValue, cellIndex) =>
                     renderExaltCell(exaltValue, cellIndex)

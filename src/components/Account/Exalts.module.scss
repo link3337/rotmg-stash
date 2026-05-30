@@ -17,7 +17,7 @@
       border-bottom: 1px solid rgba(128, 128, 128, 0.1);
     }
 
-    td + td {
+    td+td {
       padding: 2px;
       text-align: center;
     }
@@ -28,4 +28,12 @@
     font-weight: 700;
     text-shadow: 0 0 2px rgba(255, 215, 0, 1);
   }
+}
+
+.allClassesExalted {
+  color: #ffcf4d;
+  text-shadow:
+    0 0 4px rgba(255, 225, 130, 0.95),
+    0 0 10px rgba(255, 178, 46, 0.9),
+    0 0 16px rgba(255, 137, 0, 0.65);
 }
