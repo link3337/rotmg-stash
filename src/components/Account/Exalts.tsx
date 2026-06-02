@@ -65,9 +65,9 @@ const Exalts: React.FC<ExaltsProps> = ({ exalts }) => {
     const showTooltip = isCellMax;
     const tooltipProps = showTooltip
       ? {
-        'data-pr-tooltip': exaltValue,
-        'aria-label': `Exalt ${stat}: ${exaltValue}`
-      }
+          'data-pr-tooltip': exaltValue,
+          'aria-label': `Exalt ${stat}: ${exaltValue}`
+        }
       : {};
     const tabIndex = showTooltip ? 0 : -1;
 

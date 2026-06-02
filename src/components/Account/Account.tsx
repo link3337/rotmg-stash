@@ -16,7 +16,7 @@ import { info } from '@tauri-apps/plugin-log';
 import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Characters from '../Character/Characters';
 import VaultOverview from '../Vault/VaultOverview';
 import AccountInfo from './AccountInfo';
@@ -30,6 +30,7 @@ interface AccountProps {
 
 const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const dispatch = useAppDispatch();
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const { decrypt } = useCrypto();
   const loading = useAppSelector((state) => selectAccountLoading(state, account.id));
@@ -40,6 +41,8 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
 
   const settings = useAppSelector((state) => state.settings);
   const isConfigOpen = useAppSelector((state) => state.layout.isSettingsOpen);
+  const enableAccountCollapsing = settings.displaySettings.enableAccountCollapsing;
+  const accountDisplayName = settings.experimental.isStreamerMode ? account.id : account.email;
 
   const data = useMemo(() => {
     return account?.mappedData as CharListResponseUIModel;
@@ -105,7 +108,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   }
 
   const AccountContent = () => (
-    <Card className="mt-3">
+    <Card>
       {!data && (
         <>
           <div className={styles.accountinfoContainer} style={{ width: '100%' }}>
@@ -172,7 +175,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
     </Card>
   );
 
-  return settings?.experimental?.lazyLoading ? (
+  const collapsibleContent = settings?.experimental?.lazyLoading ? (
     <RenderIfVisible
       keepRendered={settings.experimental.lazyLoadingKeepRendered}
       {...(!isConfigOpen ? renderVisibleProps : {})}
@@ -181,6 +184,29 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
     </RenderIfVisible>
   ) : (
     <AccountContent />
+  );
+
+  if (!enableAccountCollapsing) {
+    return <div className={styles.accountNoCollapse}>{collapsibleContent}</div>;
+  }
+
+  return (
+    <div className={styles.accountContainer}>
+      <button
+        type="button"
+        className={`${styles.accountCollapseToggle} ${isExpanded ? styles.accountCollapseToggleExpanded : ''}`}
+        onClick={() => setIsExpanded((prev) => !prev)}
+        aria-expanded={isExpanded}
+        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} account ${accountDisplayName}`}
+      >
+        <span className={styles.accountCollapseLabel}>{accountDisplayName}</span>
+        <span
+          className={`pi pi-chevron-right ${styles.accountCollapseIcon} ${isExpanded ? styles.accountCollapseIconExpanded : ''}`}
+          aria-hidden="true"
+        />
+      </button>
+      {isExpanded && <div className={styles.accountBody}>{collapsibleContent}</div>}
+    </div>
   );
 };
 

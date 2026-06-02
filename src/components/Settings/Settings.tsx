@@ -88,9 +88,10 @@ const Settings: React.FC = () => {
   const displayOptions: DisplayOption[] = [
     { label: 'Show Totals', key: 'showTotals' },
     { label: 'Show Account Info', key: 'showAccountInfo' },
+    { label: 'Enable Account Collapsing', key: 'enableAccountCollapsing' },
     { label: 'Show Exalts', key: 'showExalts' },
     { label: 'Show Characters', key: 'showCharacters' },
-    { label: 'Make Character Info and Exalts collapsible', key: 'useAccordionMenu' },
+    { label: 'Enable Character Info and Exalts collapsing', key: 'useAccordionMenu' },
     { label: 'Use Local Assets', key: 'useLocalAssets' },
     { label: 'Show Vault', key: 'showVault' },
     { label: 'Show Gift Chest', key: 'showGiftChest' },

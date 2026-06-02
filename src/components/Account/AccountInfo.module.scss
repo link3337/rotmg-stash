@@ -1,3 +1,113 @@
+.accountContainer {
+  margin-top: 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  background: var(--surface-card);
+  overflow: hidden;
+}
+
+.accountNoCollapse {
+  margin-top: 1rem;
+}
+
+.accountCollapseToggle {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--surface-border) 70%, transparent);
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0) 100%),
+    color-mix(in srgb, var(--surface-card) 82%, var(--surface-ground));
+  color: var(--text-color);
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.08s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--surface-hover) 75%, var(--surface-card));
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:focus-visible {
+    outline: 0;
+    box-shadow:
+      inset 0 0 0 1px var(--primary-color),
+      0 0 0 3px color-mix(in srgb, var(--primary-color) 30%, transparent),
+      0 1px 0 rgba(255, 255, 255, 0.08) inset;
+  }
+}
+
+.accountCollapseToggleExpanded {
+  border-bottom-color: color-mix(in srgb, var(--surface-border) 40%, transparent);
+}
+
+.accountCollapseLabel {
+  letter-spacing: 0.01em;
+  font-weight: 600;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountCollapseIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+  line-height: 1;
+  transform: rotate(0deg);
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+.accountCollapseIconExpanded {
+  transform: rotate(90deg);
+  color: var(--text-color);
+}
+
+.accountBody {
+  margin-top: 0;
+  background: var(--surface-card);
+  animation: accountReveal 0.2s ease;
+
+  :global(.p-card) {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+}
+
+@keyframes accountReveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .accountinfoContainer {
   text-align: center;
   border-radius: 8px;

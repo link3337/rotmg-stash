@@ -16,6 +16,7 @@ export type Theme = string;
 export interface DisplaySettingsModel {
   showTotals: boolean;
   showAccountInfo: boolean;
+  enableAccountCollapsing: boolean;
   showExalts: boolean;
   showCharacters: boolean;
   useAccordionMenu: boolean;

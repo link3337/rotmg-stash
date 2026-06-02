@@ -16,6 +16,7 @@ export const defaultTotalSettings: TotalSettingsModel = {
 export const defaultDisplaySettings: DisplaySettingsModel = {
   showTotals: true,
   showAccountInfo: true,
+  enableAccountCollapsing: false,
   showExalts: true,
   showCharacters: true,
   useAccordionMenu: false,
