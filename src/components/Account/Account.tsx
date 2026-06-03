@@ -42,7 +42,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const settings = useAppSelector((state) => state.settings);
   const isConfigOpen = useAppSelector((state) => state.layout.isSettingsOpen);
   const enableAccountCollapsing = settings.displaySettings.enableAccountCollapsing;
-  const accountDisplayName = settings.experimental.isStreamerMode ? account.id : account.email;
+  const accountDisplayName = account.mappedData?.account?.name ?? account.id;
 
   const data = useMemo(() => {
     return account?.mappedData as CharListResponseUIModel;
@@ -56,10 +56,13 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
     [settings.experimental.lazyLoadingOffset, settings.experimental.lazyLoadingHeight, isConfigOpen]
   );
 
-  const hasFilteredItems = () => {
+  const hasFilteredItems = useMemo(() => {
     if (!activeFilters.length) return true; // no filters active
-    return data?.account?.uniqueItems.some((item) => activeFilters.includes(item));
-  };
+    if (!data?.account?.uniqueItems?.length) return false;
+
+    const filterSet = new Set(activeFilters);
+    return data.account.uniqueItems.some((item) => filterSet.has(item));
+  }, [activeFilters, data?.account?.uniqueItems]);
 
   const handleLaunch = async () => {
     info('Launching account');
@@ -103,7 +106,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
     ).unwrap();
   };
 
-  if (!hasFilteredItems()) {
+  if (!hasFilteredItems) {
     return <></>;
   }
 

@@ -37,45 +37,85 @@ const RenderIfVisible: React.FC<RenderIfVisibleProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState<boolean>(initialVisible);
   const wasVisible = useRef<boolean>(initialVisible);
+  const isVisibleRef = useRef<boolean>(initialVisible);
   const placeholderHeight = useRef<number>(defaultHeight);
   const intersectionRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const idleCallbackIdRef = useRef<number | null>(null);
 
   // Set visibility with intersection observer
   useEffect(() => {
-    if (intersectionRef.current) {
-      const localRef = intersectionRef.current;
-      const observer = new IntersectionObserver(
-        (entries) => {
-          // Before switching off `isVisible`, set the height of the placeholder
-          if (!entries[0].isIntersecting) {
-            placeholderHeight.current = localRef!.offsetHeight;
-          }
-          if (typeof window !== undefined && window.requestIdleCallback) {
-            window.requestIdleCallback(() => setIsVisible(entries[0].isIntersecting), {
-              timeout: 600
-            });
-          } else {
-            setIsVisible(entries[0].isIntersecting);
-          }
-        },
-        { root, rootMargin: `${visibleOffset}px 0px ${visibleOffset}px 0px` }
-      );
-
-      observer.observe(localRef);
-      return () => {
-        if (localRef) {
-          observer.unobserve(localRef);
-        }
-      };
+    if (!intersectionRef.current) {
+      return undefined;
     }
-    return () => {};
-  }, []);
+
+    const localRef = intersectionRef.current;
+
+    const updateVisibility = (nextVisible: boolean) => {
+      if (nextVisible === isVisibleRef.current) {
+        return;
+      }
+
+      isVisibleRef.current = nextVisible;
+
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        idleCallbackIdRef.current = window.requestIdleCallback(
+          () => {
+            setIsVisible(nextVisible);
+          },
+          { timeout: 600 }
+        );
+        return;
+      }
+
+      setIsVisible(nextVisible);
+    };
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+
+        // Before switching off `isVisible`, set the height of the placeholder.
+        if (!entry.isIntersecting) {
+          placeholderHeight.current = localRef.offsetHeight;
+        }
+
+        updateVisibility(entry.isIntersecting);
+      },
+      { root, rootMargin: `${visibleOffset}px 0px ${visibleOffset}px 0px` }
+    );
+
+    observerRef.current.observe(localRef);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.unobserve(localRef);
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+
+      if (
+        idleCallbackIdRef.current !== null &&
+        typeof window !== 'undefined' &&
+        'cancelIdleCallback' in window
+      ) {
+        window.cancelIdleCallback(idleCallbackIdRef.current);
+        idleCallbackIdRef.current = null;
+      }
+    };
+  }, [root, visibleOffset]);
 
   useEffect(() => {
     if (isVisible) {
       wasVisible.current = true;
+
+      // If content should stay mounted, we can stop observing after first reveal.
+      if (keepRendered && observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
     }
-  }, [isVisible]);
+  }, [isVisible, keepRendered]);
 
   const placeholderStyle = { height: placeholderHeight.current };
   const rootClasses = useMemo(() => `renderIfVisible ${rootElementClass}`, [rootElementClass]);
