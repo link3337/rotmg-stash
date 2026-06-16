@@ -13,7 +13,6 @@ import {
 import { selectSelectedItems } from '@store/slices/FilterSlice';
 import { QueueStatus } from '@store/slices/QueueSlice';
 import { info } from '@tauri-apps/plugin-log';
-import { Accordion, AccordionTab } from 'primereact/accordion';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import React, { useMemo, useState } from 'react';
@@ -31,6 +30,8 @@ interface AccountProps {
 const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const dispatch = useAppDispatch();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isExaltsExpanded, setIsExaltsExpanded] = useState(false);
+  const [isCharactersExpanded, setIsCharactersExpanded] = useState(true);
 
   const { decrypt } = useCrypto();
   const loading = useAppSelector((state) => selectAccountLoading(state, account.id));
@@ -151,11 +152,26 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
           {settings.displaySettings.showExalts && (
             <div className="pt-3">
               {settings.displaySettings.useAccordionMenu ? (
-                <Accordion className="accordion-title-white">
-                  <AccordionTab header="Exalts">
-                    <Exalts exalts={data?.exalts} />
-                  </AccordionTab>
-                </Accordion>
+                <div className={styles.accountSection}>
+                  <button
+                    type="button"
+                    className={`${styles.accountSectionToggle} ${isExaltsExpanded ? styles.accountSectionToggleExpanded : ''}`}
+                    onClick={() => setIsExaltsExpanded((prev) => !prev)}
+                    aria-expanded={isExaltsExpanded}
+                    aria-label={`${isExaltsExpanded ? 'Collapse' : 'Expand'} exalts`}
+                  >
+                    <span className={styles.accountSectionLabel}>Exalts</span>
+                    <span
+                      className={`pi pi-chevron-right ${styles.accountSectionIcon} ${isExaltsExpanded ? styles.accountSectionIconExpanded : ''}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  {isExaltsExpanded && (
+                    <div className={styles.accountSectionBody}>
+                      <Exalts exalts={data?.exalts} />
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Exalts exalts={data?.exalts} />
               )}
@@ -163,13 +179,44 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
           )}
           {settings.displaySettings.showCharacters && (
             <div className="pt-3">
-              <Characters
-                accountId={account.id}
-                characters={data.charList}
-                classStats={data?.account?.classStats}
-                exalts={data?.exalts}
-                ownedSkins={data?.account?.ownedSkins}
-              />
+              {settings.displaySettings.useAccordionMenu ? (
+                <div className={styles.accountSection}>
+                  <button
+                    type="button"
+                    className={`${styles.accountSectionToggle} ${isCharactersExpanded ? styles.accountSectionToggleExpanded : ''}`}
+                    onClick={() => setIsCharactersExpanded((prev) => !prev)}
+                    aria-expanded={isCharactersExpanded}
+                    aria-label={`${isCharactersExpanded ? 'Collapse' : 'Expand'} characters`}
+                  >
+                    <span className={styles.accountSectionLabel}>Characters</span>
+                    <span
+                      className={`pi pi-chevron-right ${styles.accountSectionIcon} ${isCharactersExpanded ? styles.accountSectionIconExpanded : ''}`}
+                      aria-hidden="true"
+                    />
+                  </button>
+                  {isCharactersExpanded && (
+                    <div
+                      className={`${styles.accountSectionBody} ${styles.accountSectionBodyCharacters}`}
+                    >
+                      <Characters
+                        accountId={account.id}
+                        characters={data.charList}
+                        classStats={data?.account?.classStats}
+                        exalts={data?.exalts}
+                        ownedSkins={data?.account?.ownedSkins}
+                      />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Characters
+                  accountId={account.id}
+                  characters={data.charList}
+                  classStats={data?.account?.classStats}
+                  exalts={data?.exalts}
+                  ownedSkins={data?.account?.ownedSkins}
+                />
+              )}
             </div>
           )}
           <VaultOverview account={data.account} />
