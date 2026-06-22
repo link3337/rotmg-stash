@@ -2,11 +2,9 @@
   border: 1px solid var(--surface-border);
   border-radius: 10px;
   padding: 0.9rem;
-  background: linear-gradient(
-    140deg,
-    color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%),
-    color-mix(in srgb, var(--surface-card) 97%, var(--text-color) 3%)
-  );
+  background: linear-gradient(140deg,
+      color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%),
+      color-mix(in srgb, var(--surface-card) 97%, var(--text-color) 3%));
 }
 
 .header {
@@ -165,41 +163,6 @@
   cursor: pointer;
 }
 
-.prototypePicker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 0.75rem;
-}
-
-.prototypeButton {
-  font-size: 0.78rem;
-}
-
-.title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.subtitle {
-  opacity: 0.78;
-  font-size: 0.86rem;
-}
-
-.classBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  min-height: 1.7rem;
-  padding: 0.2rem 0.65rem;
-  border: 1px solid color-mix(in srgb, var(--primary-color) 45%, transparent);
-  background: color-mix(in srgb, var(--primary-color) 20%, transparent);
-}
-
 .reels {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -225,14 +188,6 @@
   justify-content: space-between;
   gap: 0.35rem;
   margin-bottom: 0.35rem;
-}
-
-.slotLabel {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 0;
 }
 
 .itemViewport {

@@ -10,11 +10,6 @@
     display: flex;
     margin-bottom: 10px;
 
-    .portrait {
-      width: 80px;
-      height: 80px;
-    }
-
     .info {
       display: flex;
       gap: 10px;
@@ -74,17 +69,6 @@
     }
   }
 
-  .item {
-    width: 40px;
-    height: 40px;
-    position: relative;
-
-    &.bordered {
-      border: 1px solid #000;
-      align-self: center;
-      flex-shrink: 0;
-    }
-  }
 }
 
 .details {
