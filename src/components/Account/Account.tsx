@@ -7,6 +7,7 @@ import RenderIfVisible from '@hooks/renderIfVisible';
 import {
   refreshAccount,
   selectAccountLoading,
+  selectSnapshotView,
   skipAccountFromQueue,
   updateAccountLastLaunched
 } from '@store/slices/AccountsSlice';
@@ -15,11 +16,13 @@ import { QueueStatus } from '@store/slices/QueueSlice';
 import { info } from '@tauri-apps/plugin-log';
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
+import { Tooltip } from 'primereact/tooltip';
 import React, { useMemo, useState } from 'react';
 import Characters from '../Character/Characters';
 import VaultOverview from '../Vault/VaultOverview';
 import AccountInfo from './AccountInfo';
 import styles from './AccountInfo.module.scss';
+import AccountSnapshotControl from './AccountSnapshotControl';
 import Exalts from './Exalts';
 
 interface AccountProps {
@@ -35,6 +38,8 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
 
   const { decrypt } = useCrypto();
   const loading = useAppSelector((state) => selectAccountLoading(state, account.id));
+  const snapshotView = useAppSelector(selectSnapshotView);
+  const isSnapshotMode = snapshotView.active;
 
   const [launchAccount] = useLaunchExaltMutation();
 
@@ -44,6 +49,12 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   const isConfigOpen = useAppSelector((state) => state.layout.isSettingsOpen);
   const enableAccountCollapsing = settings.displaySettings.enableAccountCollapsing;
   const accountDisplayName = account.mappedData?.account?.name ?? account.id;
+  const snapshotLastFetchedLabel = account.lastSaved
+    ? new Intl.DateTimeFormat(navigator.language, {
+      dateStyle: 'short',
+      timeStyle: 'medium'
+    }).format(new Date(account.lastSaved))
+    : '-';
 
   const data = useMemo(() => {
     return account?.mappedData as CharListResponseUIModel;
@@ -91,6 +102,10 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
   };
 
   const handleRefresh = async () => {
+    if (isSnapshotMode) {
+      return;
+    }
+
     info('Refreshing account data');
     await dispatch(refreshAccount({ ...account, password: decrypt(account.password) })).unwrap();
   };
@@ -111,17 +126,48 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
     return <></>;
   }
 
+  const snapshotControl = (
+    <AccountSnapshotControl
+      account={account}
+      accountDisplayName={accountDisplayName}
+      isStreamerMode={settings.experimental.isStreamerMode}
+    />
+  );
+
   const AccountContent = () => (
-    <Card>
+    <Card className={isSnapshotMode ? styles.snapshotCard : undefined}>
       {!data && (
         <>
           <div className={styles.accountinfoContainer} style={{ width: '100%' }}>
             <div className={styles.header}>
               <div>{settings.experimental.isStreamerMode ? account.id : account.email}</div>
+              {isSnapshotMode && (
+                <div
+                  className={`${styles.snapshotTag} snapshot-tooltip-target-${account.id}`}
+                  aria-label={`Snapshot mode - Snapshot last fetched: ${snapshotLastFetchedLabel}`}
+                >
+                  <i className="pi pi-history" />
+                  <Tooltip
+                    target={`.snapshot-tooltip-target-${account.id}`}
+                    content={`Snapshot mode - Snapshot last fetched: ${snapshotLastFetchedLabel}`}
+                  />
+                </div>
+              )}
               <div className="text-center">
-                <Button onClick={handleRefresh} disabled={loading}>
+                <Button
+                  onClick={handleRefresh}
+                  disabled={loading || isSnapshotMode}
+                  tooltip={isSnapshotMode ? 'Restore saved data first to refresh' : undefined}
+                  tooltipOptions={{ position: 'top' }}
+                >
                   Fetch Account Data
                 </Button>
+                <AccountSnapshotControl
+                  account={account}
+                  accountDisplayName={accountDisplayName}
+                  isStreamerMode={settings.experimental.isStreamerMode}
+                  className="ml-2"
+                />
               </div>
               {account?.error && (
                 <div>
@@ -148,6 +194,8 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
             launchButtonClicked={handleLaunch}
             showAccountInfo={settings.displaySettings.showAccountInfo}
             isRateLimited={isRateLimited}
+            isSnapshotMode={isSnapshotMode}
+            snapshotControl={snapshotControl}
           />
           {settings.displaySettings.showExalts && (
             <div className="pt-3">
@@ -220,6 +268,7 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
             </div>
           )}
           <VaultOverview account={data.account} />
+
         </>
       )}
     </Card>

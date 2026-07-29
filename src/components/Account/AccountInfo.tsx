@@ -27,6 +27,8 @@ interface AccountInfoProps {
   launchButtonClicked(): void;
   showAccountInfo: boolean;
   isRateLimited: boolean;
+  isSnapshotMode: boolean;
+  snapshotControl: React.ReactNode;
 }
 
 const AccountInfo: React.FC<AccountInfoProps> = ({
@@ -41,7 +43,9 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   launchButtonClicked,
   skipQueueButtonClicked,
   showAccountInfo,
-  isRateLimited
+  isRateLimited,
+  isSnapshotMode,
+  snapshotControl
 }) => {
   const [showSkinsModal, setShowSkinsModal] = useState(false);
   const [showCharacterBuilder, setShowCharacterBuilder] = useState(false);
@@ -114,6 +118,18 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
           <span className={`text-sm text-600 tooltip-target-${account?.id}`}>
             Last saved: {account?.lastSaved ? formatDate(account?.lastSaved) : '-'}
           </span>
+          {isSnapshotMode && (
+            <span
+              className={`${styles.snapshotTag} snapshot-tooltip-target-${account.id}`}
+              aria-label={`Snapshot mode - Snapshot last fetched: ${account?.lastSaved ? formatDate(account.lastSaved) : '-'}`}
+            >
+              <i className="pi pi-history" />
+              <Tooltip
+                target={`.snapshot-tooltip-target-${account.id}`}
+                content={`Snapshot mode - Snapshot last fetched: ${account?.lastSaved ? formatDate(account.lastSaved) : '-'}`}
+              />
+            </span>
+          )}
           {loading && (
             <ProgressSpinner style={{ width: '20px', height: '20px', marginLeft: '8px' }} />
           )}
@@ -130,10 +146,13 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
           />
           <Button
             label="Refresh"
-            disabled={loading || isRateLimited}
+            disabled={loading || isRateLimited || isSnapshotMode}
             onClick={refreshButtonClicked}
             icon="pi pi-refresh"
+            tooltip={isSnapshotMode ? 'Restore saved data first to refresh' : undefined}
+            tooltipOptions={{ position: 'top' }}
           />
+          {snapshotControl}
           {accountData && characters.length > 0 && (
             <Button
               label="Character Builder Roulette"

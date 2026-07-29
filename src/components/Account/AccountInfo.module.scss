@@ -10,6 +10,19 @@
   margin-top: 1rem;
 }
 
+.snapshotCard {
+  --snapshot-accent: var(--yellow-500, #f59e0b);
+
+  border: 1px solid color-mix(in srgb, var(--snapshot-accent) 40%, var(--surface-border));
+  box-shadow:
+    inset 4px 0 0 var(--snapshot-accent),
+    0 0 0 1px color-mix(in srgb, var(--snapshot-accent) 10%, transparent);
+
+  :global(.p-card-body) {
+    padding-left: calc(var(--inline-spacing, 1rem) + 0.25rem);
+  }
+}
+
 .accountCollapseToggle {
   appearance: none;
   width: 100%;
@@ -257,4 +270,22 @@
 .statValue {
   font-weight: 500;
   font-size: 0.875rem;
+}
+
+.snapshotTag {
+  --snapshot-accent: var(--yellow-500, #f59e0b);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--snapshot-accent) 42%, var(--surface-border));
+  background: color-mix(in srgb, var(--snapshot-accent) 14%, var(--surface-ground));
+  color: var(--text-color);
+  font-size: 0.85rem;
+  line-height: 1.2;
 }

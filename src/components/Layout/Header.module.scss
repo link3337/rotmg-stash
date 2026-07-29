@@ -16,13 +16,20 @@
   }
 
   .headerButton {
-    margin-left: auto;
+    margin-left: 0.5rem;
   }
 
   .headerLeft {
     display: flex;
     align-items: center;
     gap: 1rem;
+  }
+
+  .headerActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
   }
 
   .logo {

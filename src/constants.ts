@@ -6,6 +6,7 @@ export const localStorageAccountsKey = 'accounts';
 export const localStorageSettingsKey = 'settings';
 export const localStorageTotalsKey = 'totals';
 export const localStorageRateLimitKey = 'rate_limit_expiration';
+export const localStorageAccountSnapshotsKey = 'account_snapshots';
 
 export const RATE_LIMIT_DURATION = 300000; // 5 minutes in milliseconds
 export const EMPTY_SLOT_ITEM_ID = -1;
@@ -43,5 +44,11 @@ export const TAURI_COMMANDS = {
   GET_SETTINGS: 'get_settings',
   EXECUTE_POWERSHELL: 'execute_powershell',
   SAVE_ACCOUNTS_MAPPED_DATA: 'save_accounts_mapped_data',
-  LOAD_ACCOUNTS_MAPPED_DATA: 'load_accounts_mapped_data'
+  LOAD_ACCOUNTS_MAPPED_DATA: 'load_accounts_mapped_data',
+  SAVE_ACCOUNTS_SNAPSHOTS: 'save_accounts_snapshots',
+  LOAD_ACCOUNTS_SNAPSHOTS: 'load_accounts_snapshots',
+  APPEND_ACCOUNT_SNAPSHOT: 'append_account_snapshot',
+  LOAD_ACCOUNTS_SNAPSHOTS_METADATA: 'load_accounts_snapshots_metadata',
+  LOAD_ACCOUNT_SNAPSHOT_BY_ID: 'load_account_snapshot_by_id',
+  DELETE_ACCOUNT_SNAPSHOT: 'delete_account_snapshot'
 };

@@ -10,6 +10,7 @@ use log;
 use regex::Regex;
 use reqwest::{header, Client};
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
@@ -317,6 +318,41 @@ fn get_mapped_data_file_path() -> PathBuf {
     PathBuf::from(base_path).join(mapped_data_file_name)
 }
 
+fn get_account_snapshots_file_path() -> PathBuf {
+    let base_path: PathBuf = get_save_file_path();
+    let snapshots_file_name = if cfg!(debug_assertions) {
+        "rotmg-stash-account-snapshots-dev.json"
+    } else {
+        "rotmg-stash-account-snapshots.json"
+    };
+
+    PathBuf::from(base_path).join(snapshots_file_name)
+}
+
+fn read_snapshots_json_array() -> Result<Vec<Value>, String> {
+    let file_path = get_account_snapshots_file_path();
+    if !file_path.exists() {
+        return Ok(vec![]);
+    }
+
+    let payload = fs::read_to_string(file_path).map_err(|e| e.to_string())?;
+    if payload.trim().is_empty() {
+        return Ok(vec![]);
+    }
+
+    let parsed: Value = serde_json::from_str(&payload).map_err(|e| e.to_string())?;
+    match parsed {
+        Value::Array(arr) => Ok(arr),
+        _ => Err("Snapshot file is not a JSON array".to_string()),
+    }
+}
+
+fn write_snapshots_json_array(snapshots: &Vec<Value>) -> Result<(), String> {
+    let file_path = get_account_snapshots_file_path();
+    let payload = serde_json::to_string(snapshots).map_err(|e| e.to_string())?;
+    fs::write(file_path, payload).map_err(|e| e.to_string())
+}
+
 #[tauri::command]
 async fn save_accounts_mapped_data(mapped_data_by_account_json: &str) -> Result<(), String> {
     // validate json
@@ -353,6 +389,148 @@ async fn load_accounts_mapped_data() -> Result<String, String> {
         payload.len()
     );
     Ok(payload)
+}
+
+#[tauri::command]
+async fn save_accounts_snapshots(snapshots_json: &str) -> Result<(), String> {
+    let _: serde_json::Value = serde_json::from_str(snapshots_json).map_err(|e| e.to_string())?;
+
+    let file_path = get_account_snapshots_file_path();
+    log::info!(
+        "[Snapshots] Saving account snapshots to {:?} ({} bytes)",
+        file_path,
+        snapshots_json.len()
+    );
+    fs::write(file_path, snapshots_json).map_err(|e| e.to_string())?;
+    log::info!("[Snapshots] Saved account snapshots successfully");
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_accounts_snapshots() -> Result<String, String> {
+    let file_path = get_account_snapshots_file_path();
+    log::info!("[Snapshots] Loading account snapshots from {:?}", file_path);
+
+    if !file_path.exists() {
+        log::info!("[Snapshots] Snapshot file not found, returning empty array");
+        return Ok("[]".to_string());
+    }
+
+    let payload = fs::read_to_string(file_path).map_err(|e| e.to_string())?;
+    log::info!(
+        "[Snapshots] Loaded account snapshots successfully ({} bytes)",
+        payload.len()
+    );
+    Ok(payload)
+}
+
+#[tauri::command]
+async fn append_account_snapshot(snapshot_json: &str) -> Result<(), String> {
+    let snapshot: Value = serde_json::from_str(snapshot_json).map_err(|e| e.to_string())?;
+    if !snapshot.is_object() {
+        return Err("Snapshot payload must be a JSON object".to_string());
+    }
+
+    let mut snapshots = read_snapshots_json_array()?;
+    snapshots.push(snapshot);
+
+    // keep newest first when persisted
+    snapshots.sort_by(|a, b| {
+        let a_created = a
+            .get("createdAt")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
+        let b_created = b
+            .get("createdAt")
+            .and_then(|v| v.as_str())
+            .unwrap_or_default();
+        b_created.cmp(a_created)
+    });
+
+    write_snapshots_json_array(&snapshots)?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn load_accounts_snapshots_metadata() -> Result<String, String> {
+    let snapshots = read_snapshots_json_array()?;
+
+    let metadata: Vec<Value> = snapshots
+        .into_iter()
+        .map(|snapshot| {
+            let mut meta = Map::new();
+            let id = snapshot
+                .get("id")
+                .cloned()
+                .unwrap_or(Value::String(String::new()));
+            let name = snapshot
+                .get("name")
+                .cloned()
+                .unwrap_or(Value::String(String::new()));
+            let created_at = snapshot
+                .get("createdAt")
+                .cloned()
+                .unwrap_or(Value::String(String::new()));
+            let scope = snapshot.get("scope").cloned().unwrap_or(Value::Null);
+            let source_account_id = snapshot
+                .get("sourceAccountId")
+                .cloned()
+                .unwrap_or(Value::Null);
+            let account_count = snapshot
+                .get("accounts")
+                .and_then(|v| v.as_array())
+                .map(|arr| arr.len())
+                .unwrap_or(0);
+
+            meta.insert("id".to_string(), id);
+            meta.insert("name".to_string(), name);
+            meta.insert("createdAt".to_string(), created_at);
+            meta.insert("scope".to_string(), scope);
+            meta.insert("sourceAccountId".to_string(), source_account_id);
+            meta.insert(
+                "accountCount".to_string(),
+                Value::Number(account_count.into()),
+            );
+
+            Value::Object(meta)
+        })
+        .collect();
+
+    serde_json::to_string(&metadata).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn load_account_snapshot_by_id(snapshot_id: &str) -> Result<String, String> {
+    let snapshots = read_snapshots_json_array()?;
+    let found = snapshots.into_iter().find(|snapshot| {
+        snapshot
+            .get("id")
+            .and_then(|v| v.as_str())
+            .map(|id| id == snapshot_id)
+            .unwrap_or(false)
+    });
+
+    match found {
+        Some(snapshot) => serde_json::to_string(&snapshot).map_err(|e| e.to_string()),
+        None => Err(format!("Snapshot with id '{}' not found", snapshot_id)),
+    }
+}
+
+#[tauri::command]
+async fn delete_account_snapshot(snapshot_id: &str) -> Result<(), String> {
+    let snapshots = read_snapshots_json_array()?;
+    let filtered: Vec<Value> = snapshots
+        .into_iter()
+        .filter(|snapshot| {
+            !snapshot
+                .get("id")
+                .and_then(|v| v.as_str())
+                .map(|id| id == snapshot_id)
+                .unwrap_or(false)
+        })
+        .collect();
+
+    write_snapshots_json_array(&filtered)
 }
 
 // Add this near your other command functions
@@ -405,7 +583,13 @@ pub fn run() {
             launch_exalt,
             execute_powershell,
             save_accounts_mapped_data,
-            load_accounts_mapped_data
+            load_accounts_mapped_data,
+            save_accounts_snapshots,
+            load_accounts_snapshots,
+            append_account_snapshot,
+            load_accounts_snapshots_metadata,
+            load_account_snapshot_by_id,
+            delete_account_snapshot
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

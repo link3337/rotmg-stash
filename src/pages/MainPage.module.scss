@@ -1,0 +1,69 @@
+.snapshotBanner {
+  --snapshot-accent: var(--yellow-500, #f59e0b);
+
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--snapshot-accent) 42%, var(--surface-border));
+  border-left: 4px solid var(--snapshot-accent);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--snapshot-accent) 14%, transparent), transparent 45%),
+    color-mix(in srgb, var(--surface-card) 92%, var(--surface-ground));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
+}
+
+.snapshotBannerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--snapshot-accent) 18%, var(--surface-ground));
+  color: var(--snapshot-accent);
+}
+
+.snapshotBannerContent {
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.snapshotBannerTitle {
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.snapshotBannerMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.7rem;
+  margin-top: 0.2rem;
+  color: var(--text-color-secondary);
+  font-size: 0.85rem;
+}
+
+.snapshotBannerName {
+  max-width: min(48rem, 100%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .snapshotBanner {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .snapshotBannerContent {
+    flex-basis: calc(100% - 3rem);
+  }
+}

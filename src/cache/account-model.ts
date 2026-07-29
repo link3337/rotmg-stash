@@ -47,3 +47,14 @@ export interface AccountModel {
    */
   queueStatus?: QueueStatusType;
 }
+
+export function sanitizeAccountSnapshotData(account: AccountModel): Omit<AccountModel, 'password' | 'error' | 'queueStatus'> {
+  const {
+    password: _password,
+    error: _error,
+    queueStatus: _queueStatus,
+    ...sanitizedAccount
+  } = account;
+
+  return sanitizedAccount;
+}

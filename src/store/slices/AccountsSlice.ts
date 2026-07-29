@@ -29,11 +29,22 @@ import { clearRateLimit, isCurrentlyRateLimited, setRateLimit } from './RateLimi
 interface AccountState {
   items: AccountModel[];
   loading: { [key: string]: boolean };
+  snapshotView: {
+    active: boolean;
+    snapshotId?: string;
+    snapshotName?: string;
+    createdAt?: string;
+    scope?: 'all' | 'single';
+    sourceAccountId?: string;
+  };
 }
 
 const initialState: AccountState = {
   items: [],
-  loading: {}
+  loading: {},
+  snapshotView: {
+    active: false
+  }
 };
 
 const accountsFeatureKey = 'accounts';
@@ -225,6 +236,34 @@ const accountsSlice = createSlice({
       if (account) {
         account.lastLaunched = new Date().toISOString();
       }
+    },
+    applyAccountsSnapshotTemporarily: (state, action: PayloadAction<AccountModel[]>) => {
+      state.items = action.payload;
+      state.loading = {};
+    },
+    setSnapshotView: (
+      state,
+      action: PayloadAction<{
+        snapshotId: string;
+        snapshotName: string;
+        createdAt: string;
+        scope?: 'all' | 'single';
+        sourceAccountId?: string;
+      }>
+    ) => {
+      state.snapshotView = {
+        active: true,
+        snapshotId: action.payload.snapshotId,
+        snapshotName: action.payload.snapshotName,
+        createdAt: action.payload.createdAt,
+        scope: action.payload.scope,
+        sourceAccountId: action.payload.sourceAccountId
+      };
+    },
+    clearSnapshotView: (state) => {
+      state.snapshotView = {
+        active: false
+      };
     }
   },
   extraReducers: (builder) => {
@@ -284,7 +323,10 @@ export const {
   changeAccountOrder,
   toggleAccountActive,
   deleteAccount,
-  updateAccountLastLaunched
+  updateAccountLastLaunched,
+  applyAccountsSnapshotTemporarily,
+  setSnapshotView,
+  clearSnapshotView
 } = accountsSlice.actions;
 
 // middleware listener to update localStorage when accounts.items state changes
@@ -321,6 +363,8 @@ export const selectAccountList = createSelector(accountsSelector, (accounts) => 
 export const selectActiveAccounts = createSelector(accountsSelector, (accounts) =>
   accounts.items?.filter((x) => x.active)
 );
+
+export const selectSnapshotView = createSelector(accountsSelector, (accounts) => accounts.snapshotView);
 
 export const selectAccountLoading = (state: RootState, id: string) =>
   state.accounts.loading[id] || false;

@@ -1,0 +1,165 @@
+.snapshot-manager-dialog {
+    :global(.p-dialog-content) {
+        padding-top: 0.5rem;
+    }
+}
+
+.snapshot-manager-panel {
+    margin-bottom: 1rem;
+    padding: 0.95rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at top right, color-mix(in srgb, var(--primary-color) 13%, transparent), transparent 48%),
+        color-mix(in srgb, var(--surface-card) 88%, var(--surface-ground));
+}
+
+.snapshot-manager-panel-compact {
+    margin-bottom: 0.85rem;
+}
+
+.snapshot-manager-headline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.snapshot-manager-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.snapshot-manager-subtitle {
+    margin-top: 0.2rem;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    max-width: 44rem;
+    line-height: 1.35;
+}
+
+.snapshot-manager-stats {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.snapshot-manager-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+}
+
+.snapshot-manager-stat-active {
+    border-color: color-mix(in srgb, var(--primary-color) 35%, var(--surface-border));
+    color: var(--text-color);
+    background: color-mix(in srgb, var(--primary-color) 10%, var(--surface-ground));
+}
+
+.snapshot-manager-toolbar {
+    margin-top: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.snapshot-manager-toolbar-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--text-color-secondary);
+    font-size: 0.8rem;
+}
+
+.snapshot-manager-toolbar-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.snapshot-manager-empty {
+    min-height: 11rem;
+    border: 1px dashed var(--surface-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface-card) 90%, var(--surface-ground));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    text-align: center;
+    padding: 1rem;
+}
+
+.snapshot-manager-empty-icon {
+    font-size: 1.35rem;
+    color: var(--text-color-secondary);
+}
+
+.snapshot-manager-empty-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.snapshot-manager-empty-text {
+    max-width: 32rem;
+    color: var(--text-color-secondary);
+    font-size: 0.82rem;
+}
+
+.snapshot-manager-table {
+    :global(.p-datatable-thead > tr > th) {
+        font-size: 0.8rem;
+    }
+}
+
+.snapshot-manager-row-name {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.snapshot-manager-row-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-color-secondary);
+    font-size: 0.83rem;
+}
+
+.snapshot-manager-row-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.35rem;
+}
+
+.snapshot-manager-scope-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-ground);
+    color: var(--text-color-secondary);
+    font-size: 0.72rem;
+    padding: 0.12rem 0.5rem;
+    white-space: nowrap;
+}
+
+.snapshot-manager-scope-pill-global {
+    border-color: color-mix(in srgb, var(--primary-color) 35%, var(--surface-border));
+    background: color-mix(in srgb, var(--primary-color) 10%, var(--surface-ground));
+    color: var(--text-color);
+}

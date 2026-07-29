@@ -10,6 +10,7 @@ import {
   deleteAccount,
   importAccounts,
   refreshAccount,
+  selectSnapshotView,
   toggleAccountActive,
   updateAccount,
   updateAccountLastLaunched,
@@ -33,6 +34,7 @@ import { InputText } from 'primereact/inputtext';
 import { Toast } from 'primereact/toast';
 import { Tooltip } from 'primereact/tooltip';
 import React, { useMemo, useRef, useState } from 'react';
+import '../../Snapshots/SnapshotManager.scss';
 import PasswordEditor from './PasswordEditor';
 
 export const AccountTable: React.FC = () => {
@@ -45,6 +47,7 @@ export const AccountTable: React.FC = () => {
   const isStreamerMode = useAppSelector((state) => state.settings.experimental.isStreamerMode);
   const rateLimit = useAppSelector(selectRateLimit);
   const activeFilters = useAppSelector(selectSelectedItems);
+  const snapshotView = useAppSelector(selectSnapshotView);
 
   const isRateLimited = useMemo(() => {
     if (!rateLimit.timestamp) return false;
@@ -66,6 +69,7 @@ export const AccountTable: React.FC = () => {
 
   const toast = useRef<Toast>(null);
   const fileUploadRef = useRef<FileUpload>(null);
+  const isSnapshotMode = snapshotView.active;
 
   const formatDate = (date: string | Date) => {
     return new Intl.DateTimeFormat(navigator.language, {
@@ -270,6 +274,15 @@ export const AccountTable: React.FC = () => {
   };
 
   const refreshAccountData = async (account: AccountModel) => {
+    if (isSnapshotMode) {
+      toast.current?.show({
+        severity: 'warn',
+        summary: 'Snapshot Mode Active',
+        detail: 'Restore saved data before refreshing an account.'
+      });
+      return;
+    }
+
     try {
       debug('Refreshing account data');
       await dispatch(refreshAccount({ ...account, password: decrypt(account.password) })).unwrap();
@@ -407,6 +420,9 @@ export const AccountTable: React.FC = () => {
     { rowIndex }: { rowIndex: number }
   ) => {
     const isAccountLoading = !!rowData.isLoading;
+    const refreshTooltip = isSnapshotMode
+      ? 'Restore saved data first to refresh'
+      : 'Refresh account data';
 
     return (
       <div className="flex gap-2">
@@ -433,8 +449,8 @@ export const AccountTable: React.FC = () => {
           onClick={() => refreshAccountData(rowData)}
           className="p-button-text p-button-rounded"
           loading={isAccountLoading}
-          disabled={isAccountLoading || isRateLimited}
-          tooltip="Refresh"
+          disabled={isAccountLoading || isRateLimited || isSnapshotMode}
+          tooltip={refreshTooltip}
           tooltipOptions={{ position: 'top' }}
         />
         <Button
@@ -644,6 +660,17 @@ export const AccountTable: React.FC = () => {
       <Toast ref={toast} position="bottom-right" />
       <ConfirmDialog />
 
+      <div className="mb-2 flex align-items-center gap-2">
+        <h3 className="m-0">Accounts</h3>
+        {snapshotView.active && (
+          <span className="inline-flex align-items-center gap-1 px-2 py-1 border-round surface-ground border-1 surface-border text-xs">
+            <i className="pi pi-history" />
+            Viewing {snapshotView.scope === 'single' ? 'single-account' : 'global'} snapshot:{' '}
+            {snapshotView.snapshotName}
+          </span>
+        )}
+      </div>
+
       <div className="mb-3 flex justify-content-between align-items-center">
         <Button
           icon="pi pi-plus"
@@ -697,6 +724,7 @@ export const AccountTable: React.FC = () => {
             onClick={handleExportAccounts}
             className={`mr-1 p-button-rounded p-button-outlined`}
           />
+
         </div>
       </div>
 
@@ -817,6 +845,7 @@ export const AccountTable: React.FC = () => {
       >
         <p>Do you want to import settings from the file aswell?</p>
       </Dialog>
+
     </Card>
   );
 };
