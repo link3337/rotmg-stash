@@ -24,7 +24,7 @@ tauri-plugin-log = "2.9.1"
 tauri-plugin-shell = "2.3.6"
 base64 = "0.23.1"
 dirs = "7.0.0"
-log = "0.4.33"
+log = "0.4.34"
 rand = "0.10.2"
 regex = "1.13.1"
 reqwest = { version = "0.13.4", features = ["blocking", "json", "form"] }
