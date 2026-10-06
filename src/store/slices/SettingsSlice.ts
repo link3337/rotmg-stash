@@ -22,8 +22,9 @@ import { createListenerMiddleware, createSlice, isAnyOf, PayloadAction } from '@
 import { debug } from '@tauri-apps/plugin-log';
 import { useSelector } from 'react-redux';
 import { RootState } from '..';
+import { selectGameAssetsBase } from './AssetsSlice';
 
-export interface SettingsState extends SettingsModel {}
+export type SettingsState = SettingsModel;
 
 const initialState: SettingsState = {
   displaySettings: defaultDisplaySettings,
@@ -181,10 +182,14 @@ export const selectCursedSettings = (state: RootState) => settingsSelector(state
 export const selectEnable3DViewer = (state: RootState) =>
   settingsSelector(state).cursedSettings.enable3DViewer;
 
-export const selectAssetsBaseUrl = (state: RootState) =>
-  settingsSelector(state).displaySettings.useLocalAssets
-    ? LOCAL_ASSETS_BASE_URL
-    : REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL;
+export const selectAssetsBaseUrl = (state: RootState) => {
+  const { useGameAssets, useLocalAssets } = settingsSelector(state).displaySettings;
+  const gameBase = useGameAssets ? selectGameAssetsBase(state) : null;
+
+  return (
+    gameBase || (useLocalAssets ? LOCAL_ASSETS_BASE_URL : REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL)
+  );
+};
 
 // hook
 export function useSettings(): SettingsState {

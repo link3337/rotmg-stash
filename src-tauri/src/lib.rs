@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod assets;
 mod devicetoken_script;
 mod util;
 
@@ -14,6 +15,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 use std::time::Instant;
+use tauri::Manager;
 use tauri_plugin_log;
 use url::form_urlencoded;
 use util::generate_hex_key;
@@ -355,7 +357,6 @@ async fn load_accounts_mapped_data() -> Result<String, String> {
     Ok(payload)
 }
 
-// Add this near your other command functions
 #[tauri::command]
 async fn execute_powershell() -> Result<String, String> {
     log::info!("[PowerShell] Executing script");
@@ -388,6 +389,15 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
+        .setup(|app| {
+            // Allow the frontend to fetch generated assets via asset://
+            if let Ok(dir) = assets::cache_dir() {
+                if let Err(e) = app.asset_protocol_scope().allow_directory(&dir, true) {
+                    log::error!("[assets] asset protocol scope failed: {e}");
+                }
+            }
+            Ok(())
+        })
         .plugin(
             tauri_plugin_log::Builder::new()
                 .level(log::LevelFilter::Info)
@@ -405,7 +415,9 @@ pub fn run() {
             launch_exalt,
             execute_powershell,
             save_accounts_mapped_data,
-            load_accounts_mapped_data
+            load_accounts_mapped_data,
+            assets::commands::get_game_assets_status,
+            assets::commands::extract_game_assets
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

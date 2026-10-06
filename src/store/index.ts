@@ -4,6 +4,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { combineReducers } from 'redux';
 import accountsReducer, { accountsStateListener } from './slices/AccountsSlice';
+import assetsReducer from './slices/AssetsSlice';
 import filterReducer, { filterStateListener } from './slices/FilterSlice';
 import layoutReducer from './slices/LayoutSlice';
 import queueReducer from './slices/QueueSlice';
@@ -29,6 +30,7 @@ export const store = configureStore({
     queue: queueReducer,
     rateLimit: rateLimitReducer,
     settings: settingsReducer,
+    assets: assetsReducer,
 
     // apis
     [tauriApi.reducerPath]: tauriApi.reducer,

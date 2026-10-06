@@ -17,6 +17,7 @@ import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import CursedSettings from './Cursed/CursedSettings';
 import ExperimentalSettings from './Experimental/ExperimentalSettings';
+import GameAssetsSettings from './GameAssets/GameAssetsSettings';
 
 export interface DisplayOption {
   label: string;
@@ -92,6 +93,7 @@ const Settings: React.FC = () => {
     { label: 'Show Exalts', key: 'showExalts' },
     { label: 'Show Characters', key: 'showCharacters' },
     { label: 'Enable Character Info and Exalts collapsing', key: 'useAccordionMenu' },
+    { label: 'Use Game Assets', key: 'useGameAssets' },
     { label: 'Use Local Assets', key: 'useLocalAssets' },
     { label: 'Show Vault', key: 'showVault' },
     { label: 'Show Gift Chest', key: 'showGiftChest' },
@@ -221,6 +223,10 @@ const Settings: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="col-12 mt-3">
+          <GameAssetsSettings />
         </div>
 
         <div className="col-12 mt-3">

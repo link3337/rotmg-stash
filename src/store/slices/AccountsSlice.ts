@@ -1,5 +1,5 @@
 import { backendErrorMessages } from '@/constants';
-import { itemsApi } from '@api/items/itemsApi';
+import { itemsApi, makeAssetsQueryArgs } from '@api/items/itemsApi';
 import { mapCharListResponse } from '@api/mapping/char-mapping';
 import { getAccountData } from '@api/realmApi';
 import { AccountModel } from '@cache/account-model';
@@ -145,8 +145,8 @@ export const refreshAccount = createAsyncThunk<
       const backendResponse = await getAccountData(account.email, account.password);
       const result = processBackendResponse(backendResponse, dispatch);
 
-      const useLocalAssets = (getState() as RootState).settings.displaySettings.useLocalAssets;
-      const constantsResult = itemsApi.endpoints.fetchConstants.select(useLocalAssets)(
+      const queryArgs = makeAssetsQueryArgs(getState() as RootState);
+      const constantsResult = itemsApi.endpoints.fetchConstants.select(queryArgs)(
         getState() as any
       );
       const runtimeConstants = constantsResult?.data ?? undefined;

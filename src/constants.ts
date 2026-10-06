@@ -43,5 +43,7 @@ export const TAURI_COMMANDS = {
   GET_SETTINGS: 'get_settings',
   EXECUTE_POWERSHELL: 'execute_powershell',
   SAVE_ACCOUNTS_MAPPED_DATA: 'save_accounts_mapped_data',
-  LOAD_ACCOUNTS_MAPPED_DATA: 'load_accounts_mapped_data'
+  LOAD_ACCOUNTS_MAPPED_DATA: 'load_accounts_mapped_data',
+  GET_GAME_ASSETS_STATUS: 'get_game_assets_status',
+  EXTRACT_GAME_ASSETS: 'extract_game_assets'
 };
