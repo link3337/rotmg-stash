@@ -1,19 +1,42 @@
 import { LOCAL_ASSETS_BASE_URL, REMOTE_ASSETS_BASE_URL } from '@/constants';
 import { Constants, Sheets } from '@/realm/renders/constant';
+import type { RootState } from '@/store';
 import type {
   FetchBaseQueryError,
   FetchBaseQueryMeta,
   QueryReturnValue
 } from '@reduxjs/toolkit/query';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { selectGameAssetsBase } from '@store/slices/AssetsSlice';
+
+export interface AssetsQueryArgs {
+  useGameAssets: boolean;
+  useLocalAssets: boolean;
+  gameBase?: string | null;
+}
 
 const remoteBaseQuery = fetchBaseQuery({ baseUrl: REMOTE_ASSETS_BASE_URL });
 const localBaseQuery = fetchBaseQuery({ baseUrl: LOCAL_ASSETS_BASE_URL });
 
+const toQueryArgs = (arg: boolean | AssetsQueryArgs | void): AssetsQueryArgs => {
+  if (typeof arg === 'object' && arg) {
+    return {
+      useGameAssets: !!arg.useGameAssets,
+      useLocalAssets: !!arg.useLocalAssets,
+      gameBase: arg.gameBase ?? null
+    };
+  }
+
+  return {
+    useGameAssets: false,
+    useLocalAssets: !!arg
+  };
+};
+
 const queryWithFallback =
   <T>(url: string) =>
   async (
-    useLocalAssets: boolean | void,
+    arg: boolean | AssetsQueryArgs | void,
     api: any,
     extraOptions: any
   ): Promise<QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>> => {
@@ -22,48 +45,75 @@ const queryWithFallback =
       cache: 'no-cache' as RequestCache
     };
 
-    if (useLocalAssets) {
-      const localResult = await localBaseQuery(request, api, extraOptions);
-      if (!localResult.error) {
-        return localResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
+    const queryArgs = toQueryArgs(arg);
+    const baseCandidates: Array<{ name: string; baseUrl: string }> = [];
+
+    if (queryArgs.useGameAssets && queryArgs.gameBase) {
+      baseCandidates.push({ name: 'game', baseUrl: queryArgs.gameBase });
+    }
+
+    if (queryArgs.useLocalAssets) {
+      baseCandidates.push({ name: 'local', baseUrl: LOCAL_ASSETS_BASE_URL });
+      baseCandidates.push({ name: 'remote', baseUrl: REMOTE_ASSETS_BASE_URL });
+    } else {
+      baseCandidates.push({ name: 'remote', baseUrl: REMOTE_ASSETS_BASE_URL });
+      baseCandidates.push({ name: 'local', baseUrl: LOCAL_ASSETS_BASE_URL });
+    }
+
+    let lastResult: QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta> | undefined;
+    for (const candidate of baseCandidates) {
+      const baseQuery =
+        candidate.baseUrl === LOCAL_ASSETS_BASE_URL
+          ? localBaseQuery
+          : candidate.baseUrl === REMOTE_ASSETS_BASE_URL
+            ? remoteBaseQuery
+            : fetchBaseQuery({ baseUrl: candidate.baseUrl });
+      const result = (await baseQuery(request, api, extraOptions)) as QueryReturnValue<
+        T,
+        FetchBaseQueryError,
+        FetchBaseQueryMeta
+      >;
+      if (!result.error) {
+        return result;
       }
 
-      console.warn('[itemsApi] Local asset request failed, falling back to remote assets', {
+      lastResult = result;
+      console.warn(`[itemsApi] ${candidate.name} asset request failed`, {
         url,
-        localBaseUrl: LOCAL_ASSETS_BASE_URL,
-        remoteBaseUrl: REMOTE_ASSETS_BASE_URL,
-        error: localResult.error
+        baseUrl: candidate.baseUrl,
+        error: result.error
       });
-
-      const remoteResult = await remoteBaseQuery(request, api, extraOptions);
-      return remoteResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
     }
 
-    const remoteResult = await remoteBaseQuery(request, api, extraOptions);
-    if (!remoteResult.error) {
-      return remoteResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
+    if (lastResult) {
+      return lastResult;
     }
 
-    console.warn('[itemsApi] Remote asset request failed, falling back to local assets', {
-      url,
-      remoteBaseUrl: REMOTE_ASSETS_BASE_URL,
-      localBaseUrl: LOCAL_ASSETS_BASE_URL,
-      error: remoteResult.error
-    });
-
-    const localResult = await localBaseQuery(request, api, extraOptions);
-    return localResult as QueryReturnValue<T, FetchBaseQueryError, FetchBaseQueryMeta>;
+    return remoteBaseQuery(request, api, extraOptions) as QueryReturnValue<
+      T,
+      FetchBaseQueryError,
+      FetchBaseQueryMeta
+    >;
   };
+
+export const makeAssetsQueryArgs = (state: RootState): AssetsQueryArgs => ({
+  useGameAssets: !!state.settings.displaySettings.useGameAssets,
+  useLocalAssets: !!state.settings.displaySettings.useLocalAssets,
+  gameBase: selectGameAssetsBase(state)
+});
 
 export const itemsApi = createApi({
   reducerPath: 'itemsApi',
   baseQuery: fetchBaseQuery({ baseUrl: REMOTE_ASSETS_BASE_URL }),
+  tagTypes: ['Assets'],
   endpoints: (builder) => ({
-    fetchConstants: builder.query<Constants, boolean | void>({
-      queryFn: queryWithFallback<Constants>('/constants.json')
+    fetchConstants: builder.query<Constants, boolean | AssetsQueryArgs | void>({
+      queryFn: queryWithFallback<Constants>('/constants.json'),
+      providesTags: ['Assets']
     }),
-    fetchSheets: builder.query<Sheets, boolean | void>({
-      queryFn: queryWithFallback<Sheets>('/sheets.json')
+    fetchSheets: builder.query<Sheets, boolean | AssetsQueryArgs | void>({
+      queryFn: queryWithFallback<Sheets>('/sheets.json'),
+      providesTags: ['Assets']
     })
   })
 });

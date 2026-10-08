@@ -1,10 +1,13 @@
 import { Constants, Sheets } from '@/realm/renders/constant';
 import { RealmItemMap } from '@/realm/renders/item';
 import { initPortrait } from '@/utils/portrait';
-import { useFetchConstantsQuery, useFetchSheetsQuery } from '@api/items/itemsApi';
-import { useAppSelector } from '@hooks/redux';
+import { makeAssetsQueryArgs, useFetchConstantsQuery, useFetchSheetsQuery } from '@api/items/itemsApi';
+import { useAppDispatch, useAppSelector } from '@hooks/redux';
+import { loadAssetsStatus } from '@store/slices/AssetsSlice';
 import { info } from '@tauri-apps/plugin-log';
 import React, { createContext, useContext, useEffect } from 'react';
+import { shallowEqual } from 'react-redux';
+import { skipToken } from '@reduxjs/toolkit/query';
 
 interface ConstantsContext {
   constants?: Constants | null;
@@ -19,19 +22,28 @@ interface ConstantsContext {
 const ConstantsContext = createContext<ConstantsContext | undefined>(undefined);
 
 export const ConstantsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const useLocalAssets = useAppSelector((state) => state.settings.displaySettings.useLocalAssets);
+  const dispatch = useAppDispatch();
+  const queryArgs = useAppSelector(makeAssetsQueryArgs, shallowEqual);
+  const useGameAssets = queryArgs.useGameAssets;
+  const availability = useAppSelector((state) => state.assets.availability);
+
+  useEffect(() => {
+    dispatch(loadAssetsStatus(null));
+  }, [dispatch]);
+
+  const shouldSkipAssetLoad = useGameAssets && availability === 'unknown';
 
   const {
     data: sheetsData,
     isLoading: isLoadingSheets,
     error: errorSheets
-  } = useFetchSheetsQuery(useLocalAssets);
+  } = useFetchSheetsQuery(shouldSkipAssetLoad ? skipToken : queryArgs);
 
   const {
     data: constants,
     isLoading: isLoadingConstants,
     error: errorConstants
-  } = useFetchConstantsQuery(useLocalAssets);
+  } = useFetchConstantsQuery(shouldSkipAssetLoad ? skipToken : queryArgs);
 
   const sheets = sheetsData ?? null;
   const skinsheets = sheets?.skinsheets ?? {};
@@ -42,18 +54,17 @@ export const ConstantsProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const error = errorConstants || errorSheets || null;
 
   useEffect(() => {
-    if (!constants || !skinsheets || !textiles) {
+    if (!constants || !sheets || !Object.keys(sheets.skinsheets ?? {}).length) {
       return;
     }
 
     try {
       info('Initializing portrait with fetched constants and sheets');
-      initPortrait(constants, skinsheets, textiles);
+      initPortrait(constants, sheets.skinsheets, sheets.textiles);
     } catch (e) {
-      // fail silently; portrait can still use defaults
       console.warn('Failed to initialize portrait with constants', e);
     }
-  }, [constants, skinsheets, textiles]);
+  }, [constants, sheets]);
 
   return (
     <ConstantsContext.Provider
