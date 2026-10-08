@@ -1,0 +1,144 @@
+.banner {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem 2rem;
+  margin: 0.75rem 1rem;
+  padding: 1.1rem 1.25rem;
+  overflow: hidden;
+  border: 1px solid var(--yellow-300);
+  border-radius: 10px;
+  background: var(--surface-0);
+  box-shadow: 0 6px 18px rgb(31 41 55 / 8%);
+  color: var(--text-color);
+}
+
+.banner::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--yellow-500);
+  content: '';
+}
+
+.mainContent {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1rem;
+}
+
+.icon {
+  display: grid;
+  flex: 0 0 2.75rem;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--yellow-300);
+  border-radius: 8px;
+  background: var(--surface-0);
+  color: var(--yellow-700);
+  font-size: 1.2rem;
+}
+
+.copy {
+  min-width: 0;
+}
+
+.eyebrow {
+  margin-bottom: 0.15rem;
+  color: var(--yellow-700);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.headingRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.headingRow h3 {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.copy p {
+  margin: 0.25rem 0 0;
+  color: var(--text-color-secondary);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  flex: 1 1 20rem;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.progressSummary {
+  flex: 1 1 18rem;
+  max-width: 26rem;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+  color: var(--text-color-secondary);
+  font-size: 0.8rem;
+}
+
+.percentage {
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.progress {
+  height: 0.65rem;
+}
+
+.progress :global(.p-progressbar-value) {
+  background: var(--yellow-500);
+}
+
+.dismiss {
+  flex: 0 0 auto;
+}
+
+.error {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .banner {
+    align-items: stretch;
+    margin: 0.5rem;
+  }
+
+  .mainContent,
+  .actions {
+    width: 100%;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions > :first-child {
+    flex: 1;
+  }
+
+  .progressSummary {
+    max-width: none;
+  }
+}

@@ -1,8 +1,11 @@
 import { useAppSelector } from '@/hooks/redux';
 import { GAME_ASSETS_PHASE_LABELS, useGameAssetsExtractor } from '@/hooks/useGameAssetsExtractor';
 import { Button } from 'primereact/button';
+import { Message } from 'primereact/message';
 import { ProgressBar } from 'primereact/progressbar';
+import { Tag } from 'primereact/tag';
 import React, { useState } from 'react';
+import styles from './GameAssetsBanner.module.scss';
 
 const GameAssetsBanner: React.FC = () => {
   const { extract, extracting, progress, error } = useGameAssetsExtractor();
@@ -22,39 +25,43 @@ const GameAssetsBanner: React.FC = () => {
     : 'Preparing…';
 
   return (
-    <div
-      className="flex flex-wrap align-items-center justify-content-between gap-3 p-3 bg-yellow-100 text-900"
-      role="alert"
-    >
-      <div className="flex align-items-center gap-2">
-        <i className="pi pi-exclamation-triangle text-yellow-500" />
-        <span>
-          Game assets aren't extracted yet - item sprites are loading from the remote server.
-          Extract them for offline portraits.
-        </span>
+    <section className={styles.banner} role="alert">
+      <div className={styles.mainContent}>
+        <div className={styles.icon} aria-hidden="true">
+          <i className="pi pi-database" />
+        </div>
+
+        <div className={styles.copy}>
+          <div className={styles.eyebrow}>Game assets</div>
+          <div className={styles.headingRow}>
+            <h3>Game assets aren't extracted yet</h3>
+            <Tag severity="warning" value={extracting ? 'Extracting' : 'Not extracted'} />
+          </div>
+          <p>
+            Item sprites are loading from the remote server. Extract them for offline portraits.
+          </p>
+        </div>
       </div>
 
-      <div className="flex align-items-center gap-3">
+      <div className={styles.actions}>
         {extracting || progress ? (
-          <div className="flex flex-column gap-1" style={{ minWidth: '18rem' }}>
-            <div className="flex justify-content-between text-sm">
+          <div className={styles.progressSummary}>
+            <div className={styles.progressLabel}>
               <span>{phaseLabel}</span>
               {progress && progress.total > 0 && (
                 <span>
                   {progress.current}/{progress.total}
+                  <strong className={styles.percentage}> {Math.round(percentage)}%</strong>
                 </span>
               )}
             </div>
-            <ProgressBar
-              value={percentage}
-              displayValueTemplate={(value) => `${Math.round(Number(value ?? 0))}%`}
-              style={{ height: '2rem' }}
-            />
+            <ProgressBar value={percentage} showValue={false} className={styles.progress} />
           </div>
         ) : (
           <Button
             label="Extract now"
-            icon="pi pi-database"
+            icon="pi pi-download"
+            severity="warning"
             loading={extracting}
             onClick={() => void extract()}
           />
@@ -65,13 +72,14 @@ const GameAssetsBanner: React.FC = () => {
           text
           rounded
           severity="secondary"
+          className={styles.dismiss}
           onClick={() => setDismissed(true)}
           aria-label="Dismiss"
         />
       </div>
 
-      {error && <div className="w-full text-sm text-red-600">{error}</div>}
-    </div>
+      {error && <Message severity="error" text={error} className={styles.error} />}
+    </section>
   );
 };
 

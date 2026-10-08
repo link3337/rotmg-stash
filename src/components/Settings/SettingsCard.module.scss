@@ -1,0 +1,44 @@
+.card {
+  height: 100%;
+  border: 1px solid var(--surface-border);
+  border-top: 3px solid var(--primary-color);
+  box-shadow: 0 5px 16px rgb(15 23 42 / 7%);
+}
+
+.card :global(.p-card-body) {
+  height: 100%;
+  padding: 1.25rem;
+}
+
+.card :global(.p-card-content) {
+  padding: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.icon {
+  display: grid;
+  flex: 0 0 2.5rem;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--primary-color) 12%, var(--surface-0));
+  color: var(--primary-color);
+  font-size: 1.05rem;
+}
+
+.header h4 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.content {
+  padding-top: 1rem;
+}

@@ -1,7 +1,7 @@
 {
   "name": "rotmg-stash",
   "private": true,
-  "version": "1.1.8",
+  "version": "1.1.9",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -59,7 +59,7 @@
     "sass": "^1.105.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.3",
+    "vite": "^8.3.4",
     "vite-plugin-node-polyfills": "^0.28.0",
     "vitest": "^5.0.3",
     "zod-validation-error": "^5.0.0"

@@ -1,9 +1,12 @@
 import { useAppSelector } from '@hooks/redux';
 import { GAME_ASSETS_PHASE_LABELS, useGameAssetsExtractor } from '@hooks/useGameAssetsExtractor';
 import { Button } from 'primereact/button';
+import { Card } from 'primereact/card';
+import { Message } from 'primereact/message';
 import { ProgressBar } from 'primereact/progressbar';
 import { Tag } from 'primereact/tag';
 import React from 'react';
+import styles from './GameAssetsSettings.module.scss';
 
 const GameAssetsSettings: React.FC = () => {
   const assets = useAppSelector((state) => state.assets);
@@ -20,45 +23,61 @@ const GameAssetsSettings: React.FC = () => {
   const currentStatus = assets.availability in statusMap ? assets.availability : 'unknown';
 
   return (
-    <div className="p-3 border-1 border-round surface-border">
-      <div className="flex align-items-center justify-content-between mb-3">
-        <h4 className="m-0">Game Assets</h4>
+    <Card className={styles.card}>
+      <div className={styles.header}>
+        <div className={styles.icon} aria-hidden="true">
+          <i className="pi pi-database" />
+        </div>
+        <div className={styles.titleGroup}>
+          <span className={styles.eyebrow}>Game Assets</span>
+          <p>Keep item sprites and portraits available without a network request.</p>
+        </div>
         <Tag severity={statusMap[currentStatus].severity} value={statusMap[currentStatus].label} />
       </div>
 
-      <div className="flex align-items-center gap-2 mb-3">
+      <div className={styles.actionRow}>
+        <div className={styles.source}>
+          <i className="pi pi-folder" aria-hidden="true" />
+          <div>
+            <span>Asset source</span>
+            <strong title={sourcePath ?? undefined}>
+              {sourcePath ?? 'Auto-detect game install'}
+            </strong>
+          </div>
+        </div>
         <Button
           label="Extract"
           icon="pi pi-database"
           onClick={() => void extract()}
           loading={extracting}
         />
-        <small className="text-500">{sourcePath ?? 'Auto-detect game install'}</small>
       </div>
 
       {progress && (
-        <div className="mb-3">
-          <div className="flex justify-content-between text-sm mb-1">
+        <div className={styles.progressSection}>
+          <div className={styles.progressHeader}>
             <span>{GAME_ASSETS_PHASE_LABELS[progress.phase] ?? progress.phase}</span>
             <span>
               {progress.current}/{progress.total}
+              {progress.total > 0 && <strong>{` ${Math.round(percentage)}%`}</strong>}
             </span>
           </div>
-          <ProgressBar
-            value={percentage}
-            displayValueTemplate={(value) => `${Math.round(Number(value ?? 0))}%`}
-            style={{ height: '2rem' }}
-          />
-          {progress.message && <small className="text-500 block mt-1">{progress.message}</small>}
+          <ProgressBar value={percentage} showValue={false} className={styles.progress} />
+          {progress.message && <small>{progress.message}</small>}
         </div>
       )}
 
-      {error && <small className="text-red-500 block mb-3">{error}</small>}
+      {error && <Message severity="error" text={error} className={styles.error} />}
 
-      <div className="text-sm text-500">
-        {assets.cacheDir ? `Cache: ${assets.cacheDir}` : 'Cache directory pending'}
+      <div className={styles.cacheRow}>
+        <span>
+          <i className="pi pi-database" aria-hidden="true" /> Cache location
+        </span>
+        <strong title={assets.cacheDir ?? undefined}>
+          {assets.cacheDir ? assets.cacheDir : 'Cache directory pending'}
+        </strong>
       </div>
-    </div>
+    </Card>
   );
 };
 

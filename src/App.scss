@@ -6,21 +6,6 @@
   text-align: center;
 }
 
-// PrimeFlex palette utilities (bg-*, text-*, border-*) reference `--p-*`
-// design tokens, but the installed PrimeReact v10 themes only define the
-// unprefixed `--*-100…900` tokens. Alias the shades this app uses so those
-// utilities resolve (e.g. bg-yellow-100, text-yellow-500, bg-red-100).
-body {
-  --p-yellow-100: var(--yellow-100);
-  --p-yellow-500: var(--yellow-500);
-  --p-red-100: var(--red-100);
-  --p-red-500: var(--red-500);
-  --p-red-600: var(--red-600);
-  --p-gray-500: var(--gray-500);
-  --p-primary-color: var(--primary-color);
-  --p-primary-700: var(--primary-700);
-}
-
 a {
   font-weight: 500;
   color: var(--blue-700);

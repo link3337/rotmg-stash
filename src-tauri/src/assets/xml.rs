@@ -7,6 +7,7 @@
 
 use quick_xml::events::Event;
 use quick_xml::Reader;
+use quick_xml::XmlVersion;
 
 #[derive(Debug, Clone, Default)]
 pub struct Element {
@@ -82,17 +83,17 @@ pub fn parse_document(xml: &str) -> Result<Vec<Element>, String> {
             .map_err(|e| format!("XML parse error: {e}"))?;
         match event {
             Event::Start(e) => {
-                let name = String::from_utf8_lossy(e.name().as_ref()).into_owned();
+                let name = e.name().as_ref().to_owned();
                 let mut el = Element {
                     name,
                     ..Default::default()
                 };
                 for attr in e.attributes().with_checks(false) {
                     let attr = attr.map_err(|err| format!("XML attr error: {err}"))?;
-                    let key = String::from_utf8_lossy(attr.key.as_ref()).into_owned();
+                    let key = attr.key.as_ref().to_owned();
                     // fast-xml-parser `trimValues` also applies to attributes.
                     let value = attr
-                        .unescape_value()
+                        .normalized_value(XmlVersion::Implicit1_0)
                         .map_err(|err| format!("XML attr unescape error: {err}"))?
                         .trim()
                         .to_string();
@@ -101,16 +102,16 @@ pub fn parse_document(xml: &str) -> Result<Vec<Element>, String> {
                 stack.push(el);
             }
             Event::Empty(e) => {
-                let name = String::from_utf8_lossy(e.name().as_ref()).into_owned();
+                let name = e.name().as_ref().to_owned();
                 let mut el = Element {
                     name,
                     ..Default::default()
                 };
                 for attr in e.attributes().with_checks(false) {
                     let attr = attr.map_err(|err| format!("XML attr error: {err}"))?;
-                    let key = String::from_utf8_lossy(attr.key.as_ref()).into_owned();
+                    let key = attr.key.as_ref().to_owned();
                     let value = attr
-                        .unescape_value()
+                        .normalized_value(XmlVersion::Implicit1_0)
                         .map_err(|err| format!("XML attr unescape error: {err}"))?
                         .trim()
                         .to_string();
@@ -120,10 +121,7 @@ pub fn parse_document(xml: &str) -> Result<Vec<Element>, String> {
             }
             Event::Text(t) => {
                 if let Some(cur) = stack.last_mut() {
-                    let decoded = t
-                        .decode()
-                        .map_err(|err| format!("XML text decode error: {err}"))?;
-                    let value = quick_xml::escape::unescape(&decoded)
+                    let value = quick_xml::escape::unescape(t.as_ref())
                         .map_err(|err| format!("XML text unescape error: {err}"))?;
                     let raw = cur.text.get_or_insert_with(String::new);
                     raw.push_str(&value);
@@ -132,7 +130,7 @@ pub fn parse_document(xml: &str) -> Result<Vec<Element>, String> {
             Event::CData(t) => {
                 if let Some(cur) = stack.last_mut() {
                     let raw = cur.text.get_or_insert_with(String::new);
-                    raw.push_str(&String::from_utf8_lossy(&t));
+                    raw.push_str(t.as_ref());
                 }
             }
             Event::End(_) => {
