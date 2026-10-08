@@ -7,13 +7,13 @@
 - Relation: `src/assets/` in this crate contains Rust ports of the
   TypeScript sources from that project:
 
-  | Rust port          | Original                     |
-  | ------------------ | ---------------------------- |
-  | `render.rs`        | `src/renderer.ts`            |
-  | `sheet.rs`         | sprite-sheet recompilation from `src/index.ts` |
-  | `unity.rs`         | `src/unity-asset-parser.ts`  |
-  | `flatbuf.rs`       | `Deca.SpriteSheetRoot` schema (`src/schema.fbs`) parsing |
-  | `xml.rs`           | XML text-asset semantics (`fast-xml-parser` behavior) |
+  | Rust port    | Original                                                 |
+  | ------------ | -------------------------------------------------------- |
+  | `render.rs`  | `src/renderer.ts`                                        |
+  | `sheet.rs`   | sprite-sheet recompilation from `src/index.ts`           |
+  | `unity.rs`   | `src/unity-asset-parser.ts`                              |
+  | `flatbuf.rs` | `Deca.SpriteSheetRoot` schema (`src/schema.fbs`) parsing |
+  | `xml.rs`     | XML text-asset semantics (`fast-xml-parser` behavior)    |
 
 ISC License:
 

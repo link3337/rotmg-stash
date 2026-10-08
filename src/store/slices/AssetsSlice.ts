@@ -65,9 +65,10 @@ export const selectGameAssetsBase = (state: RootState) => {
   const cacheDir = state.assets.cacheDir;
   if (!cacheDir) return null;
 
-  const base = state.assets.availability === 'fresh' || state.assets.availability === 'stale'
-    ? convertFileSrc(cacheDir)
-    : null;
+  const base =
+    state.assets.availability === 'fresh' || state.assets.availability === 'stale'
+      ? convertFileSrc(cacheDir)
+      : null;
 
   return base ? base.replace(/\/+$/, '') : null;
 };

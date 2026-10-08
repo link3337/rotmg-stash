@@ -1,8 +1,5 @@
-import {
-  GAME_ASSETS_PHASE_LABELS,
-  useGameAssetsExtractor
-} from '@/hooks/useGameAssetsExtractor';
 import { useAppSelector } from '@/hooks/redux';
+import { GAME_ASSETS_PHASE_LABELS, useGameAssetsExtractor } from '@/hooks/useGameAssetsExtractor';
 import { Button } from 'primereact/button';
 import { ProgressBar } from 'primereact/progressbar';
 import React, { useState } from 'react';
@@ -20,7 +17,9 @@ const GameAssetsBanner: React.FC = () => {
   }
 
   const percentage = progress && progress.total > 0 ? (progress.current / progress.total) * 100 : 0;
-  const phaseLabel = progress ? GAME_ASSETS_PHASE_LABELS[progress.phase] ?? progress.phase : 'Preparing…';
+  const phaseLabel = progress
+    ? (GAME_ASSETS_PHASE_LABELS[progress.phase] ?? progress.phase)
+    : 'Preparing…';
 
   return (
     <div
@@ -30,7 +29,7 @@ const GameAssetsBanner: React.FC = () => {
       <div className="flex align-items-center gap-2">
         <i className="pi pi-exclamation-triangle text-yellow-500" />
         <span>
-          Game assets aren&apos;t extracted yet — item sprites are loading from the remote server.
+          Game assets aren't extracted yet - item sprites are loading from the remote server.
           Extract them for offline portraits.
         </span>
       </div>
@@ -53,7 +52,12 @@ const GameAssetsBanner: React.FC = () => {
             />
           </div>
         ) : (
-          <Button label="Extract now" icon="pi pi-database" loading={extracting} onClick={() => void extract()} />
+          <Button
+            label="Extract now"
+            icon="pi pi-database"
+            loading={extracting}
+            onClick={() => void extract()}
+          />
         )}
 
         <Button

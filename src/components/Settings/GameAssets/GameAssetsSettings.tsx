@@ -1,8 +1,5 @@
 import { useAppSelector } from '@hooks/redux';
-import {
-  GAME_ASSETS_PHASE_LABELS,
-  useGameAssetsExtractor
-} from '@hooks/useGameAssetsExtractor';
+import { GAME_ASSETS_PHASE_LABELS, useGameAssetsExtractor } from '@hooks/useGameAssetsExtractor';
 import { Button } from 'primereact/button';
 import { ProgressBar } from 'primereact/progressbar';
 import { Tag } from 'primereact/tag';
@@ -14,7 +11,7 @@ const GameAssetsSettings: React.FC = () => {
 
   const statusMap = {
     fresh: { severity: 'success', label: 'Up to date' },
-    stale: { severity: 'warning', label: 'Game updated — regenerate' },
+    stale: { severity: 'warning', label: 'Game updated - regenerate' },
     missing: { severity: 'danger', label: 'Not extracted' },
     unknown: { severity: 'info', label: 'Checking…' }
   } as const;
@@ -30,7 +27,12 @@ const GameAssetsSettings: React.FC = () => {
       </div>
 
       <div className="flex align-items-center gap-2 mb-3">
-        <Button label="Extract" icon="pi pi-database" onClick={() => void extract()} loading={extracting} />
+        <Button
+          label="Extract"
+          icon="pi pi-database"
+          onClick={() => void extract()}
+          loading={extracting}
+        />
         <small className="text-500">{sourcePath ?? 'Auto-detect game install'}</small>
       </div>
 

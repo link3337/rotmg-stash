@@ -1,7 +1,11 @@
 import { Constants, Sheets } from '@/realm/renders/constant';
 import { RealmItemMap } from '@/realm/renders/item';
 import { initPortrait } from '@/utils/portrait';
-import { makeAssetsQueryArgs, useFetchConstantsQuery, useFetchSheetsQuery } from '@api/items/itemsApi';
+import {
+  makeAssetsQueryArgs,
+  useFetchConstantsQuery,
+  useFetchSheetsQuery
+} from '@api/items/itemsApi';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { loadAssetsStatus } from '@store/slices/AssetsSlice';
 import { info } from '@tauri-apps/plugin-log';

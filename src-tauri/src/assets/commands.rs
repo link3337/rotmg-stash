@@ -5,9 +5,7 @@ use std::path::PathBuf;
 use tauri::Emitter;
 
 #[tauri::command]
-pub fn get_game_assets_status(
-    source_path: Option<String>,
-) -> Result<AssetsStatus, String> {
+pub fn get_game_assets_status(source_path: Option<String>) -> Result<AssetsStatus, String> {
     assets::assets_status(source_path.map(PathBuf::from))
 }
 
@@ -18,10 +16,9 @@ pub async fn extract_game_assets(
     app: tauri::AppHandle,
     source_path: Option<String>,
 ) -> Result<CacheManifest, String> {
-    let source = assets::resolve_source(source_path.map(PathBuf::from))
-        .ok_or_else(|| {
-            "RotMG installation not found — set the game path in settings.".to_string()
-        })?;
+    let source = assets::resolve_source(source_path.map(PathBuf::from)).ok_or_else(|| {
+        "RotMG installation not found - set the game path in settings.".to_string()
+    })?;
     let cache = assets::cache_dir()?;
 
     let handle = app.clone();

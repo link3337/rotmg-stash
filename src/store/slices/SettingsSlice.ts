@@ -187,7 +187,8 @@ export const selectAssetsBaseUrl = (state: RootState) => {
   const gameBase = useGameAssets ? selectGameAssetsBase(state) : null;
 
   return (
-    gameBase || (useLocalAssets ? LOCAL_ASSETS_BASE_URL : REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL)
+    gameBase ||
+    (useLocalAssets ? LOCAL_ASSETS_BASE_URL : REMOTE_ASSETS_BASE_URL || LOCAL_ASSETS_BASE_URL)
   );
 };
 

@@ -138,8 +138,6 @@ const Settings: React.FC = () => {
                 </div>
               ))}
             </div>
-
-            <CursedSettings cursedSettings={settings.cursedSettings} />
           </div>
         </div>
 
@@ -231,6 +229,10 @@ const Settings: React.FC = () => {
 
         <div className="col-12 mt-3">
           <ExperimentalSettings experimentalSettings={settings?.experimental} />
+        </div>
+
+        <div className="col-12 mt-3">
+          <CursedSettings cursedSettings={settings.cursedSettings} />
         </div>
       </div>
     </Card>
