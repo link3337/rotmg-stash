@@ -310,10 +310,10 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
  * skin sheets and textiles are successfully loaded. If loading fails, the
  * promise remains pending and callers will show loading state indefinitely
  * (failures are logged to the console). Calling `initPortrait` multiple times
- * is safe — the Promise resolves once; subsequent `resolvePortraitReady()`
+ * is safe - the Promise resolves once; subsequent `resolvePortraitReady()`
  * calls on an already-resolved Promise are no-ops.
  */
-let resolvePortraitReady: () => void = () => {};
+let resolvePortraitReady: () => void = () => { };
 const portraitReadyPromise: Promise<void> = new Promise<void>((resolve) => {
   resolvePortraitReady = resolve;
 });
@@ -356,3 +356,4 @@ function waitForPortraitReady(): Promise<void> {
 
 // Export portrait function and initialization helper
 export { initPortrait, isPortraitReady, portrait, waitForPortraitReady };
+

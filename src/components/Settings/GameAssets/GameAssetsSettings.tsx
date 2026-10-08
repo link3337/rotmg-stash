@@ -14,7 +14,7 @@ const GameAssetsSettings: React.FC = () => {
 
   const statusMap = {
     fresh: { severity: 'success', label: 'Up to date' },
-    stale: { severity: 'warning', label: 'Game updated — regenerate' },
+    stale: { severity: 'warning', label: 'Game updated - regenerate' },
     missing: { severity: 'danger', label: 'Not extracted' },
     unknown: { severity: 'info', label: 'Checking…' }
   } as const;

@@ -1,8 +1,8 @@
+import { useAppSelector } from '@/hooks/redux';
 import {
   GAME_ASSETS_PHASE_LABELS,
   useGameAssetsExtractor
 } from '@/hooks/useGameAssetsExtractor';
-import { useAppSelector } from '@/hooks/redux';
 import { Button } from 'primereact/button';
 import { ProgressBar } from 'primereact/progressbar';
 import React, { useState } from 'react';
@@ -30,7 +30,7 @@ const GameAssetsBanner: React.FC = () => {
       <div className="flex align-items-center gap-2">
         <i className="pi pi-exclamation-triangle text-yellow-500" />
         <span>
-          Game assets aren&apos;t extracted yet — item sprites are loading from the remote server.
+          Game assets aren't extracted yet - item sprites are loading from the remote server.
           Extract them for offline portraits.
         </span>
       </div>

@@ -20,25 +20,21 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub const CACHE_VERSION: u32 = 1;
 
-const TARGET_TEXTURES: [&str; 4] = ["characters", "characters_masks", "groundTiles", "mapObjects"];
+const TARGET_TEXTURES: [&str; 4] = [
+    "characters",
+    "characters_masks",
+    "groundTiles",
+    "mapObjects",
+];
 
 const CACHE_FILES: [&str; 3] = ["constants.json", "renders.png", "sheets.json"];
 
 /// `config.copy` aliases from the reference tool.
 fn copy_aliases() -> HashMap<String, Vec<String>> {
     HashMap::from([
-        (
-            "lofiChar8x8".to_string(),
-            vec!["lofiChar".to_string()],
-        ),
-        (
-            "lofiChar28x8".to_string(),
-            vec!["lofiChar2".to_string()],
-        ),
-        (
-            "d2LofiObjEmbed".to_string(),
-            vec!["d2LofiObj".to_string()],
-        ),
+        ("lofiChar8x8".to_string(), vec!["lofiChar".to_string()]),
+        ("lofiChar28x8".to_string(), vec!["lofiChar2".to_string()]),
+        ("d2LofiObjEmbed".to_string(), vec!["d2LofiObj".to_string()]),
         (
             "d3Chars8x8rEmbed".to_string(),
             vec!["d3Chars8x8r".to_string()],
@@ -95,8 +91,8 @@ pub fn read_cache_manifest(dir: &Path) -> Option<CacheManifest> {
 }
 
 fn file_fingerprint(path: &Path) -> Result<(u64, u64), String> {
-    let meta = std::fs::metadata(path)
-        .map_err(|e| format!("Cannot stat {}: {e}", path.display()))?;
+    let meta =
+        std::fs::metadata(path).map_err(|e| format!("Cannot stat {}: {e}", path.display()))?;
     let mtime_ms = meta
         .modified()
         .ok()
@@ -186,7 +182,7 @@ pub fn assets_status(source: Option<PathBuf>) -> Result<AssetsStatus, String> {
 
 /// JS `+attr` (unary plus): valid finite numbers map to u32, everything
 /// else (missing, "", "abc", negative) maps to 0 and is treated as
-/// invalid/falsy downstream — matching `frameWidth <= 0` checks in TS.
+/// invalid/falsy downstream - matching `frameWidth <= 0` checks in TS.
 fn js_number_as_u32(attr: Option<&str>) -> u32 {
     attr.and_then(|v| v.trim().parse::<f64>().ok())
         .filter(|n| n.is_finite() && *n > 0.0 && *n <= u32::MAX as f64)
@@ -260,8 +256,7 @@ pub fn extract_and_render(
     {
         let unity = unity::UnityAsset::open(source)?;
 
-        let texture_objs: Vec<&unity::ObjectInfo> =
-            unity.objects_of_class(28).collect();
+        let texture_objs: Vec<&unity::ObjectInfo> = unity.objects_of_class(28).collect();
         let mut found_textures = 0usize;
         for obj in &texture_objs {
             let name = unity.read_object_name(obj)?;
@@ -285,8 +280,7 @@ pub fn extract_and_render(
             });
         }
 
-        let text_objs: Vec<&unity::ObjectInfo> =
-            unity.objects_of_class(49).collect();
+        let text_objs: Vec<&unity::ObjectInfo> = unity.objects_of_class(49).collect();
         let total_text = text_objs.len();
         for (i, obj) in text_objs.iter().enumerate() {
             let name = unity.read_object_name(obj)?;
@@ -324,7 +318,10 @@ pub fn extract_and_render(
     let spritesheetf = spritesheetf.ok_or("spritesheetf TextAsset missing")?;
 
     // ── Phase 2: flatbuffer parse ──────────────────────────────────
-    log::info!("[assets] Parsing spritesheetf ({} KiB)", spritesheetf.len() / 1024);
+    log::info!(
+        "[assets] Parsing spritesheetf ({} KiB)",
+        spritesheetf.len() / 1024
+    );
     let root = flatbuf::parse_sprite_sheet_root(&spritesheetf)?;
     drop(spritesheetf);
     log::info!(
@@ -427,7 +424,7 @@ pub fn extract_and_render(
     });
 
     log::info!(
-        "[assets] Cached to {} — {} items, {} classes, {} skins, {} enchantments",
+        "[assets] Cached to {} - {} items, {} classes, {} skins, {} enchantments",
         cache.display(),
         manifest_out.stats.items,
         manifest_out.stats.classes,
@@ -469,7 +466,11 @@ mod tests {
         let manifest = extract_and_render(&source, &cache, |p| {
             if p.phase != last_phase {
                 if !last_phase.is_empty() {
-                    println!("  phase {} took {:.1?}", last_phase, phase_started.elapsed());
+                    println!(
+                        "  phase {} took {:.1?}",
+                        last_phase,
+                        phase_started.elapsed()
+                    );
                 }
                 last_phase = p.phase.clone();
                 phase_started = std::time::Instant::now();
@@ -479,7 +480,11 @@ mod tests {
             }
         })
         .expect("pipeline failed");
-        println!("  phase {} took {:.1?}", last_phase, phase_started.elapsed());
+        println!(
+            "  phase {} took {:.1?}",
+            last_phase,
+            phase_started.elapsed()
+        );
         println!("TOTAL: {:.1?}", started.elapsed());
         println!("{manifest:#?}");
         for f in CACHE_FILES {
