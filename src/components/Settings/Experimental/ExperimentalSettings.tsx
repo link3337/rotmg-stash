@@ -13,6 +13,7 @@ import { Checkbox } from 'primereact/checkbox';
 import { InputNumber } from 'primereact/inputnumber';
 import { InputText } from 'primereact/inputtext';
 import React, { useState } from 'react';
+import SettingsCard from '../SettingsCard';
 import DeviceTokenHelperDialog from './DeviceTokenHelperDialog';
 
 interface ExperimentalSettingsProps {
@@ -40,11 +41,7 @@ const ExperimentalSettings: React.FC<ExperimentalSettingsProps> = ({ experimenta
 
   return (
     <>
-      <h4>
-        <i className="pi pi-exclamation-triangle text-yellow-500 mr-2" />
-        Experimental Features
-      </h4>
-      <div className="p-3 border-2 border-yellow-500 border-round">
+      <SettingsCard title="Experimental Features" icon="pi-exclamation-triangle">
         <small className="text-yellow-500 block mb-3">
           Warning: These features are experimental and may not work as expected.
         </small>
@@ -199,7 +196,7 @@ const ExperimentalSettings: React.FC<ExperimentalSettingsProps> = ({ experimenta
             />
           </div>
         </div>
-      </div>
+      </SettingsCard>
       <DeviceTokenHelperDialog
         showDeviceTokenHelp={showDeviceTokenHelp}
         onClose={() => setShowDeviceTokenHelp(false)}

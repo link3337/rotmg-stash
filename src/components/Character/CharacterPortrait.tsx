@@ -1,5 +1,5 @@
 import { ClassID } from '@/realm/renders/classes';
-import { portrait } from '@utils/portrait';
+import { isPortraitReady, portrait, waitForPortraitReady } from '@utils/portrait';
 import { Skeleton } from 'primereact/skeleton';
 import { useEffect, useState } from 'react';
 
@@ -15,8 +15,31 @@ const CharacterPortrait: React.FC<CharacterPortraitProps> = ({ type, skin, tex1,
   const [base64Image, setBase64Image] = useState('');
 
   useEffect(() => {
-    const base64 = portrait(type, skin, tex1, tex2);
-    setBase64Image(base64);
+    let cancelled = false;
+
+    const renderPortrait = async () => {
+      if (isPortraitReady()) {
+        const base64 = portrait(type, skin, tex1, tex2);
+        if (!cancelled) {
+          setBase64Image(base64);
+        }
+        return;
+      }
+
+      await waitForPortraitReady();
+      if (cancelled) {
+        return;
+      }
+
+      const base64 = portrait(type, skin, tex1, tex2);
+      setBase64Image(base64);
+    };
+
+    void renderPortrait();
+
+    return () => {
+      cancelled = true;
+    };
   }, [type, skin, tex1, tex2]);
 
   if (!base64Image) {

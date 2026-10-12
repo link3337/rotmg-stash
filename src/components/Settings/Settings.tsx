@@ -11,12 +11,13 @@ import {
   updateTheme
 } from '@store/slices/SettingsSlice';
 import { Button } from 'primereact/button';
-import { Card } from 'primereact/card';
 import { Checkbox } from 'primereact/checkbox';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { InputNumber } from 'primereact/inputnumber';
 import CursedSettings from './Cursed/CursedSettings';
 import ExperimentalSettings from './Experimental/ExperimentalSettings';
+import GameAssetsSettings from './GameAssets/GameAssetsSettings';
+import SettingsCard from './SettingsCard';
 
 export interface DisplayOption {
   label: string;
@@ -92,6 +93,7 @@ const Settings: React.FC = () => {
     { label: 'Show Exalts', key: 'showExalts' },
     { label: 'Show Characters', key: 'showCharacters' },
     { label: 'Enable Character Info and Exalts collapsing', key: 'useAccordionMenu' },
+    { label: 'Use Game Assets', key: 'useGameAssets' },
     { label: 'Use Local Assets', key: 'useLocalAssets' },
     { label: 'Show Vault', key: 'showVault' },
     { label: 'Show Gift Chest', key: 'showGiftChest' },
@@ -107,10 +109,9 @@ const Settings: React.FC = () => {
   ];
 
   return (
-    <Card>
-      <div className="grid">
-        <div className="col-6">
-          <h4>Theme & Display</h4>
+    <div className="grid">
+      <div className="col-6">
+        <SettingsCard title="Theme & Display" icon="pi-sliders-h">
           <div className="flex flex-column gap-3">
             <div>
               <Dropdown
@@ -136,13 +137,12 @@ const Settings: React.FC = () => {
                 </div>
               ))}
             </div>
-
-            <CursedSettings cursedSettings={settings.cursedSettings} />
           </div>
-        </div>
+        </SettingsCard>
+      </div>
 
-        <div className="col-6">
-          <h4>Item Sort</h4>
+      <div className="col-6">
+        <SettingsCard title="Item Sort" icon="pi-sort-alt">
           <div className="flex flex-column gap-2">
             <div className="flex align-items-center gap-2">
               <Dropdown
@@ -170,7 +170,7 @@ const Settings: React.FC = () => {
           </div>
 
           <div className="flex flex-column mt-4">
-            <h4>Queue Interval</h4>
+            <h5 className="mt-0 mb-2">Queue Interval</h5>
             <Dropdown
               id="queueFetchInterval"
               value={settings.queueFetchInterval}
@@ -182,7 +182,7 @@ const Settings: React.FC = () => {
           </div>
 
           <div className="flex flex-column mt-4">
-            <h4>Totals Settings</h4>
+            <h5 className="mt-0 mb-2">Totals Settings</h5>
             <div className="flex flex-column gap-3">
               <div className="flex align-items-center">
                 <Checkbox
@@ -221,13 +221,21 @@ const Settings: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="col-12 mt-3">
-          <ExperimentalSettings experimentalSettings={settings?.experimental} />
-        </div>
+        </SettingsCard>
       </div>
-    </Card>
+
+      <div className="col-12 mt-3">
+        <GameAssetsSettings />
+      </div>
+
+      <div className="col-12 mt-3">
+        <ExperimentalSettings experimentalSettings={settings?.experimental} />
+      </div>
+
+      <div className="col-12 mt-3">
+        <CursedSettings cursedSettings={settings.cursedSettings} />
+      </div>
+    </div>
   );
 };
 

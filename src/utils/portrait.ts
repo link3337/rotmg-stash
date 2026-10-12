@@ -10,7 +10,8 @@ function p_comp(s: any, x: any, y: any, i: any) {
 // single pixel
 function p_dict(s: any, x: any, y: any) {
   const offset = (s.width * y + x) << 2;
-  for (var i = 0, d = []; i < 4; i++) d[i] = s.data[offset + i];
+  const d: number[] = [];
+  for (let i = 0; i < 4; i++) d[i] = s.data[offset + i];
   return d;
 }
 
@@ -224,7 +225,7 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
   }
 
   let skinData: Skin = skins[skin];
-  if (!skinData || !(sprites as any)[skinData.sheet][skinData.index]) {
+  if (!skinData || !(sprites as any)[skinData.sheet]?.[skinData.index]) {
     skin = type;
     skinData = skins[skin];
     if (!skinData) {
@@ -309,7 +310,7 @@ function portrait(type: any, skin: any, tex1Id: any, tex2Id: any): string {
  * skin sheets and textiles are successfully loaded. If loading fails, the
  * promise remains pending and callers will show loading state indefinitely
  * (failures are logged to the console). Calling `initPortrait` multiple times
- * is safe — the Promise resolves once; subsequent `resolvePortraitReady()`
+ * is safe - the Promise resolves once; subsequent `resolvePortraitReady()`
  * calls on an already-resolved Promise are no-ops.
  */
 let resolvePortraitReady: () => void = () => {};

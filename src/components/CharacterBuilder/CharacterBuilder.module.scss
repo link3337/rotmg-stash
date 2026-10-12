@@ -2,9 +2,11 @@
   border: 1px solid var(--surface-border);
   border-radius: 10px;
   padding: 0.9rem;
-  background: linear-gradient(140deg,
-      color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%),
-      color-mix(in srgb, var(--surface-card) 97%, var(--text-color) 3%));
+  background: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--surface-card) 92%, var(--primary-color) 8%),
+    color-mix(in srgb, var(--surface-card) 97%, var(--text-color) 3%)
+  );
 }
 
 .header {

@@ -121,7 +121,7 @@ export function xmlToJson(xml: any) {
 
     removeWhite: function (e: any) {
       e.normalize();
-      for (let n = e.firstChild; n; ) {
+      for (let n = e.firstChild; n;) {
         if (n.nodeType == 3) {
           // text node
           if (!n.nodeValue.match(/[^ \f\n\r\t\v]/)) {

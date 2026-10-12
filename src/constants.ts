@@ -50,5 +50,7 @@ export const TAURI_COMMANDS = {
   APPEND_ACCOUNT_SNAPSHOT: 'append_account_snapshot',
   LOAD_ACCOUNTS_SNAPSHOTS_METADATA: 'load_accounts_snapshots_metadata',
   LOAD_ACCOUNT_SNAPSHOT_BY_ID: 'load_account_snapshot_by_id',
-  DELETE_ACCOUNT_SNAPSHOT: 'delete_account_snapshot'
+  DELETE_ACCOUNT_SNAPSHOT: 'delete_account_snapshot',
+  GET_GAME_ASSETS_STATUS: 'get_game_assets_status',
+  EXTRACT_GAME_ASSETS: 'extract_game_assets'
 };
