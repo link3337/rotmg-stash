@@ -15,13 +15,13 @@ name = "rotmg_stash_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.7.2", features = [] }
+tauri-build = { version = "2.7.4", features = [] }
 
 [dependencies]
-tauri = { version = "2.12.3", features = ["devtools", "protocol-asset"] }
-tauri-plugin-dialog = "2.8.2"
+tauri = { version = "2.12.5", features = ["devtools", "protocol-asset"] }
+tauri-plugin-dialog = "2.8.4"
 tauri-plugin-log = "2.10.1"
-tauri-plugin-shell = "2.5.0"
+tauri-plugin-shell = "2.6.0"
 base64 = "0.23.1"
 dirs = "7.0.0"
 log = "0.4.34"
@@ -31,7 +31,7 @@ reqwest = { version = "0.13.5", features = ["blocking", "json", "form"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
 url = "2.5.8"
-memmap2 = "0.9"
+memmap2 = "0.9.12"
 quick-xml = "0.42.0"
 image = { version = "0.25", default-features = false, features = ["png"] }
 
