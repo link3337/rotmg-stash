@@ -22,7 +22,6 @@ import Characters from '../Character/Characters';
 import VaultOverview from '../Vault/VaultOverview';
 import AccountInfo from './AccountInfo';
 import styles from './AccountInfo.module.scss';
-import AccountSnapshotControl from './AccountSnapshotControl';
 import Exalts from './Exalts';
 
 interface AccountProps {
@@ -126,14 +125,6 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
     return <></>;
   }
 
-  const snapshotControl = (
-    <AccountSnapshotControl
-      account={account}
-      accountDisplayName={accountDisplayName}
-      isStreamerMode={settings.experimental.isStreamerMode}
-    />
-  );
-
   const AccountContent = () => (
     <Card className={isSnapshotMode ? styles.snapshotCard : undefined}>
       {!data && (
@@ -157,17 +148,11 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
                 <Button
                   onClick={handleRefresh}
                   disabled={loading || isSnapshotMode}
-                  tooltip={isSnapshotMode ? 'Restore saved data first to refresh' : undefined}
+                  tooltip={isSnapshotMode ? 'Exit snapshot view to refresh' : undefined}
                   tooltipOptions={{ position: 'top' }}
                 >
                   Fetch Account Data
                 </Button>
-                <AccountSnapshotControl
-                  account={account}
-                  accountDisplayName={accountDisplayName}
-                  isStreamerMode={settings.experimental.isStreamerMode}
-                  className="ml-2"
-                />
               </div>
               {account?.error && (
                 <div>
@@ -195,7 +180,6 @@ const Account: React.FC<AccountProps> = ({ account, isRateLimited }) => {
             showAccountInfo={settings.displaySettings.showAccountInfo}
             isRateLimited={isRateLimited}
             isSnapshotMode={isSnapshotMode}
-            snapshotControl={snapshotControl}
           />
           {settings.displaySettings.showExalts && (
             <div className="pt-3">

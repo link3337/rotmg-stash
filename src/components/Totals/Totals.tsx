@@ -1,11 +1,9 @@
-import { ItemUIModel } from '@/api/models/char-ui-model';
+﻿import { ItemUIModel } from '@/api/models/char-ui-model';
 import { getTotalsFromLocalStorage, saveTotalsToLocalStorage } from '@/cache/localstorage-service';
-import { SortCriteria, SortFields } from '@/cache/settings-model';
 import { TotalsUIModel } from '@/cache/totals-model';
 import { useConstants } from '@/providers/ConstantsProvider';
 import { itemAliases } from '@/realm/renders/aliases';
 import { createTotalMap } from '@/utils/item-name-map';
-import { booleanSort, numberSort } from '@/utils/sorting';
 import { AccountModel } from '@cache/account-model';
 import ItemSearch from '@components/Item/ItemSearch';
 import { useAppSelector } from '@hooks/redux';
@@ -27,25 +25,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { ItemList } from '../Item/ItemList';
 import styles from './Totals.module.scss';
-
-// Memoized calculation function
-const calculateTotalsOfAllAccounts = (accounts: AccountModel[]): TotalsUIModel[] => {
-  const totals = new Map<number, number>();
-  accounts?.forEach((account) => {
-    const mappedData = account.mappedData;
-    if (!mappedData) return;
-
-    mappedData?.totals?.forEach((item) => {
-      const current = totals.get(item.itemId) || 0;
-      totals.set(item.itemId, current + item.amount);
-    });
-  });
-
-  return Array.from(totals).map(([itemId, amount]) => ({
-    itemId,
-    amount
-  }));
-};
+import { calculateTotalsOfAllAccounts, sortTotals } from './totals-utils';
 
 interface TotalProps {
   accounts: AccountModel[];
@@ -75,38 +55,6 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
   const items = regularItems;
 
-  // Memoized sort function
-  const sortItems = useCallback(
-    (toBeSortedItems: TotalsUIModel[], sort: SortCriteria): TotalsUIModel[] => {
-      return [...toBeSortedItems].sort((a, b) => {
-        const itemA = items?.[a.itemId];
-        const itemB = items?.[b.itemId];
-
-        switch (sort.field) {
-          case SortFields.id:
-            return sort.direction === 'asc' ? a?.itemId - b?.itemId : b?.itemId - a?.itemId;
-          case SortFields.name:
-            return sort.direction === 'asc'
-              ? itemA?.name.localeCompare(itemB?.name)
-              : itemB?.name.localeCompare(itemA?.name);
-          case SortFields.fameBonus:
-            return numberSort(itemA?.fameBonus, itemB?.fameBonus, sort.direction);
-          case SortFields.feedPower:
-            return numberSort(itemA?.feedPower, itemB?.feedPower, sort.direction);
-          case SortFields.soulbound:
-            return booleanSort(itemA?.isSoulbound, itemB?.isSoulbound, sort.direction);
-          case SortFields.tier:
-            return numberSort(itemA?.tier, itemB?.tier, sort.direction);
-          case SortFields.shiny:
-            return booleanSort(itemA?.isShiny, itemB?.isShiny, sort.direction);
-          default:
-            return 0;
-        }
-      });
-    },
-    [items]
-  );
-
   // Memoized handlers
   const handleClearFilters = useCallback(() => {
     dispatch(clearFilters());
@@ -135,7 +83,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
   // Sort total items and update filtered items
   useEffect(() => {
     if (totalItems.length > 0 && items) {
-      const sortedItems = sortItems(totalItems, itemSort);
+      const sortedItems = sortTotals(totalItems, itemSort, items);
 
       if (JSON.stringify(sortedItems) !== JSON.stringify(totalItems)) {
         debug('Totals were sorted and updated');
@@ -149,7 +97,7 @@ const Totals: React.FC<TotalProps> = ({ accounts }) => {
 
       setFilteredItems(filtered);
     }
-  }, [totalItems, itemSort, activeFilters, sortItems, items]);
+  }, [totalItems, itemSort, activeFilters, items]);
 
   // Update name map for search functionality
   useEffect(() => {

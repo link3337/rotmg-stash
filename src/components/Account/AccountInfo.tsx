@@ -28,7 +28,6 @@ interface AccountInfoProps {
   showAccountInfo: boolean;
   isRateLimited: boolean;
   isSnapshotMode: boolean;
-  snapshotControl: React.ReactNode;
 }
 
 const AccountInfo: React.FC<AccountInfoProps> = ({
@@ -44,8 +43,7 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
   skipQueueButtonClicked,
   showAccountInfo,
   isRateLimited,
-  isSnapshotMode,
-  snapshotControl
+  isSnapshotMode
 }) => {
   const [showSkinsModal, setShowSkinsModal] = useState(false);
   const [showCharacterBuilder, setShowCharacterBuilder] = useState(false);
@@ -149,10 +147,9 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
             disabled={loading || isRateLimited || isSnapshotMode}
             onClick={refreshButtonClicked}
             icon="pi pi-refresh"
-            tooltip={isSnapshotMode ? 'Restore saved data first to refresh' : undefined}
+            tooltip={isSnapshotMode ? 'Exit snapshot view to refresh' : undefined}
             tooltipOptions={{ position: 'top' }}
           />
-          {snapshotControl}
           {accountData && characters.length > 0 && (
             <Button
               label="Character Builder Roulette"

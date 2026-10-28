@@ -162,4 +162,38 @@
     border-color: color-mix(in srgb, var(--primary-color) 35%, var(--surface-border));
     background: color-mix(in srgb, var(--primary-color) 10%, var(--surface-ground));
     color: var(--text-color);
+}.snapshot-manager-section {
+    margin-top: 1rem;
+    padding: 0.9rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+}
+
+.snapshot-manager-section-title {
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+}
+
+.snapshot-manager-form {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.snapshot-manager-form-target {
+    min-width: 14rem;
+}
+
+.snapshot-manager-active {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+    border: 1px solid var(--yellow-500);
+    background: color-mix(in srgb, var(--yellow-500) 12%, var(--surface-ground));
+}
+
+.snapshot-manager-table :global(tr.snapshot-manager-row-active) {
+    outline: 1px solid var(--primary-color);
 }

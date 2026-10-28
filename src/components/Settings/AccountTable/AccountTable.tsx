@@ -665,8 +665,7 @@ export const AccountTable: React.FC = () => {
         {snapshotView.active && (
           <span className="inline-flex align-items-center gap-1 px-2 py-1 border-round surface-ground border-1 surface-border text-xs">
             <i className="pi pi-history" />
-            Viewing {snapshotView.scope === 'single' ? 'single-account' : 'global'} snapshot:{' '}
-            {snapshotView.snapshotName}
+            Viewing snapshot: {snapshotView.snapshotName}
           </span>
         )}
       </div>

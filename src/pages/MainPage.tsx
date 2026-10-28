@@ -1,6 +1,7 @@
 import Account from '@components/Account/Account';
 import Queue from '@components/Queue/Queue';
 import Totals from '@components/Totals/Totals';
+import SnapshotTotals from '@components/Totals/SnapshotTotals';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import {
   clearSnapshotView,
@@ -38,7 +39,7 @@ const MainPage: React.FC = () => {
       toastRef.current?.show({
         severity: 'success',
         summary: 'Restored',
-        detail: 'Returned to the latest saved account data.'
+        detail: 'Showing your current data again.'
       });
     } catch (error) {
       toastRef.current?.show({
@@ -61,7 +62,7 @@ const MainPage: React.FC = () => {
           </div>
           <div className={styles.snapshotBannerContent}>
             <div className={styles.snapshotBannerTitle}>
-              Viewing a {snapshotView.scope === 'single' ? 'single-account' : 'global'} snapshot
+              Viewing a snapshot (read-only) — this is old data, not your current data
             </div>
             <div className={styles.snapshotBannerMeta}>
               <span className={styles.snapshotBannerName}>{snapshotView.snapshotName}</span>
@@ -69,8 +70,8 @@ const MainPage: React.FC = () => {
             </div>
           </div>
           <Button
-            label="Return to Saved Data"
-            icon="pi pi-undo"
+            label="Exit snapshot view"
+            icon="pi pi-times"
             severity="warning"
             outlined
             loading={isRestoringSnapshot}
@@ -79,7 +80,11 @@ const MainPage: React.FC = () => {
         </section>
       )}
       {!snapshotView.active && <Queue accounts={activeAccounts} />}
-      <Totals accounts={activeAccounts} />
+      {snapshotView.active ? (
+        <SnapshotTotals accounts={activeAccounts} title={snapshotView.snapshotName ?? ''} />
+      ) : (
+        <Totals accounts={activeAccounts} />
+      )}
       {activeAccounts?.map((account) => (
         <Account key={account.id} account={account} isRateLimited={rateLimit.isLimited} />
       ))}
