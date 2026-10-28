@@ -19,9 +19,9 @@ tauri-build = { version = "2.7.4", features = [] }
 
 [dependencies]
 tauri = { version = "2.12.5", features = ["devtools", "protocol-asset"] }
-tauri-plugin-dialog = "2.8.3"
+tauri-plugin-dialog = "2.8.4"
 tauri-plugin-log = "2.10.1"
-tauri-plugin-shell = "2.5.0"
+tauri-plugin-shell = "2.6.0"
 base64 = "0.23.1"
 dirs = "7.0.0"
 log = "0.4.34"
