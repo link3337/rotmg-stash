@@ -1,4 +1,4 @@
-import { backendErrorMessages, displayErrorMessages } from '@/constants';
+import { backendErrorMessages, displayErrorMessages, GAME_LAUNCH_ENABLED } from '@/constants';
 import { AccountUIModel } from '@api/models/account-ui-model';
 import { CharUIModel } from '@api/models/char-ui-model';
 import { AccountModel } from '@cache/account-model';
@@ -120,9 +120,11 @@ const AccountInfo: React.FC<AccountInfoProps> = ({
         </span>
         <div className="flex align-items-center gap-2">
           {errorInfo()}
-          {experimentalSettings.deviceToken && experimentalSettings.exaltPath && (
-            <Button label="Launch Exalt" onClick={launchButtonClicked} icon="pi pi-play" />
-          )}
+          {GAME_LAUNCH_ENABLED &&
+            experimentalSettings.deviceToken &&
+            experimentalSettings.exaltPath && (
+              <Button label="Launch Exalt" onClick={launchButtonClicked} icon="pi pi-play" />
+            )}
           <Button
             label={account?.queueStatus === QueueStatus.SKIPPED ? 'Add to Queue' : 'Skip Queue'}
             onClick={skipQueueButtonClicked}

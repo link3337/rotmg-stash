@@ -50,6 +50,10 @@ impl std::fmt::Display for AccountError {
     }
 }
 
+/// Temporarily disabled: DECA's policy forbids launching the game outside the official launcher.
+/// Keep in sync with `GAME_LAUNCH_ENABLED` in `src/constants.ts`.
+const GAME_LAUNCH_ENABLED: bool = false;
+
 /// Launches RotMG.exe
 #[tauri::command]
 async fn launch_exalt(
@@ -58,6 +62,10 @@ async fn launch_exalt(
     guid: &str,
     password: &str,
 ) -> Result<String, String> {
+    if !GAME_LAUNCH_ENABLED {
+        return Err("Launching Exalt is disabled: DECA's policy forbids launching the game outside the official launcher".to_string());
+    }
+
     // Build and verify the path to the executable
     let mut exalt_path = PathBuf::from(exalt_path);
     exalt_path.push("RotMG Exalt.exe");

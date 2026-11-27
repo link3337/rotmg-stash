@@ -1,5 +1,5 @@
 import { useLaunchExaltMutation } from '@/api/tauri/tauriApi';
-import { RATE_LIMIT_DURATION } from '@/constants';
+import { GAME_LAUNCH_ENABLED, RATE_LIMIT_DURATION } from '@/constants';
 import { AccountModel } from '@cache/account-model';
 import { AccountExportModel, ExportModel } from '@cache/export-model';
 import useCrypto from '@hooks/crypto';
@@ -410,16 +410,18 @@ export const AccountTable: React.FC = () => {
 
     return (
       <div className="flex gap-2">
-        {settings?.experimental?.exaltPath && settings?.experimental?.deviceToken && (
-          <Button
-            icon="pi pi-play"
-            onClick={() => launchExalt(rowData)}
-            className="p-button-success p-button-text p-button-rounded"
-            disabled={isAccountLoading}
-            tooltip="Launch Exalt"
-            tooltipOptions={{ position: 'top' }}
-          />
-        )}
+        {GAME_LAUNCH_ENABLED &&
+          settings?.experimental?.exaltPath &&
+          settings?.experimental?.deviceToken && (
+            <Button
+              icon="pi pi-play"
+              onClick={() => launchExalt(rowData)}
+              className="p-button-success p-button-text p-button-rounded"
+              disabled={isAccountLoading}
+              tooltip="Launch Exalt"
+              tooltipOptions={{ position: 'top' }}
+            />
+          )}
         <Button
           icon={`pi pi-star${rowData.active ? '-fill' : ''}`}
           onClick={() => toggleActive(rowData)}

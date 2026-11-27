@@ -1,5 +1,6 @@
 import { useLazyExecutePowershellQuery } from '@/api/tauri/tauriApi';
 import { ExperimentalSettingsModel } from '@/cache/settings-model';
+import { GAME_LAUNCH_ENABLED } from '@/constants';
 import { useAppDispatch } from '@/hooks/redux';
 import {
   toggleDebugMode,
@@ -167,34 +168,36 @@ const ExperimentalSettings: React.FC<ExperimentalSettingsProps> = ({ experimenta
             </div>
           </div>
 
-          <div className="flex flex-column gap-2 mt-3">
-            <div className="flex align-items-center gap-2">
-              <label htmlFor="deviceToken">Device Token</label>
-              <Button
-                icon="pi pi-question-circle"
-                className="p-button-text p-button-rounded p-button-sm"
-                onClick={() => setShowDeviceTokenHelp(true)}
-              />
-              <Button
-                label="Run Script"
-                icon="pi pi-play"
-                className="p-button-sm"
-                onClick={handleRunPowershellScript()}
+          {GAME_LAUNCH_ENABLED && (
+            <div className="flex flex-column gap-2 mt-3">
+              <div className="flex align-items-center gap-2">
+                <label htmlFor="deviceToken">Device Token</label>
+                <Button
+                  icon="pi pi-question-circle"
+                  className="p-button-text p-button-rounded p-button-sm"
+                  onClick={() => setShowDeviceTokenHelp(true)}
+                />
+                <Button
+                  label="Run Script"
+                  icon="pi pi-play"
+                  className="p-button-sm"
+                  onClick={handleRunPowershellScript()}
+                />
+              </div>
+              <InputText
+                id="deviceToken"
+                value={experimentalSettings?.deviceToken}
+                onChange={(e) =>
+                  dispatch(
+                    updateExperimentalSetting({
+                      key: 'deviceToken',
+                      value: e.target.value
+                    })
+                  )
+                }
               />
             </div>
-            <InputText
-              id="deviceToken"
-              value={experimentalSettings?.deviceToken}
-              onChange={(e) =>
-                dispatch(
-                  updateExperimentalSetting({
-                    key: 'deviceToken',
-                    value: e.target.value
-                  })
-                )
-              }
-            />
-          </div>
+          )}
         </div>
       </SettingsCard>
       <DeviceTokenHelperDialog

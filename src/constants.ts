@@ -37,6 +37,12 @@ export const displayErrorMessages = {
   UNKNOWN_ERROR: 'An unknown error occurred. Please try again later.'
 };
 
+/**
+ * Temporarily disabled: DECA's policy forbids launching the game outside the official launcher.
+ * Keep in sync with `GAME_LAUNCH_ENABLED` in `src-tauri/src/lib.rs`.
+ */
+export const GAME_LAUNCH_ENABLED = false;
+
 export const TAURI_COMMANDS = {
   GET_ACCOUNT_DATA: 'get_account_data',
   LAUNCH_EXALT: 'launch_exalt',
