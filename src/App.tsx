@@ -1,3 +1,4 @@
+import LaunchDisabledNotice from '@/components/Notice/LaunchDisabledNotice';
 import UpdateChecker from '@/components/Update/UpdateChecker';
 import { findThemeById } from '@/themeRegistry';
 import MainLayout from '@components/Layout/MainLayout';
@@ -63,6 +64,7 @@ function App() {
   return (
     <div className="App">
       {isProd && <UpdateChecker />}
+      <LaunchDisabledNotice />
       <MainLayout>
         {isDebugMode && (
           <Button
