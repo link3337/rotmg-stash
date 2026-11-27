@@ -11,7 +11,7 @@ A desktop application built with Tauri, React, and TypeScript for checking your 
 - 🔍 Item Search
 - 🔄 Automatic account refresh queue
 - 🎭 Streamer mode for privacy and e-mail masking
-- 🎮 Launching Exalt
+- 🎮 ~~Launching Exalt~~ (temporarily disabled, see [Launching Exalt](#launching-exalt))
 
 ## 🚀 Getting Started
 
@@ -50,27 +50,9 @@ npm run tauri dev
 
 ### Launching Exalt
 
-To use RotMG Stash with the game client, you'll need to generate a device token. This is similar to Unity's [Device Unique Identifier](https://docs.unity3d.com/6000.0/Documentation/ScriptReference/SystemInfo-deviceUniqueIdentifier.html).
+> **⚠️ Temporarily disabled**: DECA has updated its policy, and launching the game separately without the official launcher is now forbidden. The **Launch Exalt** feature and the Device Token setting have been removed from the app until further notice. Please start the game through the official launcher.
 
-1. Get the PowerShell script:
-   - Download `generate-device-token.ps1` from the `scripts` folder, or
-   - Copy the script content
-
-2. Run the script:
-
-   ```powershell
-   .\generate-device-token.ps1
-   ```
-
-   or copy paste the content into Powershell
-
-3. Configure RotMG Stash:
-   - Copy the generated device token
-   - Open Settings > Experimental
-   - Paste the token into the Device Token field
-   - Set your Exalt path
-
-> **Note**: The device token is uniquely generated from your hardware information (Win32_BaseBoard, Win32_BIOS, and Win32_OperatingSystem SerialNumbers).
+The **Exalt Path** setting (Settings > Experimental) is still available, as it is used to extract game assets.
 
 ## 🛠️ Tech Stack
 
